@@ -45,7 +45,7 @@ Read `$ARGUMENTS` first. If its first token is one of the modes below, run that 
 4. Call `mcp__plugin_context-graph_ContextGraph__edit_context_section` with `proposalId`, the `expectedRevision` you read, `sectionId` (preferred) or `heading`, and only the fields that change (`newHeading`, `body`, `rule`) plus a short `note`. One section per call.
    - On success the tool names the new revision. Tell the user in one line, for example "Committed revision 7: tightened Customer." Do not paste the document back.
    - On `CONFLICT`, re-read with `get_context_model`, tell the user what changed, and retry with the new revision.
-   - On `INVALID_REQUEST`, the server rejected the rule or heading; read the reason, fix it (usually the type or field name), and retry.
+   - On `INVALID_REQUEST`, the server rejected the rule or heading; read the reason, fix it (usually the type or field name), and retry. Duplicated headings are repaired by the tool itself in the same commit (later duplicates get a numbered suffix); it says so in its result.
    - Only for edits that touch several sections at once, call `get_context_document`, apply every change to the markdown keeping each section and its `Context section`, `Evidence`, `Answers`, `Questions` and `Review` lines exactly, and commit once with `save_context_revision` (the frontmatter must keep the revision you read).
 5. Ask whether there is another change. Continue until the user says they are done, then go to Wrap up.
 

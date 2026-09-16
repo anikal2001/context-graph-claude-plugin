@@ -1,7 +1,7 @@
 ---
-description: Manage ontology versions from Claude Code: read versions, save a draft, ask the model for a draft, preview exact membership changes, publish, compare versions and set automatic drafting. TRIGGER when the user wants to publish the ontology, save or draft an ontology version, see what publishing would change, diff ontology versions, or turn auto-draft on or off, or says 'publish the ontology', 'new ontology version', 'what would publishing change', 'compare ontology versions'. SKIP when the user wants to edit sections of the context graph or business document (use /context-graph:graph).
-argument-hint: "[versions|save|draft|publish|compare|settings]"
-allowed-tools: ["Bash", "AskUserQuestion", "Read", "mcp__plugin_context-graph_ContextGraph__get_ontology", "mcp__plugin_context-graph_ContextGraph__get_ontology_version", "mcp__plugin_context-graph_ContextGraph__save_ontology_version", "mcp__plugin_context-graph_ContextGraph__configure_ontology", "mcp__plugin_context-graph_ContextGraph__request_ontology_draft", "mcp__plugin_context-graph_ContextGraph__preview_ontology_publication", "mcp__plugin_context-graph_ContextGraph__publish_ontology", "mcp__plugin_context-graph_ContextGraph__update_ontology_settings", "mcp__plugin_context-graph_ContextGraph__compare_ontology_versions", "mcp__plugin_context-graph_ContextGraph__get_context_document", "mcp__plugin_context-graph_ContextGraph__list_context_models", "mcp__plugin_context-graph_ContextGraph__list_sources", "mcp__plugin_context-graph_ContextGraph__get_imported_model"]
+description: Edit and manage ontology versions from Claude Code: change one entity, definition, relationship, metric or process and save it as the next draft, read versions, ask the model for a draft, preview exact membership changes, publish, compare versions and set automatic drafting. TRIGGER when the user wants to edit the ontology, change a definition or rule, add or remove an entity, publish the ontology, save or draft an ontology version, see what publishing would change, diff ontology versions, or turn auto-draft on or off, or says 'edit the ontology', 'change this definition', 'publish the ontology', 'new ontology version', 'what would publishing change', 'compare ontology versions'. SKIP when the user wants to edit sections of the context graph or business document (use /context-graph:graph).
+argument-hint: "[edit|versions|save|draft|publish|compare|settings]"
+allowed-tools: ["Bash", "AskUserQuestion", "Read", "mcp__plugin_context-graph_ContextGraph__get_ontology", "mcp__plugin_context-graph_ContextGraph__get_ontology_version", "mcp__plugin_context-graph_ContextGraph__save_ontology_version", "mcp__plugin_context-graph_ContextGraph__edit_ontology_entry", "mcp__plugin_context-graph_ContextGraph__configure_ontology", "mcp__plugin_context-graph_ContextGraph__request_ontology_draft", "mcp__plugin_context-graph_ContextGraph__preview_ontology_publication", "mcp__plugin_context-graph_ContextGraph__publish_ontology", "mcp__plugin_context-graph_ContextGraph__update_ontology_settings", "mcp__plugin_context-graph_ContextGraph__compare_ontology_versions", "mcp__plugin_context-graph_ContextGraph__get_context_document", "mcp__plugin_context-graph_ContextGraph__list_context_models", "mcp__plugin_context-graph_ContextGraph__list_sources", "mcp__plugin_context-graph_ContextGraph__get_imported_model"]
 ---
 
 # Context graph: Ontology versions
@@ -12,16 +12,27 @@ Every write takes the ontology **head revision** from `get_ontology` as `expecte
 
 ## Modes
 
-Read `$ARGUMENTS` first. If its first token is one of the modes below, run that mode. Otherwise run `versions`.
+Read `$ARGUMENTS` first. If its first token is one of the modes below, run that mode. Otherwise, when the arguments describe a change, run `edit` with them as the request; with no arguments run `versions`.
 
 | Mode | Trigger | What it does |
 |------|---------|--------------|
-| `versions` | `versions` (default) | List versions and jobs, read one version's markdown |
+| `edit` | `edit` or a described change | Change one entry (entity, definition, relationship, metric, process, …) and save it as the next draft version |
+| `versions` | `versions` (default without arguments) | List versions and jobs, read one version's markdown |
 | `save` | `save` | Save markdown (from a file, the context document, or edits to a version) as the next draft |
 | `draft` | `draft` | Ask the model to draft the next version from the configured sources |
 | `publish` | `publish` | Preview membership changes, confirm, publish the newest draft |
 | `compare` | `compare` | Diff two versions |
 | `settings` | `settings` | Automatic drafting and its business questions |
+
+## Edit
+
+1. Call `mcp__plugin_context-graph_ContextGraph__get_ontology` for the head revision, then `mcp__plugin_context-graph_ContextGraph__get_ontology_version` (newest, or the version the user names) and find the entry the user means under its section (`## Entities`, `## Definitions`, `## Relationships`, `## Metrics`, `## Processes`, and so on). When the entry is unclear, list the candidate headings and ask with `AskUserQuestion`.
+2. For a rule, call `mcp__plugin_context-graph_ContextGraph__get_imported_model` (with `search` for the type) so the rule uses real type ids, field names and picklist values: `Type where field op value`, operators `=`, `!=`, `>`, `>=`, `<`, `<=`, joined with `and`; `undetermined` when the data cannot decide. For an entity, `Source:` names the imported type.
+3. Call `mcp__plugin_context-graph_ContextGraph__edit_ontology_entry` with `expectedRevision`, `section`, `name`, and only what changes: `newName`, `prose`, `properties` (for example `{"rule": "…"}`, `{"source": "…"}`, `{"formula": "…"}`; an empty value removes the line). Use `action: "add"` with `prose` and `properties` for a new entry, `action: "remove"` to drop one. One entry per call; each call saves the next draft version.
+   - The tool names the new draft version. Tell the user in one line, for example "Saved draft v15: Customer rule now Account where Type = \"Customer\"." Do not paste the markdown back.
+   - On `INVALID_REQUEST`, the server's parser named the bad heading or rule; fix and retry.
+   - On `CONFLICT`, re-read `get_ontology` and retry with the new head revision.
+4. Ask whether there is another change. When the user is done, offer `publish` (a draft is not live until published).
 
 ## Versions
 

@@ -36480,7 +36480,7 @@ var StdioServerTransport = class {
 import os2 from "node:os";
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.4.0";
+var CONTRACT_VERSION = "1.5.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -36673,7 +36673,7 @@ var DefinitionVersionSchema = external_exports.strictObject({
   publishedAt: TimestampSchema.nullable()
 });
 var ExtractionBatchSchema = external_exports.strictObject({
-  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", CONTRACT_VERSION]),
+  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", CONTRACT_VERSION]),
   connectionId: IdSchema,
   runId: IdSchema,
   batchId: IdSchema,
@@ -36912,6 +36912,15 @@ var GithubLinkStatusSchema = external_exports.strictObject({ configured: externa
 var GithubInstallationsResponseSchema = external_exports.strictObject({ installations: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), account: external_exports.string(), targetType: external_exports.string() })) });
 var GithubRepositoriesResponseSchema = external_exports.strictObject({ repositories: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), fullName: external_exports.string(), defaultBranch: external_exports.string(), private: external_exports.boolean() })) });
 var GithubBranchesResponseSchema = external_exports.strictObject({ branches: external_exports.array(external_exports.string()) });
+var NotionLinkStatusSchema = external_exports.strictObject({ configured: external_exports.boolean(), linked: external_exports.boolean(), workspaceName: external_exports.string().nullable() });
+var NotionSearchQuerySchema = external_exports.strictObject({ query: external_exports.string().max(200).optional(), kind: external_exports.enum(["data_source", "page"]).default("data_source") });
+var NotionSearchResponseSchema = external_exports.strictObject({ results: external_exports.array(external_exports.strictObject({
+  id: IdSchema,
+  kind: external_exports.enum(["data_source", "page"]),
+  title: external_exports.string(),
+  url: external_exports.string().nullable(),
+  lastEditedAt: external_exports.string().nullable()
+})) });
 var SyncAcceptedSchema = external_exports.strictObject({ runId: IdSchema, status: external_exports.literal("queued") });
 var DefinitionInputSchema = external_exports.strictObject({
   name: external_exports.string().min(1).max(200),
@@ -36928,6 +36937,228 @@ var PrincipalSchema = external_exports.strictObject({
   workspaceId: IdSchema,
   role: external_exports.enum(["viewer", "operator", "admin"])
 });
+
+// ../shared/src/ontology/rules.ts
+var OntologyParseError = class extends Error {
+  constructor(message, line) {
+    super(line === void 0 ? message : `Line ${line}: ${message}`);
+    this.line = line;
+    this.name = "OntologyParseError";
+  }
+  line;
+};
+var operators = {
+  "=": "eq",
+  "!=": "neq",
+  ">": "gt",
+  ">=": "gte",
+  "<": "lt",
+  "<=": "lte"
+};
+function validateDefinitionRule(input2, entityTypes) {
+  const rule = DefinitionRuleSchema.parse(input2);
+  if (rule.kind === "description") return rule;
+  const matches = entityTypes.filter((type2) => type2.id === rule.typeId || type2.nativeName === rule.typeId);
+  if (matches.length !== 1) throw new OntologyParseError(`${matches.length ? "Ambiguous" : "Unknown"} entity type: ${rule.typeId}`);
+  const type = matches[0];
+  for (const predicate of rule.predicates) {
+    const field = type.fields.find((field2) => field2.name === predicate.field);
+    if (!field) {
+      throw new OntologyParseError(`Unknown field ${predicate.field} on ${type.nativeName}`);
+    }
+    const value = predicate.value;
+    const equality = ["eq", "neq"].includes(predicate.operator);
+    if (value === null) {
+      if (!equality) throw new OntologyParseError("Null only supports equality comparisons");
+      continue;
+    }
+    const expected = field.dataType === "number" ? "number" : field.dataType === "boolean" ? "boolean" : "string";
+    if (field.dataType === "json" || typeof value !== expected || typeof value === "number" && !Number.isFinite(value)) {
+      throw new OntologyParseError(`Invalid value type for ${predicate.field}`);
+    }
+    if (field.dataType === "boolean" && !equality) throw new OntologyParseError("Boolean only supports equality comparisons");
+    if (field.dataType === "date" && (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value) || !Number.isFinite(Date.parse(value)) || new Date(value).toISOString().slice(0, 10) !== value)) throw new OntologyParseError("Invalid date");
+    if (field.dataType === "datetime" && !TimestampSchema.safeParse(value).success) throw new OntologyParseError("Invalid datetime");
+  }
+  return { ...rule, typeId: type.id };
+}
+function parseDefinitionRule(text3, entityTypes) {
+  let remaining = text3.trim();
+  if (remaining.startsWith("`") && remaining.endsWith("`")) remaining = remaining.slice(1, -1).trim();
+  if (/^undetermined$/i.test(remaining)) return { kind: "description", text: "undetermined" };
+  const start = /^([A-Za-z_][A-Za-z0-9_:./-]*)\s+where\s+/i.exec(remaining);
+  if (!start) {
+    if (/\bwhere\b/i.test(remaining)) throw new OntologyParseError("Invalid filter rule");
+    return { kind: "description", text: remaining || "undetermined" };
+  }
+  const typeId = start[1];
+  remaining = remaining.slice(start[0].length);
+  const predicates = [];
+  while (remaining) {
+    const comparison = /^([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|!=|=|>|<)\s*/.exec(remaining);
+    if (!comparison) throw new OntologyParseError("Expected a field comparison");
+    remaining = remaining.slice(comparison[0].length);
+    const literal2 = /^("(?:[^"\\\r\n]|\\["\\/bfnrt]|\\u[0-9a-fA-F]{4})*"|true\b|false\b|null\b|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/.exec(remaining);
+    if (!literal2) throw new OntologyParseError("Expected a JSON string, finite number, boolean, or null");
+    const value = JSON.parse(literal2[0]);
+    if (typeof value === "number" && !Number.isFinite(value)) throw new OntologyParseError("Rule numbers must be finite");
+    predicates.push({ field: comparison[1], operator: operators[comparison[2]], value });
+    remaining = remaining.slice(literal2[0].length);
+    if (!remaining.trim()) break;
+    const conjunction = /^\s+and\s+/i.exec(remaining);
+    if (!conjunction) throw new OntologyParseError("Only AND joins are supported; unexpected text after value");
+    remaining = remaining.slice(conjunction[0].length);
+    if (!remaining.trim()) throw new OntologyParseError("Expected a comparison after AND");
+  }
+  const rule = DefinitionRuleSchema.parse({ kind: "filter", typeId, predicates });
+  return entityTypes === void 0 ? rule : validateDefinitionRule(rule, entityTypes);
+}
+
+// ../shared/src/ontology/markdown.ts
+var sections = /* @__PURE__ */ new Set(["entities", "definitions", "relationships", "metrics", "questions", "workflows", "processes", "automations"]);
+var labelPattern = /^\s*(?:[-*]\s+)?(?:\*\*)?([A-Za-z][A-Za-z ]*)(?:\*\*)?:(?:\*\*)?\s*(.*)$/;
+function scalar(value, line) {
+  if (value.startsWith('"')) {
+    try {
+      const parsed = JSON.parse(value);
+      if (typeof parsed === "string") return parsed;
+    } catch {
+    }
+    throw new OntologyParseError("Invalid quoted frontmatter value", line);
+  }
+  if (value.startsWith("'")) {
+    if (!/^'(?:[^']|'')*'$/.test(value)) throw new OntologyParseError("Invalid quoted frontmatter value", line);
+    return value.slice(1, -1).replaceAll("''", "'");
+  }
+  if (/^(true|false|null)$/.test(value)) return JSON.parse(value);
+  if (/^-?(?:0|[1-9]\d*)(?:\.\d+)?$/.test(value)) {
+    const number4 = Number(value);
+    if (!Number.isFinite(number4)) throw new OntologyParseError("Frontmatter number must be finite", line);
+    return number4;
+  }
+  if (!value || /^[[\]{}&*!>|]/.test(value)) throw new OntologyParseError("Frontmatter supports scalar values only", line);
+  return value;
+}
+function parseOntologyMarkdown(markdown, entityTypes) {
+  const lines = markdown.replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n").split("\n");
+  if (lines[0]?.trim() !== "---") throw new OntologyParseError("Expected opening frontmatter delimiter", 1);
+  const frontmatter = {};
+  let cursor = 1;
+  for (; cursor < lines.length && lines[cursor].trim() !== "---"; cursor++) {
+    const line = lines[cursor];
+    if (!line.trim() || line.trimStart().startsWith("#")) continue;
+    const pair = /^([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$/.exec(line);
+    if (!pair) throw new OntologyParseError("Expected a flat frontmatter key/value pair", cursor + 1);
+    if (Object.hasOwn(frontmatter, pair[1])) throw new OntologyParseError("Duplicate frontmatter key", cursor + 1);
+    Object.defineProperty(frontmatter, pair[1], { value: scalar(pair[2], cursor + 1), enumerable: true });
+  }
+  if (cursor === lines.length) throw new OntologyParseError("Unclosed frontmatter", 1);
+  const document = { frontmatter, title: "", entities: [], definitions: [], relationships: [], metrics: [], questions: [], workflows: [], processes: [], automations: [] };
+  let section;
+  let entry;
+  let group;
+  let fence;
+  const seenSections = /* @__PURE__ */ new Set();
+  const finish = () => {
+    if (!entry || !section) return;
+    const properties = {};
+    const prose = [];
+    let entryFence;
+    for (const [offset, line] of entry.lines.entries()) {
+      const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
+      if (marker) {
+        if (!entryFence) entryFence = marker;
+        else if (marker[0] === entryFence[0] && marker.length >= entryFence.length) entryFence = void 0;
+        prose.push(line);
+        continue;
+      }
+      const label = entryFence ? null : labelPattern.exec(line);
+      if (label) {
+        const key = label[1].toLowerCase().trim();
+        if (Object.hasOwn(properties, key)) {
+          if (key === "rule") throw new OntologyParseError(`Duplicate ${key} line`, entry.line + offset + 1);
+          prose.push(line);
+          continue;
+        }
+        Object.defineProperty(properties, key, { value: label[2].trim(), enumerable: true });
+        if (key === "rule") continue;
+      }
+      prose.push(line);
+    }
+    if (entry.process !== void 0 && !Object.hasOwn(properties, "process")) Object.defineProperty(properties, "process", { value: entry.process, enumerable: true });
+    const parsed = { name: entry.name, line: entry.line, markdown: entry.lines.join("\n").trim(), properties };
+    const sameProcess = (item) => (item.properties.process ?? "").toLowerCase() === (parsed.properties.process ?? "").toLowerCase();
+    if (document[section].some((item) => item.name.toLowerCase() === parsed.name.toLowerCase() && (section !== "processes" || sameProcess(item)))) {
+      throw new OntologyParseError(`Duplicate ${section} entry: ${parsed.name}`, entry.line);
+    }
+    if (section === "definitions") {
+      const description = prose.join("\n").trim();
+      let rule;
+      try {
+        rule = properties.rule === void 0 ? { kind: "description", text: description || entry.name } : parseDefinitionRule(properties.rule, entityTypes);
+      } catch (error62) {
+        throw new OntologyParseError(error62 instanceof Error ? error62.message : "Invalid rule", entry.line);
+      }
+      if (rule.kind === "description") rule = { kind: "description", text: properties.rule && !/^undetermined$/i.test(properties.rule) ? [description, rule.text].filter(Boolean).join("\n") : description || rule.text };
+      document.definitions.push({ ...parsed, description, rule });
+    } else document[section].push(parsed);
+    entry = void 0;
+  };
+  for (cursor++; cursor < lines.length; cursor++) {
+    const line = lines[cursor];
+    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
+    if (marker) {
+      if (!fence) fence = marker;
+      else if (marker[0] === fence[0] && marker.length >= fence.length) fence = void 0;
+      if (!entry) throw new OntologyParseError("Code blocks must belong to an entry", cursor + 1);
+      entry.lines.push(line);
+      continue;
+    }
+    if (fence) {
+      entry.lines.push(line);
+      continue;
+    }
+    const heading = /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+    if (heading?.[1] === "#") {
+      if (document.title || section) throw new OntologyParseError("Unexpected document title", cursor + 1);
+      document.title = heading[2];
+    } else if (heading?.[1] === "##") {
+      finish();
+      const name = heading[2].toLowerCase();
+      if (!sections.has(name)) throw new OntologyParseError(`Unknown section: ${heading[2]}`, cursor + 1);
+      if (seenSections.has(name)) throw new OntologyParseError(`Duplicate section: ${heading[2]}`, cursor + 1);
+      section = name;
+      seenSections.add(name);
+    } else if (heading?.[1] === "###") {
+      if (!section) throw new OntologyParseError("Entry must belong to a section", cursor + 1);
+      finish();
+      group = section === "processes" ? heading[2] : void 0;
+      entry = { name: heading[2], line: cursor + 1, lines: [] };
+    } else if (heading?.[1] === "####" && section === "processes" && group !== void 0) {
+      if (entry?.name === group && entry.process === void 0) entry = void 0;
+      else finish();
+      entry = { name: heading[2], line: cursor + 1, lines: [], process: group };
+    } else {
+      const item = section === "questions" ? /^\d+[.)]\s+(.+)$/.exec(line) : section === "relationships" && !labelPattern.test(line) ? /^[-*]\s+(.+)$/.exec(line) : null;
+      if (item) {
+        finish();
+        entry = { name: item[1], line: cursor + 1, lines: [item[1]] };
+      } else if (entry) entry.lines.push(line);
+      else if (line.trim() && !section) throw new OntologyParseError("Content must belong to a section entry", cursor + 1);
+    }
+  }
+  if (fence) throw new OntologyParseError("Unclosed code block", cursor);
+  finish();
+  if (!document.title) throw new OntologyParseError("Missing document title");
+  const definitionNames = new Set(document.definitions.map((definition) => definition.name.toLowerCase()));
+  for (const stage of document.processes) {
+    const target = stage.properties.definition;
+    if (target !== void 0 && !definitionNames.has(target.trim().toLowerCase())) throw new OntologyParseError(`Unknown definition in process stage ${stage.name}: ${target}`, stage.line);
+    const order = stage.properties.order;
+    if (order !== void 0 && !/^\d{1,4}$/.test(order.trim())) throw new OntologyParseError(`Process stage ${stage.name} needs a whole-number Order`, stage.line);
+  }
+  return document;
+}
 
 // ../shared/src/plugin.ts
 var PLUGIN_HOSTS = ["claude"];
@@ -37133,8 +37364,8 @@ var editContextSection = { name: "edit_context_section", title: "Edit context se
   proposalId,
   expectedRevision,
   sectionId: external_exports.string().min(1).max(200).optional().describe("Section id from get_context_model."),
-  heading: external_exports.string().min(1).max(200).optional().describe("Current heading, when no sectionId is given."),
-  newHeading: external_exports.string().min(1).max(200).optional(),
+  heading: external_exports.string().min(1).max(2e3).optional().describe("Current heading, when no sectionId is given."),
+  newHeading: external_exports.string().min(1).max(2e3).optional().describe("Synthesized headings can be long sentences; keep the rename on one line."),
   body: external_exports.string().max(2e4).optional().describe("New prose for the section (markdown)."),
   rule: external_exports.string().max(2e3).optional().describe('New rule line, e.g. `Account where Type = "Customer"`, or `undetermined`.'),
   note: external_exports.string().max(200).optional().describe("Short commit note shown in the revision history.")
@@ -37173,6 +37404,16 @@ var requestOntologyDraft = { name: "request_ontology_draft", title: "Request ont
 var previewOntologyPublication = { name: "preview_ontology_publication", title: "Preview ontology publication", description: "Exact membership changes of every executable definition (before/after counts, entered/left) and the context changes that publishing the newest draft would make. Returns the previewToken publish_ontology requires.", inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()) } };
 var publishOntology = { name: "publish_ontology", title: "Publish ontology", description: "Publish the newest draft as an immutable version using a previewToken from preview_ontology_publication. Refused when sources or the draft changed since the preview. Ask the person before publishing.", inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()), previewToken: external_exports.string().length(64) } };
 var updateOntologySettings = { name: "update_ontology_settings", title: "Update ontology settings", description: "Turn automatic drafting after imports on or off and set the business questions automatic drafts use.", inputSchema: { autoDraft: bool().optional(), questions: external_exports.string().max(1e4).optional() } };
+var editOntologyEntry = { name: "edit_ontology_entry", title: "Edit ontology entry", description: "Change one entry of the ontology (an entity, definition, relationship, workflow, metric, process, automation or question) and save the result as the next draft version, without pasting the whole document. Reads the newest version (or `version`), applies the change the way the graph page does, and the server validates it against the imported types. Definitions carry `Rule: Type where field op value` or `Rule: undetermined`; entities carry `Source: <type>`. Publishing stays a separate preview + publish step.", inputSchema: {
+  expectedRevision: int2(external_exports.number().nonnegative()).describe("Ontology head revision from get_ontology."),
+  version: int2(external_exports.number().positive()).optional().describe("Version to start from; defaults to the newest."),
+  section: external_exports.enum(["entities", "definitions", "relationships", "workflows", "metrics", "processes", "automations", "questions"]),
+  name: external_exports.string().min(1).max(2e3).describe("Entry heading as it appears under the section."),
+  action: external_exports.enum(["update", "add", "remove"]).default("update"),
+  newName: external_exports.string().min(1).max(2e3).optional(),
+  prose: external_exports.string().max(2e4).optional().describe("New prose (markdown); for add, the entry body."),
+  properties: external_exports.record(external_exports.string().min(1).max(40), external_exports.string().max(2e3)).optional().describe('Labeled lines to set, e.g. {"rule": "Account where Type = \\"Customer\\""} or {"source": "Account"}; an empty value removes that line.')
+} };
 var compareOntologyVersions = { name: "compare_ontology_versions", title: "Compare ontology versions", description: "Unified diff of the ontology markdown between two versions.", inputSchema: { from: int2(external_exports.number().positive()), to: int2(external_exports.number().positive()).optional().describe("Defaults to the newest version.") } };
 var listSources = { name: "list_sources", title: "List sources", description: "Connected data sources with provider, status, coverage and freshness.", inputSchema: {} };
 var getImportedModel = { name: "get_imported_model", title: "Get imported model", description: "Imported object types with record counts, fields and reference relationships. Use it to write executable rules (`Type where field op value`) against real field names and picklist values.", inputSchema: {
@@ -37205,6 +37446,7 @@ var ALL_TOOL_CONTRACTS = [
   previewOntologyPublication,
   publishOntology,
   updateOntologySettings,
+  editOntologyEntry,
   compareOntologyVersions,
   listSources,
   getImportedModel,
@@ -37274,26 +37516,26 @@ var LABEL = /^\s*(?:[-*]\s+)?(?:\*\*)?([A-Za-z][A-Za-z ]*)(?:\*\*)?:(?:\*\*)?\s*
 var PROTECTED = /* @__PURE__ */ new Set(["context section", "evidence", "answers", "questions", "review"]);
 var labelOf = (line) => LABEL.exec(line)?.[1]?.toLowerCase().trim();
 function listSections(markdown) {
-  const rows = markdown.replace(/\r\n?/g, "\n").split("\n");
-  const sections = [];
+  const rows2 = markdown.replace(/\r\n?/g, "\n").split("\n");
+  const sections2 = [];
   let group = "";
-  for (let index = 0; index < rows.length; index++) {
-    const h2 = /^##\s+(.+?)\s*$/.exec(rows[index]);
-    if (h2 && !/^###/.test(rows[index])) {
+  for (let index = 0; index < rows2.length; index++) {
+    const h2 = /^##\s+(.+?)\s*$/.exec(rows2[index]);
+    if (h2 && !/^###/.test(rows2[index])) {
       group = h2[1];
       continue;
     }
-    const h3 = /^###\s+(.+?)\s*$/.exec(rows[index]);
+    const h3 = /^###\s+(.+?)\s*$/.exec(rows2[index]);
     if (!h3) continue;
-    let end = rows.length;
-    for (let cursor = index + 1; cursor < rows.length; cursor++) if (/^#{2,3}\s+/.test(rows[cursor])) {
+    let end = rows2.length;
+    for (let cursor = index + 1; cursor < rows2.length; cursor++) if (/^#{2,3}\s+/.test(rows2[cursor])) {
       end = cursor;
       break;
     }
     const body = [];
     let rule = "undetermined";
     let sectionId = null;
-    for (const line of rows.slice(index + 1, end)) {
+    for (const line of rows2.slice(index + 1, end)) {
       const label = labelOf(line);
       if (label === "rule") {
         rule = LABEL.exec(line)[2].trim();
@@ -37310,23 +37552,23 @@ function listSections(markdown) {
       if (label !== void 0 && PROTECTED.has(label)) continue;
       body.push(line);
     }
-    sections.push({ index: sections.length, group, heading: h3[1], sectionId, rule, body: body.join("\n").trim(), start: index, end });
+    sections2.push({ index: sections2.length, group, heading: h3[1], sectionId, rule, body: body.join("\n").trim(), start: index, end });
   }
-  return sections;
+  return sections2;
 }
 function findSection(markdown, selector) {
-  const sections = listSections(markdown);
-  const matches = sections.filter((section) => (selector.sectionId ? section.sectionId === selector.sectionId : false) || (selector.heading ? section.heading.toLowerCase() === selector.heading.toLowerCase() : false));
+  const sections2 = listSections(markdown);
+  const matches = sections2.filter((section) => (selector.sectionId ? section.sectionId === selector.sectionId : false) || (selector.heading ? section.heading.toLowerCase() === selector.heading.toLowerCase() : false));
   if (matches.length === 1) return matches[0];
   if (matches.length > 1) throw new Error(`"${selector.heading ?? selector.sectionId}" matches ${matches.length} sections; pass its sectionId.`);
   const wanted = selector.sectionId ?? selector.heading ?? "";
-  const nearby = sections.filter((section) => section.heading.toLowerCase().includes(wanted.toLowerCase())).map((section) => section.heading).slice(0, 5);
+  const nearby = sections2.filter((section) => section.heading.toLowerCase().includes(wanted.toLowerCase())).map((section) => section.heading).slice(0, 5);
   throw new Error(`No section named "${wanted}".${nearby.length ? ` Did you mean: ${nearby.join(", ")}?` : ""}`);
 }
 function editSection(markdown, selector, change) {
   const section = findSection(markdown, selector);
-  const rows = markdown.replace(/\r\n?/g, "\n").split("\n");
-  const block = rows.slice(section.start + 1, section.end);
+  const rows2 = markdown.replace(/\r\n?/g, "\n").split("\n");
+  const block = rows2.slice(section.start + 1, section.end);
   const labelLines = block.filter((line) => {
     const label = labelOf(line);
     return label !== void 0 && (PROTECTED.has(label) || label === "rule");
@@ -37338,8 +37580,8 @@ function editSection(markdown, selector, change) {
   const heading = (change.heading ?? section.heading).replace(/[\r\n]+/g, " ").trim();
   if (!heading) throw new Error("A section heading cannot be empty.");
   const next = [`### ${heading}`, "", ...body ? [body, ""] : [], ...labels, ""];
-  rows.splice(section.start, section.end - section.start, ...next);
-  const result = rows.join("\n").replace(/\n{3,}/g, "\n\n").replace(/\s+$/, "\n");
+  rows2.splice(section.start, section.end - section.start, ...next);
+  const result = rows2.join("\n").replace(/\n{3,}/g, "\n\n").replace(/\s+$/, "\n");
   return { markdown: result, section: findSection(result, section.sectionId ? { sectionId: section.sectionId } : { heading }) };
 }
 function documentIdentity(markdown) {
@@ -37356,6 +37598,21 @@ function documentIdentity(markdown) {
     }
   }
   return { contextModel, contextRevision: revision2 ? Number(revision2) : null };
+}
+function dedupeHeadings(markdown) {
+  const used = /* @__PURE__ */ new Set();
+  const renamed = [];
+  let result = markdown;
+  for (const section of listSections(markdown)) {
+    const base2 = section.heading.replace(/\s\(\d+\)$/, "");
+    let heading = section.heading;
+    for (let n = 2; used.has(heading.toLowerCase()); n++) heading = `${base2} (${n})`;
+    used.add(heading.toLowerCase());
+    if (heading === section.heading) continue;
+    renamed.push({ sectionId: section.sectionId, from: section.heading, to: heading });
+    result = editSection(result, section.sectionId ? { sectionId: section.sectionId } : { heading: section.heading }, { heading }).markdown;
+  }
+  return { markdown: result, renamed };
 }
 
 // src/diff.ts
@@ -37407,6 +37664,91 @@ function unifiedDiff(before, after, labels, context = 2) {
   return out.join("\n");
 }
 
+// src/ontologyDocument.ts
+var ONTOLOGY_SECTIONS = ["entities", "definitions", "relationships", "workflows", "metrics", "processes", "automations", "questions"];
+var TITLES = { entities: "Entities", definitions: "Definitions", relationships: "Relationships", workflows: "Workflows", metrics: "Metrics", processes: "Processes", automations: "Automations", questions: "Questions" };
+var LABEL2 = /^\s*(?:[-*]\s+)?(?:\*\*)?([A-Za-z][A-Za-z ]*)(?:\*\*)?:(?:\*\*)?\s*(.*)$/;
+var rows = (markdown) => markdown.replace(/\r\n?/g, "\n").split("\n");
+function sectionRange(lines, section) {
+  const start = lines.findIndex((line) => /^##\s+/.test(line) && !/^###/.test(line) && line.replace(/^##\s+/, "").trim().toLowerCase() === section);
+  if (start === -1) return null;
+  let end = lines.length;
+  for (let index = start + 1; index < lines.length; index++) if (/^##\s+[^#]/.test(lines[index])) {
+    end = index;
+    break;
+  }
+  return { start, end };
+}
+function listEntries(markdown) {
+  const lines = rows(markdown);
+  const entries = [];
+  for (const section of ONTOLOGY_SECTIONS) {
+    const range = sectionRange(lines, section);
+    if (!range) continue;
+    for (let index = range.start + 1; index < range.end; index++) {
+      const heading = /^###\s+(.+?)\s*$/.exec(lines[index]);
+      if (!heading) continue;
+      let end = range.end;
+      for (let cursor = index + 1; cursor < range.end; cursor++) if (/^###\s+/.test(lines[cursor])) {
+        end = cursor;
+        break;
+      }
+      const body = lines.slice(index + 1, end);
+      const properties = {};
+      for (const line of body) {
+        const label = LABEL2.exec(line);
+        if (label) properties[label[1].toLowerCase().trim()] = label[2].trim();
+      }
+      entries.push({ section, name: heading[1], prose: body.filter((line) => !LABEL2.test(line)).join("\n").trim(), properties, start: index, end });
+    }
+  }
+  return entries;
+}
+function findEntry(markdown, section, name) {
+  const matches = listEntries(markdown).filter((entry) => entry.section === section && entry.name.toLowerCase() === name.toLowerCase());
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) throw new Error(`${TITLES[section]} has ${matches.length} entries named "${name}".`);
+  const nearby = listEntries(markdown).filter((entry) => entry.section === section && entry.name.toLowerCase().includes(name.toLowerCase())).map((entry) => entry.name).slice(0, 5);
+  throw new Error(`No ${section} entry named "${name}".${nearby.length ? ` Did you mean: ${nearby.join(", ")}?` : ""}`);
+}
+var tidy = (lines) => lines.join("\n").replace(/\n{3,}/g, "\n\n").replace(/\s+$/, "\n");
+function updateEntry(markdown, section, name, change) {
+  const lines = rows(markdown);
+  const entry = findEntry(markdown, section, name);
+  const body = lines.slice(entry.start + 1, entry.end);
+  const kept = new Map(body.filter((line) => LABEL2.test(line)).map((line) => [LABEL2.exec(line)[1].toLowerCase().trim(), line]));
+  for (const [key, value] of Object.entries(change.properties ?? {})) {
+    if (value.trim() === "") kept.delete(key.toLowerCase());
+    else kept.set(key.toLowerCase(), `${key[0].toUpperCase()}${key.slice(1)}: ${value.trim()}`);
+  }
+  const prose = (change.prose ?? entry.prose).trim();
+  const heading = (change.name ?? entry.name).replace(/[\r\n]+/g, " ").trim();
+  if (!heading) throw new Error("An entry name cannot be empty.");
+  lines.splice(entry.start, entry.end - entry.start, `### ${heading}`, ...prose ? [prose] : [], ...kept.values(), "");
+  return tidy(lines);
+}
+function addEntry(markdown, section, name, prose, properties = {}) {
+  const lines = rows(markdown);
+  if (listEntries(markdown).some((entry2) => entry2.section === section && entry2.name.toLowerCase() === name.toLowerCase())) throw new Error(`${TITLES[section]} already has an entry named "${name}".`);
+  const entry = [`### ${name.trim()}`, ...prose.trim() ? [prose.trim()] : [], ...Object.entries(properties).filter(([, value]) => value.trim()).map(([key, value]) => `${key[0].toUpperCase()}${key.slice(1)}: ${value.trim()}`), ""];
+  const range = sectionRange(lines, section);
+  if (range) {
+    lines.splice(range.end, 0, ...entry);
+    return tidy(lines);
+  }
+  const later = ONTOLOGY_SECTIONS.slice(ONTOLOGY_SECTIONS.indexOf(section) + 1).map((item) => sectionRange(lines, item)).find(Boolean);
+  const block = [`## ${TITLES[section]}`, "", ...entry];
+  if (later) lines.splice(later.start, 0, ...block);
+  else lines.push("", ...block);
+  return tidy(lines);
+}
+function removeEntry(markdown, section, name) {
+  const lines = rows(markdown);
+  const entry = findEntry(markdown, section, name);
+  lines.splice(entry.start, entry.end - entry.start);
+  return tidy(lines);
+}
+
 // src/toolHandlers.ts
 var text2 = (value) => ({ content: [{ type: "text", text: value }] });
 var failure2 = (message) => ({ content: [{ type: "text", text: message }], isError: true });
@@ -37425,6 +37767,31 @@ var when = (iso) => iso.replace("T", " ").replace(/\.\d+Z$/, "Z");
 function versionLine(version2, published) {
   const executable = version2.definitions.filter((definition) => definition.rule.kind === "filter").length;
   return `- v${version2.version} \xB7 ${version2.version === published ? "PUBLISHED" : version2.state} \xB7 ${when(version2.createdAt)} \xB7 by ${version2.author} \xB7 ${version2.definitions.length} definitions (${executable} executable)`;
+}
+function explainParseFailure(original, edited) {
+  const duplicates = (markdown) => {
+    const counts = /* @__PURE__ */ new Map();
+    for (const section of listSections(markdown)) counts.set(section.heading, (counts.get(section.heading) ?? 0) + 1);
+    return [...counts.entries()].filter(([, count]) => count > 1);
+  };
+  const before = duplicates(original);
+  const after = duplicates(edited);
+  if (after.length) {
+    const groups = after.map(([heading, count]) => `"${shorten(heading, 80)}" (${count} sections)`).join(", ");
+    const how = after.length === 1 ? "Rename one of them with newHeading" : "Rename all but one in each group in a single save_context_revision, since the document is rejected while any duplicate remains";
+    return `Parser: duplicated headings: ${groups}${before.length ? ". The stored document has this already, so no edit of it can be saved until the headings differ" : ""}. ${how}; the section ids from get_context_model tell them apart.`;
+  }
+  const complaint = (markdown) => {
+    try {
+      parseOntologyMarkdown(markdown, []);
+      return null;
+    } catch (error62) {
+      return error62 instanceof Error ? error62.message : String(error62);
+    }
+  };
+  const message = complaint(edited);
+  if (message && !/type/i.test(message)) return `Parser: ${message}${complaint(original) ? " (the stored document has this problem already)" : ""}`;
+  return "The document structure parses, so the rejected part is a rule: check the type and field names with get_imported_model, or set the rule to undetermined.";
 }
 function createToolHandlers(client) {
   const parse3 = (schema, value) => {
@@ -37495,8 +37862,16 @@ function createToolHandlers(client) {
       } catch (error62) {
         return failure2(error62 instanceof Error ? error62.message : "The edit could not be applied.");
       }
-      const saved = parse3(SaveResultSchema, await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown: edited.markdown }));
-      return text2(`Committed revision ${saved.proposal.revision} of ${proposalId2}: updated "${edited.section.heading}"${note ? ` (${note})` : ""}. The graph and document pages pick it up on their next poll. Read get_context_model for the new section states.`);
+      const repaired = dedupeHeadings(edited.markdown);
+      let saved;
+      try {
+        saved = parse3(SaveResultSchema, await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown: repaired.markdown }));
+      } catch (error62) {
+        if (error62 instanceof ApiError && error62.code === "INVALID_REQUEST") return failure2(`${error62.code}: ${error62.message} ${explainParseFailure(doc.markdown, edited.markdown)}`.trim());
+        throw error62;
+      }
+      const repairs = repaired.renamed.length ? ` Also renamed ${repaired.renamed.length} duplicated heading${repaired.renamed.length === 1 ? "" : "s"} so the document parses: ${repaired.renamed.map((item) => `"${shorten(item.from, 60)}" \u2192 "${shorten(item.to, 64)}"`).join("; ")}.` : "";
+      return text2(`Committed revision ${saved.proposal.revision} of ${proposalId2}: updated "${edited.section.heading}"${note ? ` (${note})` : ""}.${repairs} The graph and document pages pick it up on their next poll. Read get_context_model for the new section states.`);
     },
     async save_context_revision(args) {
       const { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown, note } = args;
@@ -37588,6 +37963,23 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
       if (autoDraft === void 0 && questions === void 0) return failure2("Pass autoDraft and/or questions.");
       const next = parse3(OntologyStateSchema, await client.post("/ontology/settings", { ...autoDraft === void 0 ? {} : { autoDraft }, ...questions === void 0 ? {} : { questions } }));
       return text2(`Settings saved: autoDraft=${next.settings.autoDraft}, questions=${shorten(next.settings.questions || "(none)", 200)}.`);
+    },
+    async edit_ontology_entry(args) {
+      const { expectedRevision: expectedRevision2, version: version2, section, name, action, newName, prose, properties } = args;
+      const current = await ontology();
+      if (current.revision !== expectedRevision2) return failure2(`CONFLICT: the ontology head is at revision ${current.revision}, not ${expectedRevision2}. Re-read get_ontology and retry.`);
+      const base2 = version2 ? current.versions.find((item) => item.version === version2) : current.versions[0];
+      if (!base2) return failure2(version2 ? `No ontology version ${version2}.` : "No ontology versions yet: save one with save_ontology_version or request a draft.");
+      let markdown;
+      try {
+        markdown = action === "remove" ? removeEntry(base2.markdown, section, name) : action === "add" ? addEntry(base2.markdown, section, name, prose ?? "", properties ?? {}) : updateEntry(base2.markdown, section, name, { name: newName, prose, properties });
+      } catch (error62) {
+        return failure2(error62 instanceof Error ? error62.message : "The edit could not be applied.");
+      }
+      if (markdown === base2.markdown) return failure2("Nothing changed: pass newName, prose, and/or properties.");
+      const next = parse3(OntologyStateSchema, await client.post("/ontology/save", { expectedRevision: expectedRevision2, markdown }));
+      const saved = next.versions[0];
+      return text2(`Saved ontology draft v${saved.version} from v${base2.version} (head revision ${next.revision}): ${action === "remove" ? "removed" : action === "add" ? "added" : "updated"} ${section} entry "${newName ?? name}". ${saved.definitions.length} definitions (${saved.definitions.filter((definition) => definition.rule.kind === "filter").length} executable). The versions menu on the graph and document pages lists it; preview_ontology_publication then publish_ontology make it live.`);
     },
     async compare_ontology_versions(args) {
       const { from, to } = args;

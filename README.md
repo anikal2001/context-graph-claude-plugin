@@ -25,7 +25,7 @@ This opens a sign-in page in your browser. Approve it and the plugin is connecte
 |---|---|
 | `/context-graph:setup [login\|status\|logout\|url <app-url>]` | Sign in from the browser, check the connection, sign out, or switch deployments |
 | `/context-graph:graph [edit\|review\|history\|revert]` | Change section headings, prose and rules of the context model one revision at a time; review sections; diff revisions; revert a section |
-| `/context-graph:ontology [versions\|save\|draft\|publish\|compare\|settings]` | List versions, save a draft, ask the model for a draft, preview exact membership changes and publish, diff versions, set automatic drafting |
+| `/context-graph:ontology [edit\|versions\|save\|draft\|publish\|compare\|settings]` | Edit one entity, definition, relationship, metric or process into the next draft version; list versions; save a draft; ask the model for a draft; preview exact membership changes and publish; diff versions; set automatic drafting |
 | `/context-graph:update [check]` | Update the plugin to the latest published version |
 
 ## MCP tools
@@ -34,7 +34,7 @@ The plugin registers an MCP server named `ContextGraph`; tools appear as `mcp__p
 
 Context model: `list_context_models`, `get_context_model`, `get_context_document`, `get_context_graph`, `edit_context_section`, `save_context_revision`, `comment_context_section`, `compare_context_revisions`, `preview_context_publication`.
 
-Ontology: `get_ontology`, `get_ontology_version`, `save_ontology_version`, `configure_ontology`, `request_ontology_draft`, `preview_ontology_publication`, `publish_ontology`, `update_ontology_settings`, `compare_ontology_versions`.
+Ontology: `get_ontology`, `get_ontology_version`, `edit_ontology_entry`, `save_ontology_version`, `configure_ontology`, `request_ontology_draft`, `preview_ontology_publication`, `publish_ontology`, `update_ontology_settings`, `compare_ontology_versions`.
 
 Sources and identity: `list_sources`, `get_imported_model`, `search_entities`, `whoami`, `get_plugin_activity`.
 
