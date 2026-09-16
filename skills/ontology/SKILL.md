@@ -10,6 +10,17 @@ The ontology is the reviewed model of the business: immutable numbered versions,
 
 Every write takes the ontology **head revision** from `get_ontology` as `expectedRevision`. Read it right before each write.
 
+## Tool access
+
+The `mcp__plugin_context-graph_ContextGraph__*` tools come from this plugin's MCP server. When one is not directly callable (Claude Code defers MCP tools when many servers are configured), load it with ToolSearch, for example `select:mcp__plugin_context-graph_ContextGraph__list_context_models`, then call it. If the tools still cannot be called, run the same tool from Bash; it prints the same result:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/dist/commands/tool.js" list_context_models
+node "${CLAUDE_PLUGIN_ROOT}/dist/commands/tool.js" get_context_model '{"proposalId":"business-context"}'
+```
+
+`tool.js --list` prints every tool. Never substitute curl, hand-written API calls, or files under `~/.config/context-graph` (the token there is a secret: do not read or print it). Never invent page links: only `pageLink.js` prints them. If neither route works, tell the user to run `/mcp`, check that the ContextGraph server is connected, and restart Claude Code, then stop.
+
 ## Modes
 
 Read `$ARGUMENTS` first. If its first token is one of the modes below, run that mode. Otherwise, when the arguments describe a change, run `edit` with them as the request; with no arguments run `versions`.

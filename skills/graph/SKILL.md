@@ -16,6 +16,18 @@ Work one section per commit. Read before every write: each write carries the rev
 |---------|-------------|
 | `pageLink.js --page graph [--context <id>] [--node <id>]` | Link to the graph page, optionally focused on one node |
 | `pageLink.js --page document [--context <id>] [--section <id>]` | Link to the document page, optionally focused on one section |
+| `tool.js <tool> ['<json args>']` | Run any of the plugin's MCP tools from Bash when they cannot be called directly (`tool.js --list` shows them) |
+
+## Tool access
+
+The `mcp__plugin_context-graph_ContextGraph__*` tools come from this plugin's MCP server. When one is not directly callable (Claude Code defers MCP tools when many servers are configured), load it with ToolSearch, for example `select:mcp__plugin_context-graph_ContextGraph__list_context_models`, then call it. If the tools still cannot be called, run the same tool from Bash; it prints the same result:
+
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/dist/commands/tool.js" list_context_models
+node "${CLAUDE_PLUGIN_ROOT}/dist/commands/tool.js" get_context_model '{"proposalId":"business-context"}'
+```
+
+`tool.js --list` prints every tool. Never substitute curl, hand-written API calls, or files under `~/.config/context-graph` (the token there is a secret: do not read or print it). Never invent page links: only `pageLink.js` prints them. If neither route works, tell the user to run `/mcp`, check that the ContextGraph server is connected, and restart Claude Code, then stop.
 
 ## Modes
 
@@ -41,7 +53,7 @@ Read `$ARGUMENTS` first. If its first token is one of the modes below, run that 
 
 ## Edit
 
-3. Find out what the user wants changed. When it is unclear which section they mean, list the candidate headings and ask with `AskUserQuestion`. When the change is a rule, call `mcp__plugin_context-graph_ContextGraph__get_imported_model` (with `search` for the type) to use real field names and picklist values, and `mcp__plugin_context-graph_ContextGraph__search_entities` to check a few rows. A rule is `Type where field op value`, operators `=`, `!=`, `>`, `>=`, `<`, `<=`, joined with `and`; anything the data cannot decide stays `undetermined`.
+3. Find out what the user wants changed. When it is unclear which section they mean, list the candidate headings and ask with `AskUserQuestion`. When the user cannot find a heading in the model they opened, check the other models from step 1: `ontology:<connectionId>` models hold the entities and definitions of the published ontology. A section can be reworded but **never removed** from a context model: the server keeps every section's identity. To remove an entity, definition or metric, say so and hand off to `/context-graph:ontology edit` (`action: "remove"`, then save and publish); the bridged model is regenerated without it when the ontology is published. When the change is a rule, call `mcp__plugin_context-graph_ContextGraph__get_imported_model` (with `search` for the type) to use real field names and picklist values, and `mcp__plugin_context-graph_ContextGraph__search_entities` to check a few rows. A rule is `Type where field op value`, operators `=`, `!=`, `>`, `>=`, `<`, `<=`, joined with `and`; anything the data cannot decide stays `undetermined`.
 4. Call `mcp__plugin_context-graph_ContextGraph__edit_context_section` with `proposalId`, the `expectedRevision` you read, `sectionId` (preferred) or `heading`, and only the fields that change (`newHeading`, `body`, `rule`) plus a short `note`. One section per call.
    - On success the tool names the new revision. Tell the user in one line, for example "Committed revision 7: tightened Customer." Do not paste the document back.
    - On `CONFLICT`, re-read with `get_context_model`, tell the user what changed, and retry with the new revision.
