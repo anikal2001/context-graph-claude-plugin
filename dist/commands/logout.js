@@ -20289,7 +20289,7 @@ function createApiClient(platform2, pluginVersion, options = {}) {
     if (input2.body !== void 0) headers["Content-Type"] = "application/json";
     let response;
     try {
-      response = await fetcher(`${root}${path5}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(6e4) });
+      response = await fetcher(`${root}${path5}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(options.timeoutMs ?? 6e4) });
     } catch (error62) {
       throw new ApiError("UNAVAILABLE", `Could not reach ${config2.serviceUrl}: ${error62 instanceof Error ? error62.message : "network error"}`, 0);
     }

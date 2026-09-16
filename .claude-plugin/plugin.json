@@ -1,7 +1,7 @@
 {
   "name": "context-graph",
   "description": "Edit context graph revisions and ontology versions from Claude Code, with the browser page following along.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "author": { "name": "Context graph" },
   "homepage": "https://github.com/anikal2001/context-graph-claude-plugin",
   "repository": "https://github.com/anikal2001/context-graph-claude-plugin",
