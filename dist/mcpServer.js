@@ -3262,8 +3262,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path5) {
-      let input2 = path5;
+    function removeDotSegments(path6) {
+      let input2 = path6;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -3672,8 +3672,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path5 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path5 && path5 !== "/" ? path5 : void 0;
+        const path6 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path6 && path6 !== "/" ? path6 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -7185,12 +7185,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs5, exportName) {
+    function addFormats(ajv, list, fs6, exportName) {
       var _a3;
       var _b;
       (_a3 = (_b = ajv.opts.code).formats) !== null && _a3 !== void 0 ? _a3 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs5[f]);
+        ajv.addFormat(f, fs6[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -7572,8 +7572,8 @@ function getErrorMap() {
 
 // ../node_modules/.bun/zod@4.6.5/node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path5, errorMaps, issueData } = params;
-  const fullPath = [...path5, ...issueData.path || []];
+  const { data, path: path6, errorMaps, issueData } = params;
+  const fullPath = [...path6, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -7688,11 +7688,11 @@ var errorUtil;
 
 // ../node_modules/.bun/zod@4.6.5/node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path5, key) {
+  constructor(parent, value, path6, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path5;
+    this._path = path6;
     this._key = key;
   }
   get path() {
@@ -11646,10 +11646,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path5) {
-  if (!path5)
+function getElementAtPath(obj, path6) {
+  if (!path6)
     return obj;
-  return path5.reduce((acc, key) => acc?.[key], obj);
+  return path6.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -11989,11 +11989,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path5, issues) {
+function prefixIssues(path6, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path5);
+    iss.path.unshift(path6);
     return iss;
   });
 }
@@ -12443,16 +12443,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path5 = []) => {
+  const processError = (error63, path6 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path5, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path6, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path5, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path5, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
       } else {
-        const fullpath = [...path5, ...issue2.path];
+        const fullpath = [...path6, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -12491,17 +12491,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path5 = []) => {
+  const processError = (error63, path6 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path5, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path6, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path5, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path5, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
       } else {
-        const fullpath = [...path5, ...issue2.path];
+        const fullpath = [...path6, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -12540,8 +12540,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path5 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path5) {
+  const path6 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path6) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -28056,11 +28056,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path5) {
-  if (path5.length === 0) {
+function getDotPath(path6) {
+  if (path6.length === 0) {
     return "object root";
   }
-  return path5.reduce((acc, seg, index) => {
+  return path6.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -30287,13 +30287,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path5 = ref.slice(1).split("/").filter(Boolean);
-  if (path5.length === 0) {
+  const path6 = ref.slice(1).split("/").filter(Boolean);
+  if (path6.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path5[0] === defsKey) {
-    const key = path5[1] === void 0 ? void 0 : decodeJSONPointerSegment(path5[1]);
+  if (path6[0] === defsKey) {
+    const key = path6[1] === void 0 ? void 0 : decodeJSONPointerSegment(path6[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -36912,15 +36912,6 @@ var GithubLinkStatusSchema = external_exports.strictObject({ configured: externa
 var GithubInstallationsResponseSchema = external_exports.strictObject({ installations: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), account: external_exports.string(), targetType: external_exports.string() })) });
 var GithubRepositoriesResponseSchema = external_exports.strictObject({ repositories: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), fullName: external_exports.string(), defaultBranch: external_exports.string(), private: external_exports.boolean() })) });
 var GithubBranchesResponseSchema = external_exports.strictObject({ branches: external_exports.array(external_exports.string()) });
-var NotionLinkStatusSchema = external_exports.strictObject({ configured: external_exports.boolean(), linked: external_exports.boolean(), workspaceName: external_exports.string().nullable() });
-var NotionSearchQuerySchema = external_exports.strictObject({ query: external_exports.string().max(200).optional(), kind: external_exports.enum(["data_source", "page"]).default("data_source") });
-var NotionSearchResponseSchema = external_exports.strictObject({ results: external_exports.array(external_exports.strictObject({
-  id: IdSchema,
-  kind: external_exports.enum(["data_source", "page"]),
-  title: external_exports.string(),
-  url: external_exports.string().nullable(),
-  lastEditedAt: external_exports.string().nullable()
-})) });
 var SyncAcceptedSchema = external_exports.strictObject({ runId: IdSchema, status: external_exports.literal("queued") });
 var DefinitionInputSchema = external_exports.strictObject({
   name: external_exports.string().min(1).max(200),
@@ -37299,7 +37290,7 @@ function createApiClient(platform2, pluginVersion, options = {}) {
   const config2 = options.config ?? getConfig();
   const fetcher = options.fetcher ?? fetch;
   const root = `${config2.serviceUrl}/api/v1`;
-  async function request(method, path5, input2) {
+  async function request(method, path6, input2) {
     if (input2.auth && !config2.token) throw new ApiError("UNAUTHENTICATED", `Not signed in. Run ${platform2.loginHint} first.`, 401);
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(input2.query ?? {})) if (value !== void 0) params.set(key, String(value));
@@ -37308,7 +37299,7 @@ function createApiClient(platform2, pluginVersion, options = {}) {
     if (input2.body !== void 0) headers["Content-Type"] = "application/json";
     let response;
     try {
-      response = await fetcher(`${root}${path5}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(6e4) });
+      response = await fetcher(`${root}${path6}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(6e4) });
     } catch (error62) {
       throw new ApiError("UNAVAILABLE", `Could not reach ${config2.serviceUrl}: ${error62 instanceof Error ? error62.message : "network error"}`, 0);
     }
@@ -37329,10 +37320,10 @@ function createApiClient(platform2, pluginVersion, options = {}) {
   }
   return {
     serviceUrl: config2.serviceUrl,
-    get: (path5, query) => request("GET", path5, { query, auth: true }),
-    post: (path5, body) => request("POST", path5, { body, auth: true }),
-    delete: (path5) => request("DELETE", path5, { auth: true }),
-    anonymous: (method, path5, body) => request(method, path5, { body, auth: false })
+    get: (path6, query) => request("GET", path6, { query, auth: true }),
+    post: (path6, body) => request("POST", path6, { body, auth: true }),
+    delete: (path6) => request("DELETE", path6, { auth: true }),
+    anonymous: (method, path6, body) => request(method, path6, { body, auth: false })
   };
 }
 
@@ -37404,9 +37395,7 @@ var requestOntologyDraft = { name: "request_ontology_draft", title: "Request ont
 var previewOntologyPublication = { name: "preview_ontology_publication", title: "Preview ontology publication", description: "Exact membership changes of every executable definition (before/after counts, entered/left) and the context changes that publishing the newest draft would make. Returns the previewToken publish_ontology requires.", inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()) } };
 var publishOntology = { name: "publish_ontology", title: "Publish ontology", description: "Publish the newest draft as an immutable version using a previewToken from preview_ontology_publication. Refused when sources or the draft changed since the preview. Ask the person before publishing.", inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()), previewToken: external_exports.string().length(64) } };
 var updateOntologySettings = { name: "update_ontology_settings", title: "Update ontology settings", description: "Turn automatic drafting after imports on or off and set the business questions automatic drafts use.", inputSchema: { autoDraft: bool().optional(), questions: external_exports.string().max(1e4).optional() } };
-var editOntologyEntry = { name: "edit_ontology_entry", title: "Edit ontology entry", description: "Change one entry of the ontology (an entity, definition, relationship, workflow, metric, process, automation or question) and save the result as the next draft version, without pasting the whole document. Reads the newest version (or `version`), applies the change the way the graph page does, and the server validates it against the imported types. Definitions carry `Rule: Type where field op value` or `Rule: undetermined`; entities carry `Source: <type>`. Publishing stays a separate preview + publish step.", inputSchema: {
-  expectedRevision: int2(external_exports.number().nonnegative()).describe("Ontology head revision from get_ontology."),
-  version: int2(external_exports.number().positive()).optional().describe("Version to start from; defaults to the newest."),
+var editOntologyEntry = { name: "edit_ontology_entry", title: "Stage an ontology edit", description: "Stage a change to one entry of the ontology (an entity, definition, relationship, workflow, metric, process, automation or question) against the original version. Nothing is saved: the tool returns the diff of all staged changes versus the original, and the changes reach the server only when save_ontology_changes runs after the person says save. Definitions carry `Rule: Type where field op value` or `Rule: undetermined`; entities carry `Source: <type>`. Stage several edits, show the diff, then save once.", inputSchema: {
   section: external_exports.enum(["entities", "definitions", "relationships", "workflows", "metrics", "processes", "automations", "questions"]),
   name: external_exports.string().min(1).max(2e3).describe("Entry heading as it appears under the section."),
   action: external_exports.enum(["update", "add", "remove"]).default("update"),
@@ -37414,6 +37403,12 @@ var editOntologyEntry = { name: "edit_ontology_entry", title: "Edit ontology ent
   prose: external_exports.string().max(2e4).optional().describe("New prose (markdown); for add, the entry body."),
   properties: external_exports.record(external_exports.string().min(1).max(40), external_exports.string().max(2e3)).optional().describe('Labeled lines to set, e.g. {"rule": "Account where Type = \\"Customer\\""} or {"source": "Account"}; an empty value removes that line.')
 } };
+var showOntologyChanges = { name: "show_ontology_changes", title: "Show staged ontology changes", description: "The staged ontology edits as a list and as a unified diff against the original version they were made on. Nothing is sent to the server.", inputSchema: {} };
+var saveOntologyChanges = { name: "save_ontology_changes", title: "Save staged ontology changes", description: "Save the staged ontology edits as the next draft version. Call only after the person has seen the diff and said to save. Refused when a newer version was saved since the edits were staged, unless rebase is true, which replays them onto the newest version. Publishing stays a separate preview + publish step.", inputSchema: {
+  expectedRevision: int2(external_exports.number().nonnegative()).describe("Ontology head revision from get_ontology."),
+  rebase: bool().optional().describe("Replay the staged edits onto the newest version when it changed underneath.")
+} };
+var discardOntologyChanges = { name: "discard_ontology_changes", title: "Discard staged ontology changes", description: "Throw away the staged ontology edits without saving anything.", inputSchema: {} };
 var compareOntologyVersions = { name: "compare_ontology_versions", title: "Compare ontology versions", description: "Unified diff of the ontology markdown between two versions.", inputSchema: { from: int2(external_exports.number().positive()), to: int2(external_exports.number().positive()).optional().describe("Defaults to the newest version.") } };
 var listSources = { name: "list_sources", title: "List sources", description: "Connected data sources with provider, status, coverage and freshness.", inputSchema: {} };
 var getImportedModel = { name: "get_imported_model", title: "Get imported model", description: "Imported object types with record counts, fields and reference relationships. Use it to write executable rules (`Type where field op value`) against real field names and picklist values.", inputSchema: {
@@ -37447,6 +37442,9 @@ var ALL_TOOL_CONTRACTS = [
   publishOntology,
   updateOntologySettings,
   editOntologyEntry,
+  showOntologyChanges,
+  saveOntologyChanges,
+  discardOntologyChanges,
   compareOntologyVersions,
   listSources,
   getImportedModel,
@@ -37664,6 +37662,10 @@ function unifiedDiff(before, after, labels, context = 2) {
   return out.join("\n");
 }
 
+// src/pending.ts
+import fs3 from "node:fs";
+import path3 from "node:path";
+
 // src/ontologyDocument.ts
 var ONTOLOGY_SECTIONS = ["entities", "definitions", "relationships", "workflows", "metrics", "processes", "automations", "questions"];
 var TITLES = { entities: "Entities", definitions: "Definitions", relationships: "Relationships", workflows: "Workflows", metrics: "Metrics", processes: "Processes", automations: "Automations", questions: "Questions" };
@@ -37747,6 +37749,41 @@ function removeEntry(markdown, section, name) {
   const entry = findEntry(markdown, section, name);
   lines.splice(entry.start, entry.end - entry.start);
   return tidy(lines);
+}
+
+// src/pending.ts
+var PENDING_DIR = path3.join(path3.dirname(CONFIG_FILE), "pending");
+var fileFor = (serviceUrl) => path3.join(PENDING_DIR, `ontology-${new URL(serviceUrl).host.replace(/[^a-z0-9.-]/gi, "_")}.json`);
+function readPending(serviceUrl) {
+  try {
+    const parsed = JSON.parse(fs3.readFileSync(fileFor(serviceUrl), "utf8"));
+    return typeof parsed.baseVersion === "number" && Array.isArray(parsed.ops) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+function writePending(serviceUrl, pending) {
+  fs3.mkdirSync(PENDING_DIR, { recursive: true });
+  fs3.writeFileSync(fileFor(serviceUrl), `${JSON.stringify(pending, null, 2)}
+`, { mode: 384 });
+}
+function clearPending(serviceUrl) {
+  try {
+    fs3.unlinkSync(fileFor(serviceUrl));
+  } catch {
+  }
+}
+function applyOps(markdown, ops) {
+  let result = markdown;
+  for (const op of ops) {
+    result = op.action === "remove" ? removeEntry(result, op.section, op.name) : op.action === "add" ? addEntry(result, op.section, op.name, op.prose ?? "", op.properties ?? {}) : updateEntry(result, op.section, op.name, { name: op.newName, prose: op.prose, properties: op.properties });
+  }
+  return result;
+}
+function describeOp(op) {
+  const what = op.action === "remove" ? "remove" : op.action === "add" ? "add" : "update";
+  const parts = [op.newName ? `rename to "${op.newName}"` : "", op.action === "update" && op.prose !== void 0 ? "prose" : "", op.properties ? Object.entries(op.properties).map(([key, value]) => value.trim() ? `${key}: ${value}` : `drop ${key}`).join(", ") : ""].filter(Boolean);
+  return `${what} ${op.section} "${op.name}"${parts.length ? ` (${parts.join("; ")})` : ""}`;
 }
 
 // src/toolHandlers.ts
@@ -37965,21 +38002,73 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
       return text2(`Settings saved: autoDraft=${next.settings.autoDraft}, questions=${shorten(next.settings.questions || "(none)", 200)}.`);
     },
     async edit_ontology_entry(args) {
-      const { expectedRevision: expectedRevision2, version: version2, section, name, action, newName, prose, properties } = args;
+      const { section, name, action, newName, prose, properties } = args;
+      if (action === "update" && newName === void 0 && prose === void 0 && properties === void 0) return failure2("Nothing to change: pass newName, prose, and/or properties.");
       const current = await ontology();
-      if (current.revision !== expectedRevision2) return failure2(`CONFLICT: the ontology head is at revision ${current.revision}, not ${expectedRevision2}. Re-read get_ontology and retry.`);
-      const base2 = version2 ? current.versions.find((item) => item.version === version2) : current.versions[0];
-      if (!base2) return failure2(version2 ? `No ontology version ${version2}.` : "No ontology versions yet: save one with save_ontology_version or request a draft.");
+      const newest = current.versions[0];
+      if (!newest) return failure2("No ontology versions yet: save one with save_ontology_version or request a draft.");
+      const pending = readPending(client.serviceUrl);
+      const base2 = pending ? current.versions.find((item) => item.version === pending.baseVersion) : newest;
+      if (!base2) {
+        clearPending(client.serviceUrl);
+        return failure2(`The staged edits were made on version ${pending?.baseVersion}, which no longer exists; they were discarded. Stage the edit again.`);
+      }
+      const op = { action, section, name, newName, prose, properties, at: (/* @__PURE__ */ new Date()).toISOString() };
+      const ops = [...pending?.ops ?? [], op];
       let markdown;
       try {
-        markdown = action === "remove" ? removeEntry(base2.markdown, section, name) : action === "add" ? addEntry(base2.markdown, section, name, prose ?? "", properties ?? {}) : updateEntry(base2.markdown, section, name, { name: newName, prose, properties });
+        markdown = applyOps(base2.markdown, ops);
       } catch (error62) {
         return failure2(error62 instanceof Error ? error62.message : "The edit could not be applied.");
       }
-      if (markdown === base2.markdown) return failure2("Nothing changed: pass newName, prose, and/or properties.");
+      if (markdown === applyOps(base2.markdown, pending?.ops ?? [])) return failure2("Nothing changed: the entry already reads that way.");
+      writePending(client.serviceUrl, { host: new URL(client.serviceUrl).host, baseVersion: base2.version, ops, updatedAt: op.at });
+      const stale = base2.version !== newest.version ? ` Note: version ${newest.version} was saved since these edits started on v${base2.version}; save_ontology_changes will need rebase.` : "";
+      return text2([`Staged (not saved): ${describeOp(op)}. ${ops.length} change${ops.length === 1 ? "" : "s"} staged on v${base2.version}.${stale}`, "", unifiedDiff(base2.markdown, markdown, { before: `ontology v${base2.version} (original)`, after: "staged changes" }), "", "Show the diff to the person; when they say save, call save_ontology_changes. discard_ontology_changes drops the staging."].join("\n"));
+    },
+    async show_ontology_changes() {
+      const pending = readPending(client.serviceUrl);
+      if (!pending || !pending.ops.length) return text2("No staged ontology changes.");
+      const current = await ontology();
+      const base2 = current.versions.find((item) => item.version === pending.baseVersion);
+      if (!base2) return failure2(`The staged edits were made on version ${pending.baseVersion}, which no longer exists. discard_ontology_changes clears them.`);
+      let markdown;
+      try {
+        markdown = applyOps(base2.markdown, pending.ops);
+      } catch (error62) {
+        return failure2(`The staged edits no longer apply: ${error62 instanceof Error ? error62.message : String(error62)}. discard_ontology_changes clears them.`);
+      }
+      const newest = current.versions[0];
+      return text2([`${pending.ops.length} staged change${pending.ops.length === 1 ? "" : "s"} on v${base2.version}${newest.version !== base2.version ? ` (newest is now v${newest.version}; saving needs rebase)` : ""}:`, ...pending.ops.map((op, index) => `${index + 1}. ${describeOp(op)} \xB7 ${when(op.at)}`), "", unifiedDiff(base2.markdown, markdown, { before: `ontology v${base2.version} (original)`, after: "staged changes" })].join("\n"));
+    },
+    async save_ontology_changes(args) {
+      const { expectedRevision: expectedRevision2, rebase } = args;
+      const pending = readPending(client.serviceUrl);
+      if (!pending || !pending.ops.length) return failure2("No staged ontology changes to save.");
+      const current = await ontology();
+      if (current.revision !== expectedRevision2) return failure2(`CONFLICT: the ontology head is at revision ${current.revision}, not ${expectedRevision2}. Re-read get_ontology and retry.`);
+      const newest = current.versions[0];
+      let base2 = current.versions.find((item) => item.version === pending.baseVersion);
+      if (!base2) return failure2(`The staged edits were made on version ${pending.baseVersion}, which no longer exists. Use rebase: true to replay them onto v${newest.version}, or discard them.`);
+      if (base2.version !== newest.version) {
+        if (!rebase) return failure2(`Version ${newest.version} was saved after these edits were staged on v${base2.version}. Show the person compare_ontology_versions ${base2.version} \u2192 ${newest.version}, then call again with rebase: true to replay the edits onto v${newest.version}, or discard them.`);
+        base2 = newest;
+      }
+      let markdown;
+      try {
+        markdown = applyOps(base2.markdown, pending.ops);
+      } catch (error62) {
+        return failure2(`The staged edits do not apply to v${base2.version}: ${error62 instanceof Error ? error62.message : String(error62)}.`);
+      }
       const next = parse3(OntologyStateSchema, await client.post("/ontology/save", { expectedRevision: expectedRevision2, markdown }));
+      clearPending(client.serviceUrl);
       const saved = next.versions[0];
-      return text2(`Saved ontology draft v${saved.version} from v${base2.version} (head revision ${next.revision}): ${action === "remove" ? "removed" : action === "add" ? "added" : "updated"} ${section} entry "${newName ?? name}". ${saved.definitions.length} definitions (${saved.definitions.filter((definition) => definition.rule.kind === "filter").length} executable). The versions menu on the graph and document pages lists it; preview_ontology_publication then publish_ontology make it live.`);
+      return text2(`Saved ontology draft v${saved.version} from v${base2.version} (head revision ${next.revision}) with ${pending.ops.length} change${pending.ops.length === 1 ? "" : "s"}: ${pending.ops.map(describeOp).join("; ")}. ${saved.definitions.length} definitions (${saved.definitions.filter((definition) => definition.rule.kind === "filter").length} executable). The versions menu on the graph and document pages lists it; preview_ontology_publication then publish_ontology make it live.`);
+    },
+    async discard_ontology_changes() {
+      const pending = readPending(client.serviceUrl);
+      clearPending(client.serviceUrl);
+      return text2(pending?.ops.length ? `Discarded ${pending.ops.length} staged change${pending.ops.length === 1 ? "" : "s"} (${pending.ops.map(describeOp).join("; ")}). Nothing was saved.` : "No staged ontology changes.");
     },
     async compare_ontology_versions(args) {
       const { from, to } = args;
@@ -38054,25 +38143,25 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
 }
 
 // src/version.ts
-import fs4 from "node:fs";
-import path4 from "node:path";
+import fs5 from "node:fs";
+import path5 from "node:path";
 
 // src/pluginRoot.ts
-import fs3 from "node:fs";
-import path3 from "node:path";
+import fs4 from "node:fs";
+import path4 from "node:path";
 import { fileURLToPath } from "node:url";
 function findRoot(start) {
   let dir = start;
   for (let depth = 0; depth < 5; depth++) {
-    if (fs3.existsSync(path3.join(dir, "package.json")) && fs3.existsSync(path3.join(dir, ".claude-plugin"))) return dir;
-    dir = path3.dirname(dir);
+    if (fs4.existsSync(path4.join(dir, "package.json")) && fs4.existsSync(path4.join(dir, ".claude-plugin"))) return dir;
+    dir = path4.dirname(dir);
   }
-  return path3.resolve(start, "..");
+  return path4.resolve(start, "..");
 }
-var PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT ?? findRoot(path3.dirname(fileURLToPath(import.meta.url)));
+var PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT ?? findRoot(path4.dirname(fileURLToPath(import.meta.url)));
 
 // src/version.ts
-var PLUGIN_VERSION = JSON.parse(fs4.readFileSync(path4.join(PLUGIN_ROOT, "package.json"), "utf8")).version;
+var PLUGIN_VERSION = JSON.parse(fs5.readFileSync(path5.join(PLUGIN_ROOT, "package.json"), "utf8")).version;
 function getVersion() {
   return PLUGIN_VERSION;
 }
@@ -38084,10 +38173,10 @@ function createMcpServer() {
     get serviceUrl() {
       return createApiClient(platform, getVersion()).serviceUrl;
     },
-    get: (path5, query) => createApiClient(platform, getVersion()).get(path5, query),
-    post: (path5, body) => createApiClient(platform, getVersion()).post(path5, body),
-    delete: (path5) => createApiClient(platform, getVersion()).delete(path5),
-    anonymous: (method, path5, body) => createApiClient(platform, getVersion()).anonymous(method, path5, body)
+    get: (path6, query) => createApiClient(platform, getVersion()).get(path6, query),
+    post: (path6, body) => createApiClient(platform, getVersion()).post(path6, body),
+    delete: (path6) => createApiClient(platform, getVersion()).delete(path6),
+    anonymous: (method, path6, body) => createApiClient(platform, getVersion()).anonymous(method, path6, body)
   });
   for (const { contract, handle } of handlers) server2.registerTool(contract.name, toolConfig(contract), (args) => handle(args));
   return server2;

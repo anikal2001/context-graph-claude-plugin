@@ -1,6 +1,6 @@
 {
   "name": "context-graph-claude-plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Edit context graph revisions and ontology versions from Claude Code, with the browser page following along.",
   "type": "module",
   "license": "MIT",
