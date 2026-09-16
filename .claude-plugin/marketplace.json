@@ -1,0 +1,21 @@
+{
+  "name": "context-graph",
+  "owner": { "name": "Context graph" },
+  "metadata": {
+    "description": "Edit context graph revisions and ontology versions from Claude Code, with the browser page following along.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "context-graph",
+      "source": "./",
+      "description": "Edit context graph revisions and ontology versions from Claude Code, with the browser page following along.",
+      "version": "0.1.0",
+      "homepage": "https://github.com/anikal2001/context-graph-claude-plugin",
+      "repository": "https://github.com/anikal2001/context-graph-claude-plugin",
+      "license": "MIT",
+      "category": "developer-tools",
+      "tags": ["context-graph", "ontology", "knowledge-graph", "mcp"]
+    }
+  ]
+}

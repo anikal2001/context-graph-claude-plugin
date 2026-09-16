@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "ContextGraph": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/mcp-server"
+    }
+  }
+}

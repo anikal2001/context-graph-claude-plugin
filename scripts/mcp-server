@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+set -eu
+
+ROOT="${CLAUDE_PLUGIN_ROOT:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}"
+
+if [ -n "${NODE_OPTIONS:-}" ]; then
+  unset NODE_OPTIONS
+fi
+
+if [ -n "${NODE_BIN:-}" ] && [ -x "${NODE_BIN}" ]; then
+  exec "${NODE_BIN}" "$ROOT/dist/mcpServer.js" "$@"
+fi
+
+if command -v node >/dev/null 2>&1; then
+  exec node "$ROOT/dist/mcpServer.js" "$@"
+fi
+
+echo "Error: node not found. Install Node.js to use the Context graph plugin." >&2
+exit 1

@@ -1,0 +1,17 @@
+{
+  "name": "context-graph-claude-plugin",
+  "version": "0.1.0",
+  "description": "Edit context graph revisions and ontology versions from Claude Code, with the browser page following along.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "claude-code",
+    "context-graph",
+    "ontology",
+    "mcp"
+  ],
+  "repository": "github:anikal2001/context-graph-claude-plugin"
+}
