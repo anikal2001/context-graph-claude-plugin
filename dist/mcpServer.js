@@ -36480,7 +36480,7 @@ var StdioServerTransport = class {
 import os2 from "node:os";
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.5.0";
+var CONTRACT_VERSION = "1.6.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -36673,7 +36673,7 @@ var DefinitionVersionSchema = external_exports.strictObject({
   publishedAt: TimestampSchema.nullable()
 });
 var ExtractionBatchSchema = external_exports.strictObject({
-  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", CONTRACT_VERSION]),
+  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", CONTRACT_VERSION]),
   connectionId: IdSchema,
   runId: IdSchema,
   batchId: IdSchema,
@@ -36935,7 +36935,9 @@ var DefinitionPublishRequestSchema = external_exports.strictObject({ expectedRev
 var PrincipalSchema = external_exports.strictObject({
   subjectId: IdSchema,
   workspaceId: IdSchema,
-  role: external_exports.enum(["viewer", "operator", "admin"])
+  role: external_exports.enum(["viewer", "operator", "admin"]),
+  /** The session's active identity-provider organization, when it has one. Its workspace is derived from it. */
+  orgId: IdSchema.optional()
 });
 
 // ../shared/src/ontology/rules.ts
@@ -37212,11 +37214,25 @@ var PluginActivitySchema = external_exports.strictObject({
   events: external_exports.array(PluginActivityEventSchema),
   /** True when a plugin token was used in the last two minutes: pages poll faster while an agent is working. */
   active: external_exports.boolean(),
-  serverTime: TimestampSchema
+  serverTime: TimestampSchema,
+  /** Which installs are listed: those of the viewer's organization, or only the viewer's own when they have none. */
+  scope: external_exports.enum(["organization", "personal"]).optional()
 });
 var PluginActivityQuerySchema = external_exports.strictObject({ limit: external_exports.coerce.number().int().min(1).max(100).default(20) });
 var PLUGIN_ACTIVE_WINDOW_MS = 2 * 60 * 1e3;
 var HANDOFF_TICKET_TTL_MS = 10 * 60 * 1e3;
+
+// ../shared/src/workspace.ts
+var WorkspaceScopeSchema = external_exports.enum(["organization", "personal"]);
+var WorkspaceMeSchema = external_exports.strictObject({ principal: PrincipalSchema, scope: WorkspaceScopeSchema });
+var ClearWorkspaceRequestSchema = external_exports.strictObject({ confirm: external_exports.literal("CLEAR") });
+var WorkspaceClearedSchema = external_exports.strictObject({
+  workspaceId: IdSchema,
+  clearedAt: TimestampSchema,
+  /** Rows removed per table, so the page can say what went. */
+  deleted: external_exports.record(external_exports.string().min(1).max(80), external_exports.number().int().nonnegative()),
+  total: external_exports.number().int().nonnegative()
+});
 
 // src/config.ts
 import fs from "node:fs";
