@@ -14,6 +14,10 @@ Update the Claude Code plugin to the latest version published to the plugin's pu
 |---------|-------------|
 | `update.js [--check]` | Compare the installed version and build with the published release and apply the update through `claude plugin` |
 
+## Output
+
+The user wants the result, not the work. Do not narrate what you are about to do, which tool you are calling, or what you are checking; never write "Let me", "I'll", "First I'll" or a summary of your reasoning. Run the steps silently and answer with the outcome only: one or two lines (for example "Committed revision 7: tightened Customer." plus the page link), a fenced diff when a step calls for one, or a single question through `AskUserQuestion`. When something fails, say what failed and the one command that fixes it, nothing else.
+
 ## Modes
 
 Read `$ARGUMENTS` first.

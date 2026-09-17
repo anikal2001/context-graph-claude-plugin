@@ -17,6 +17,10 @@ Sign the plugin in to a Context graph workspace from the browser, check its stat
 | `logout.js` | Revoke this machine's token on the server and forget it |
 | `pageLink.js [--page graph\|document] [--context <id>]` | Print a link to the graph (step 3) or document (step 4) page |
 
+## Output
+
+The user wants the result, not the work. Do not narrate what you are about to do, which tool you are calling, or what you are checking; never write "Let me", "I'll", "First I'll" or a summary of your reasoning. Run the steps silently and answer with the outcome only: one or two lines (for example "Committed revision 7: tightened Customer." plus the page link), a fenced diff when a step calls for one, or a single question through `AskUserQuestion`. When something fails, say what failed and the one command that fixes it, nothing else.
+
 ## Tool access
 
 When `mcp__plugin_context-graph_ContextGraph__whoami` is not directly callable (Claude Code defers MCP tools when many servers are configured), load it with ToolSearch (`select:mcp__plugin_context-graph_ContextGraph__whoami`) or run `node "${CLAUDE_PLUGIN_ROOT}/dist/commands/tool.js" whoami`. Never read or print files under `~/.config/context-graph`: the token there is a secret. Never invent page links: only `pageLink.js` prints them.

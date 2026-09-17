@@ -18,6 +18,10 @@ Work one section per commit. Read before every write: each write carries the rev
 | `pageLink.js --page document [--context <id>] [--section <id>]` | Link to the document page, optionally focused on one section |
 | `tool.js <tool> ['<json args>']` | Run any of the plugin's MCP tools from Bash when they cannot be called directly (`tool.js --list` shows them) |
 
+## Output
+
+The user wants the result, not the work. Do not narrate what you are about to do, which tool you are calling, or what you are checking; never write "Let me", "I'll", "First I'll" or a summary of your reasoning. Run the steps silently and answer with the outcome only: one or two lines (for example "Committed revision 7: tightened Customer." plus the page link), a fenced diff when a step calls for one, or a single question through `AskUserQuestion`. When something fails, say what failed and the one command that fixes it, nothing else.
+
 ## Tool access
 
 The `mcp__plugin_context-graph_ContextGraph__*` tools come from this plugin's MCP server. When one is not directly callable (Claude Code defers MCP tools when many servers are configured), load it with ToolSearch, for example `select:mcp__plugin_context-graph_ContextGraph__list_context_models`, then call it. If the tools still cannot be called, run the same tool from Bash; it prints the same result:
