@@ -1118,7 +1118,7 @@ var require_util = __commonJS({
     }
     exports.schemaRefOrVal = schemaRefOrVal;
     function unescapeFragment(str) {
-      return unescapeJsonPointer(decodeURIComponent(str));
+      return unescapeJsonPointer2(decodeURIComponent(str));
     }
     exports.unescapeFragment = unescapeFragment;
     function escapeFragment(str) {
@@ -1131,10 +1131,10 @@ var require_util = __commonJS({
       return str.replace(/~/g, "~0").replace(/\//g, "~1");
     }
     exports.escapeJsonPointer = escapeJsonPointer;
-    function unescapeJsonPointer(str) {
+    function unescapeJsonPointer2(str) {
       return str.replace(/~1/g, "/").replace(/~0/g, "~");
     }
-    exports.unescapeJsonPointer = unescapeJsonPointer;
+    exports.unescapeJsonPointer = unescapeJsonPointer2;
     function eachItem(xs, f) {
       if (Array.isArray(xs)) {
         for (const x of xs)
@@ -3262,8 +3262,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path6) {
-      let input2 = path6;
+    function removeDotSegments(path7) {
+      let input2 = path7;
       const output2 = [];
       let nextSlash = -1;
       let len = 0;
@@ -3672,8 +3672,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path6 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path6 && path6 !== "/" ? path6 : void 0;
+        const path7 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path7 && path7 !== "/" ? path7 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -7185,12 +7185,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs6, exportName) {
+    function addFormats(ajv, list, fs7, exportName) {
       var _a3;
       var _b;
       (_a3 = (_b = ajv.opts.code).formats) !== null && _a3 !== void 0 ? _a3 : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs6[f]);
+        ajv.addFormat(f, fs7[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -7572,8 +7572,8 @@ function getErrorMap() {
 
 // ../node_modules/.bun/zod@4.6.5/node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path6, errorMaps, issueData } = params;
-  const fullPath = [...path6, ...issueData.path || []];
+  const { data, path: path7, errorMaps, issueData } = params;
+  const fullPath = [...path7, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -7688,11 +7688,11 @@ var errorUtil;
 
 // ../node_modules/.bun/zod@4.6.5/node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path6, key) {
+  constructor(parent, value, path7, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path6;
+    this._path = path7;
     this._key = key;
   }
   get path() {
@@ -11646,10 +11646,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path6) {
-  if (!path6)
+function getElementAtPath(obj, path7) {
+  if (!path7)
     return obj;
-  return path6.reduce((acc, key) => acc?.[key], obj);
+  return path7.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -11989,11 +11989,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path6, issues) {
+function prefixIssues(path7, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path6);
+    iss.path.unshift(path7);
     return iss;
   });
 }
@@ -12443,16 +12443,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path6 = []) => {
+  const processError = (error63, path7 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path6, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
       } else {
-        const fullpath = [...path6, ...issue2.path];
+        const fullpath = [...path7, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -12491,17 +12491,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path6 = []) => {
+  const processError = (error63, path7 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path6, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path6, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
       } else {
-        const fullpath = [...path6, ...issue2.path];
+        const fullpath = [...path7, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -12540,8 +12540,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path6 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path6) {
+  const path7 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path7) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -16526,8 +16526,8 @@ var error3 = () => {
         const sizing = getSizing(issue2.origin);
         if (sizing) {
           const maxValue = Number(issue2.maximum);
-          const unit = getBelarusianPlural(maxValue, sizing.unit.one, sizing.unit.few, sizing.unit.many);
-          return `\u0417\u0430\u043D\u0430\u0434\u0442\u0430 \u0432\u044F\u043B\u0456\u043A\u0456: \u0447\u0430\u043A\u0430\u043B\u0430\u0441\u044F, \u0448\u0442\u043E ${issue2.origin ?? "\u0437\u043D\u0430\u0447\u044D\u043D\u043D\u0435"} \u043F\u0430\u0432\u0456\u043D\u043D\u0430 ${sizing.verb} ${adj}${issue2.maximum.toString()} ${unit}`;
+          const unit2 = getBelarusianPlural(maxValue, sizing.unit.one, sizing.unit.few, sizing.unit.many);
+          return `\u0417\u0430\u043D\u0430\u0434\u0442\u0430 \u0432\u044F\u043B\u0456\u043A\u0456: \u0447\u0430\u043A\u0430\u043B\u0430\u0441\u044F, \u0448\u0442\u043E ${issue2.origin ?? "\u0437\u043D\u0430\u0447\u044D\u043D\u043D\u0435"} \u043F\u0430\u0432\u0456\u043D\u043D\u0430 ${sizing.verb} ${adj}${issue2.maximum.toString()} ${unit2}`;
         }
         return `\u0417\u0430\u043D\u0430\u0434\u0442\u0430 \u0432\u044F\u043B\u0456\u043A\u0456: \u0447\u0430\u043A\u0430\u043B\u0430\u0441\u044F, \u0448\u0442\u043E ${issue2.origin ?? "\u0437\u043D\u0430\u0447\u044D\u043D\u043D\u0435"} \u043F\u0430\u0432\u0456\u043D\u043D\u0430 \u0431\u044B\u0446\u044C ${adj}${issue2.maximum.toString()}`;
       }
@@ -16536,8 +16536,8 @@ var error3 = () => {
         const sizing = getSizing(issue2.origin);
         if (sizing) {
           const minValue = Number(issue2.minimum);
-          const unit = getBelarusianPlural(minValue, sizing.unit.one, sizing.unit.few, sizing.unit.many);
-          return `\u0417\u0430\u043D\u0430\u0434\u0442\u0430 \u043C\u0430\u043B\u044B: \u0447\u0430\u043A\u0430\u043B\u0430\u0441\u044F, \u0448\u0442\u043E ${issue2.origin} \u043F\u0430\u0432\u0456\u043D\u043D\u0430 ${sizing.verb} ${adj}${issue2.minimum.toString()} ${unit}`;
+          const unit2 = getBelarusianPlural(minValue, sizing.unit.one, sizing.unit.few, sizing.unit.many);
+          return `\u0417\u0430\u043D\u0430\u0434\u0442\u0430 \u043C\u0430\u043B\u044B: \u0447\u0430\u043A\u0430\u043B\u0430\u0441\u044F, \u0448\u0442\u043E ${issue2.origin} \u043F\u0430\u0432\u0456\u043D\u043D\u0430 ${sizing.verb} ${adj}${issue2.minimum.toString()} ${unit2}`;
         }
         return `\u0417\u0430\u043D\u0430\u0434\u0442\u0430 \u043C\u0430\u043B\u044B: \u0447\u0430\u043A\u0430\u043B\u0430\u0441\u044F, \u0448\u0442\u043E ${issue2.origin} \u043F\u0430\u0432\u0456\u043D\u043D\u0430 \u0431\u044B\u0446\u044C ${adj}${issue2.minimum.toString()}`;
       }
@@ -19164,8 +19164,8 @@ var error24 = () => {
         const sizing = getSizing(issue2.origin);
         if (sizing) {
           const maxValue = Number(issue2.maximum);
-          const unit = getArmenianPlural(maxValue, sizing.unit.one, sizing.unit.many);
-          return `\u0549\u0561\u0583\u0561\u0566\u0561\u0576\u0581 \u0574\u0565\u056E \u0561\u0580\u056A\u0565\u0584\u2024 \u057D\u057A\u0561\u057D\u057E\u0578\u0582\u0574 \u0567, \u0578\u0580 ${withDefiniteArticle(issue2.origin ?? "\u0561\u0580\u056A\u0565\u0584")} \u056F\u0578\u0582\u0576\u0565\u0576\u0561 ${adj}${issue2.maximum.toString()} ${unit}`;
+          const unit2 = getArmenianPlural(maxValue, sizing.unit.one, sizing.unit.many);
+          return `\u0549\u0561\u0583\u0561\u0566\u0561\u0576\u0581 \u0574\u0565\u056E \u0561\u0580\u056A\u0565\u0584\u2024 \u057D\u057A\u0561\u057D\u057E\u0578\u0582\u0574 \u0567, \u0578\u0580 ${withDefiniteArticle(issue2.origin ?? "\u0561\u0580\u056A\u0565\u0584")} \u056F\u0578\u0582\u0576\u0565\u0576\u0561 ${adj}${issue2.maximum.toString()} ${unit2}`;
         }
         return `\u0549\u0561\u0583\u0561\u0566\u0561\u0576\u0581 \u0574\u0565\u056E \u0561\u0580\u056A\u0565\u0584\u2024 \u057D\u057A\u0561\u057D\u057E\u0578\u0582\u0574 \u0567, \u0578\u0580 ${withDefiniteArticle(issue2.origin ?? "\u0561\u0580\u056A\u0565\u0584")} \u056C\u056B\u0576\u056B ${adj}${issue2.maximum.toString()}`;
       }
@@ -19174,8 +19174,8 @@ var error24 = () => {
         const sizing = getSizing(issue2.origin);
         if (sizing) {
           const minValue = Number(issue2.minimum);
-          const unit = getArmenianPlural(minValue, sizing.unit.one, sizing.unit.many);
-          return `\u0549\u0561\u0583\u0561\u0566\u0561\u0576\u0581 \u0583\u0578\u0584\u0580 \u0561\u0580\u056A\u0565\u0584\u2024 \u057D\u057A\u0561\u057D\u057E\u0578\u0582\u0574 \u0567, \u0578\u0580 ${withDefiniteArticle(issue2.origin)} \u056F\u0578\u0582\u0576\u0565\u0576\u0561 ${adj}${issue2.minimum.toString()} ${unit}`;
+          const unit2 = getArmenianPlural(minValue, sizing.unit.one, sizing.unit.many);
+          return `\u0549\u0561\u0583\u0561\u0566\u0561\u0576\u0581 \u0583\u0578\u0584\u0580 \u0561\u0580\u056A\u0565\u0584\u2024 \u057D\u057A\u0561\u057D\u057E\u0578\u0582\u0574 \u0567, \u0578\u0580 ${withDefiniteArticle(issue2.origin)} \u056F\u0578\u0582\u0576\u0565\u0576\u0561 ${adj}${issue2.minimum.toString()} ${unit2}`;
         }
         return `\u0549\u0561\u0583\u0561\u0566\u0561\u0576\u0581 \u0583\u0578\u0584\u0580 \u0561\u0580\u056A\u0565\u0584\u2024 \u057D\u057A\u0561\u057D\u057E\u0578\u0582\u0574 \u0567, \u0578\u0580 ${withDefiniteArticle(issue2.origin)} \u056C\u056B\u0576\u056B ${adj}${issue2.minimum.toString()}`;
       }
@@ -20089,18 +20089,18 @@ var error32 = () => {
         const adj = issue2.inclusive ? "\uC774\uD558" : "\uBBF8\uB9CC";
         const suffix = adj === "\uBBF8\uB9CC" ? "\uC774\uC5B4\uC57C \uD569\uB2C8\uB2E4" : "\uC5EC\uC57C \uD569\uB2C8\uB2E4";
         const sizing = getSizing(issue2.origin);
-        const unit = sizing?.unit ?? "\uC694\uC18C";
+        const unit2 = sizing?.unit ?? "\uC694\uC18C";
         if (sizing)
-          return `${issue2.origin ?? "\uAC12"}\uC774 \uB108\uBB34 \uD07D\uB2C8\uB2E4: ${issue2.maximum.toString()}${unit} ${adj}${suffix}`;
+          return `${issue2.origin ?? "\uAC12"}\uC774 \uB108\uBB34 \uD07D\uB2C8\uB2E4: ${issue2.maximum.toString()}${unit2} ${adj}${suffix}`;
         return `${issue2.origin ?? "\uAC12"}\uC774 \uB108\uBB34 \uD07D\uB2C8\uB2E4: ${issue2.maximum.toString()} ${adj}${suffix}`;
       }
       case "too_small": {
         const adj = issue2.inclusive ? "\uC774\uC0C1" : "\uCD08\uACFC";
         const suffix = adj === "\uC774\uC0C1" ? "\uC774\uC5B4\uC57C \uD569\uB2C8\uB2E4" : "\uC5EC\uC57C \uD569\uB2C8\uB2E4";
         const sizing = getSizing(issue2.origin);
-        const unit = sizing?.unit ?? "\uC694\uC18C";
+        const unit2 = sizing?.unit ?? "\uC694\uC18C";
         if (sizing) {
-          return `${issue2.origin ?? "\uAC12"}\uC774 \uB108\uBB34 \uC791\uC2B5\uB2C8\uB2E4: ${issue2.minimum.toString()}${unit} ${adj}${suffix}`;
+          return `${issue2.origin ?? "\uAC12"}\uC774 \uB108\uBB34 \uC791\uC2B5\uB2C8\uB2E4: ${issue2.minimum.toString()}${unit2} ${adj}${suffix}`;
         }
         return `${issue2.origin ?? "\uAC12"}\uC774 \uB108\uBB34 \uC791\uC2B5\uB2C8\uB2E4: ${issue2.minimum.toString()} ${adj}${suffix}`;
       }
@@ -21913,8 +21913,8 @@ var error46 = () => {
         const sizing = getSizing(issue2.origin);
         if (sizing) {
           const maxValue = Number(issue2.maximum);
-          const unit = getRussianPlural(maxValue, sizing.unit.one, sizing.unit.few, sizing.unit.many);
-          return `\u0421\u043B\u0438\u0448\u043A\u043E\u043C \u0431\u043E\u043B\u044C\u0448\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435: \u043E\u0436\u0438\u0434\u0430\u043B\u043E\u0441\u044C, \u0447\u0442\u043E ${issue2.origin ?? "\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435"} \u0431\u0443\u0434\u0435\u0442 \u0438\u043C\u0435\u0442\u044C ${adj}${issue2.maximum.toString()} ${unit}`;
+          const unit2 = getRussianPlural(maxValue, sizing.unit.one, sizing.unit.few, sizing.unit.many);
+          return `\u0421\u043B\u0438\u0448\u043A\u043E\u043C \u0431\u043E\u043B\u044C\u0448\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435: \u043E\u0436\u0438\u0434\u0430\u043B\u043E\u0441\u044C, \u0447\u0442\u043E ${issue2.origin ?? "\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435"} \u0431\u0443\u0434\u0435\u0442 \u0438\u043C\u0435\u0442\u044C ${adj}${issue2.maximum.toString()} ${unit2}`;
         }
         return `\u0421\u043B\u0438\u0448\u043A\u043E\u043C \u0431\u043E\u043B\u044C\u0448\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435: \u043E\u0436\u0438\u0434\u0430\u043B\u043E\u0441\u044C, \u0447\u0442\u043E ${issue2.origin ?? "\u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435"} \u0431\u0443\u0434\u0435\u0442 ${adj}${issue2.maximum.toString()}`;
       }
@@ -21923,8 +21923,8 @@ var error46 = () => {
         const sizing = getSizing(issue2.origin);
         if (sizing) {
           const minValue = Number(issue2.minimum);
-          const unit = getRussianPlural(minValue, sizing.unit.one, sizing.unit.few, sizing.unit.many);
-          return `\u0421\u043B\u0438\u0448\u043A\u043E\u043C \u043C\u0430\u043B\u0435\u043D\u044C\u043A\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435: \u043E\u0436\u0438\u0434\u0430\u043B\u043E\u0441\u044C, \u0447\u0442\u043E ${issue2.origin} \u0431\u0443\u0434\u0435\u0442 \u0438\u043C\u0435\u0442\u044C ${adj}${issue2.minimum.toString()} ${unit}`;
+          const unit2 = getRussianPlural(minValue, sizing.unit.one, sizing.unit.few, sizing.unit.many);
+          return `\u0421\u043B\u0438\u0448\u043A\u043E\u043C \u043C\u0430\u043B\u0435\u043D\u044C\u043A\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435: \u043E\u0436\u0438\u0434\u0430\u043B\u043E\u0441\u044C, \u0447\u0442\u043E ${issue2.origin} \u0431\u0443\u0434\u0435\u0442 \u0438\u043C\u0435\u0442\u044C ${adj}${issue2.minimum.toString()} ${unit2}`;
         }
         return `\u0421\u043B\u0438\u0448\u043A\u043E\u043C \u043C\u0430\u043B\u0435\u043D\u044C\u043A\u043E\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435: \u043E\u0436\u0438\u0434\u0430\u043B\u043E\u0441\u044C, \u0447\u0442\u043E ${issue2.origin} \u0431\u0443\u0434\u0435\u0442 ${adj}${issue2.minimum.toString()}`;
       }
@@ -28056,11 +28056,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path6) {
-  if (path6.length === 0) {
+function getDotPath(path7) {
+  if (path7.length === 0) {
     return "object root";
   }
-  return path6.reduce((acc, seg, index) => {
+  return path7.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -30287,13 +30287,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path6 = ref.slice(1).split("/").filter(Boolean);
-  if (path6.length === 0) {
+  const path7 = ref.slice(1).split("/").filter(Boolean);
+  if (path7.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path6[0] === defsKey) {
-    const key = path6[1] === void 0 ? void 0 : decodeJSONPointerSegment(path6[1]);
+  if (path7[0] === defsKey) {
+    const key = path7[1] === void 0 ? void 0 : decodeJSONPointerSegment(path7[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -33760,9 +33760,9 @@ var zodToJsonSchema = (schema, options) => {
     ...refs2,
     currentPath: [...refs2.basePath, refs2.definitionPath, name]
   }, false) ?? parseAnyDef(refs2);
-  const title = typeof options === "object" && options.name !== void 0 && options.nameStrategy === "title" ? options.name : void 0;
-  if (title !== void 0) {
-    main.title = title;
+  const title2 = typeof options === "object" && options.name !== void 0 && options.nameStrategy === "title" ? options.name : void 0;
+  if (title2 !== void 0) {
+    main.title = title2;
   }
   if (refs2.flags.hasReferencedOpenAiAnyType) {
     if (!definitions) {
@@ -36021,10 +36021,10 @@ var McpServer = class {
       return registeredResourceTemplate;
     }
   }
-  _createRegisteredResource(name, title, uri, metadata, readCallback) {
+  _createRegisteredResource(name, title2, uri, metadata, readCallback) {
     const registeredResource = {
       name,
-      title,
+      title: title2,
       metadata,
       readCallback,
       enabled: true,
@@ -36053,10 +36053,10 @@ var McpServer = class {
     this._registeredResources[uri] = registeredResource;
     return registeredResource;
   }
-  _createRegisteredResourceTemplate(name, title, template, metadata, readCallback) {
+  _createRegisteredResourceTemplate(name, title2, template, metadata, readCallback) {
     const registeredResourceTemplate = {
       resourceTemplate: template,
-      title,
+      title: title2,
       metadata,
       readCallback,
       enabled: true,
@@ -36090,9 +36090,9 @@ var McpServer = class {
     }
     return registeredResourceTemplate;
   }
-  _createRegisteredPrompt(name, title, description, argsSchema, callback) {
+  _createRegisteredPrompt(name, title2, description, argsSchema, callback) {
     const registeredPrompt = {
-      title,
+      title: title2,
       description,
       argsSchema: argsSchema === void 0 ? void 0 : objectFromShape(argsSchema),
       callback,
@@ -36131,10 +36131,10 @@ var McpServer = class {
     }
     return registeredPrompt;
   }
-  _createRegisteredTool(name, title, description, inputSchema, outputSchema, annotations, execution, _meta, handler) {
+  _createRegisteredTool(name, title2, description, inputSchema, outputSchema, annotations, execution, _meta, handler) {
     validateAndWarnToolName(name);
     const registeredTool = {
-      title,
+      title: title2,
       description,
       inputSchema: getZodSchemaObject(inputSchema),
       outputSchema: getZodSchemaObject(outputSchema),
@@ -36217,8 +36217,8 @@ var McpServer = class {
     if (this._registeredTools[name]) {
       throw new Error(`Tool ${name} is already registered`);
     }
-    const { title, description, inputSchema, outputSchema, annotations, _meta } = config2;
-    return this._createRegisteredTool(name, title, description, inputSchema, outputSchema, annotations, { taskSupport: "forbidden" }, _meta, cb);
+    const { title: title2, description, inputSchema, outputSchema, annotations, _meta } = config2;
+    return this._createRegisteredTool(name, title2, description, inputSchema, outputSchema, annotations, { taskSupport: "forbidden" }, _meta, cb);
   }
   prompt(name, ...rest) {
     if (this._registeredPrompts[name]) {
@@ -36245,8 +36245,8 @@ var McpServer = class {
     if (this._registeredPrompts[name]) {
       throw new Error(`Prompt ${name} is already registered`);
     }
-    const { title, description, argsSchema } = config2;
-    const registeredPrompt = this._createRegisteredPrompt(name, title, description, argsSchema, cb);
+    const { title: title2, description, argsSchema } = config2;
+    const registeredPrompt = this._createRegisteredPrompt(name, title2, description, argsSchema, cb);
     this.setPromptRequestHandlers();
     this.sendPromptListChanged();
     return registeredPrompt;
@@ -36699,11 +36699,20 @@ var refs = external_exports.array(EvidenceRefSchema);
 var CoveragePhaseSchema = external_exports.enum(["discovery", "retrieval", "parsing", "inspection", "validation", "review"]);
 var CoverageStateSchema = external_exports.enum(["queued", "running", "complete", "failed", "unsupported", "excluded", "blocked_by_access"]);
 var SourceCapabilitySchema = external_exports.strictObject({ ...base, connectionId: IdSchema, kind: text, state: external_exports.enum(["available", "unsupported", "blocked_by_access", "unknown"]), reason: text.nullable(), apiVersion: IdSchema, accessVersion: IdSchema });
-var CatalogComponentSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, kind: external_exports.enum(["object", "field", "report", "flow", "validation_rule", "formula", "record_type", "other"]), nativeId: text, label: text, description: external_exports.string().max(3e4), version: IdSchema, active: external_exports.boolean().nullable(), access: external_exports.enum(["allowed", "blocked_by_access", "excluded", "unknown"]), accessVersion: IdSchema, observedAt: TimestampSchema, parentId: IdSchema.nullable(), artifact: EvidenceRefSchema.nullable() });
+var CatalogKindSchema = external_exports.enum(["object", "field", "report", "flow", "validation_rule", "formula", "record_type", "role", "profile", "permission_set", "other"]);
+var ReaderKindSchema = external_exports.enum(["object", "report", "flow", "validation_rule", "role", "profile", "permission_set"]);
+var ReaderDescriptorSchema = external_exports.strictObject({ kind: CatalogKindSchema, nativeId: text, label: text, providerId: IdSchema, active: external_exports.boolean().nullable(), objectType: text.optional(), description: external_exports.string().max(3e4).optional(), artifactPath: external_exports.string().optional() });
+var ReaderGapSchema = external_exports.strictObject({ kind: CatalogKindSchema, state: external_exports.enum(["blocked_by_access", "unsupported", "failed"]), reason: text, retryable: external_exports.boolean() });
+var ReaderInventorySchema = external_exports.strictObject({ components: external_exports.array(ReaderDescriptorSchema), nextCursor: external_exports.string().nullable(), gaps: external_exports.array(ReaderGapSchema) });
+var ReaderArtifactSchema = external_exports.strictObject({ content: external_exports.record(external_exports.string(), external_exports.json()), sourceVersion: external_exports.string().nullable() });
+var ReaderRetrievalSchema = external_exports.strictObject({ artifacts: external_exports.array(ReaderArtifactSchema), children: external_exports.array(ReaderDescriptorSchema), nextCursor: external_exports.string().nullable(), complete: external_exports.boolean(), gaps: external_exports.array(ReaderGapSchema), active: external_exports.boolean().nullable().optional() });
+var CatalogComponentSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, kind: CatalogKindSchema, nativeId: text, label: text, description: external_exports.string().max(3e4), version: IdSchema, active: external_exports.boolean().nullable(), access: external_exports.enum(["allowed", "blocked_by_access", "excluded", "unknown"]), accessVersion: IdSchema, observedAt: TimestampSchema, parentId: IdSchema.nullable(), artifact: EvidenceRefSchema.nullable(), provider: ReaderDescriptorSchema.optional() });
 var ImportPlanSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, catalogRevision: CountSchema, selectedComponentIds: ids, selectedFields: external_exports.record(IdSchema, ids), excludedComponentIds: ids, state: external_exports.enum(["draft", "submitted", "superseded"]), createdAt: TimestampSchema });
-var ComponentCoverageSchema = external_exports.strictObject({ ...base, componentId: IdSchema, componentVersion: IdSchema, phase: CoveragePhaseSchema, state: CoverageStateSchema, cursor: external_exports.string().nullable(), inspectedPaths: external_exports.array(external_exports.string()), reason: text.nullable(), updatedAt: TimestampSchema });
+var ComponentCoverageSchema = external_exports.strictObject({ ...base, componentId: IdSchema, componentVersion: IdSchema, phase: CoveragePhaseSchema, state: CoverageStateSchema, cursor: external_exports.string().nullable(), continuation: external_exports.string().nullable().optional(), inspectedPaths: external_exports.array(external_exports.string()), reason: text.nullable(), updatedAt: TimestampSchema });
 var RetainedArtifactSchema = external_exports.strictObject({ id: IdSchema, version: IdSchema, connectionId: IdSchema, componentId: IdSchema, apiVersion: IdSchema, accessVersion: IdSchema, contentHash: IdSchema, content: external_exports.string().max(5e6), mediaType: text, observedAt: TimestampSchema, sourceModifiedAt: TimestampSchema.nullable() });
-var ComponentDependencySchema = external_exports.strictObject({ ...base, sourceComponentId: IdSchema, sourceVersion: IdSchema, targetComponentId: IdSchema.nullable(), targetNativeId: text, relation: external_exports.enum(["reads", "writes", "filters", "calls", "references"]), path: external_exports.string(), state: external_exports.enum(["resolved", "unsupported", "blocked_by_access", "unresolved"]), reason: text.nullable() });
+var ComponentDependencySchema = external_exports.strictObject({ ...base, sourceComponentId: IdSchema, sourceVersion: IdSchema, targetComponentId: IdSchema.nullable(), targetNativeId: text, targetKind: CatalogComponentSchema.shape.kind.optional(), relation: external_exports.enum(["reads", "writes", "filters", "calls", "references"]), path: external_exports.string(), state: external_exports.enum(["resolved", "unsupported", "blocked_by_access", "unresolved"]), reason: text.nullable() });
+var DependencyCandidateSchema = external_exports.strictObject({ relation: ComponentDependencySchema.shape.relation, targetKind: CatalogComponentSchema.shape.kind, targetNativeId: text, path: external_exports.string(), resolution: external_exports.enum(["resolved", "unresolved"]), reason: text.optional() });
+var DependencyParseResultSchema = external_exports.strictObject({ references: external_exports.array(DependencyCandidateSchema), unsupported: external_exports.array(external_exports.strictObject({ path: external_exports.string(), reason: text })), coverage: external_exports.enum(["complete", "partial", "unsupported"]) });
 var SnapshotVectorSchema = external_exports.strictObject({ sources: external_exports.array(external_exports.strictObject({ connectionId: IdSchema, batchWatermark: IdSchema.nullable(), catalogVersion: IdSchema, accessVersion: IdSchema, coverageRevision: CountSchema })), answerRevision: CountSchema, skillVersion: IdSchema, promptVersion: IdSchema });
 var SourceProfileSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, componentId: IdSchema, snapshot: SnapshotVectorSchema, method: external_exports.enum(["exact", "sampled"]), population: text, denominator: CountSchema, sampleSize: CountSchema.nullable(), complete: external_exports.boolean(), statistics: external_exports.record(external_exports.string(), external_exports.json()), evidence: refs, gaps: external_exports.array(text) });
 var InvestigationCheckpointSchema = external_exports.strictObject({ queue: ids, visited: ids, cursors: external_exports.record(IdSchema, external_exports.string()), toolCalls: CountSchema, sampledRecords: CountSchema, inputTokens: CountSchema, outputTokens: CountSchema, elapsedMs: CountSchema, agentState: external_exports.json().optional() });
@@ -36882,6 +36891,67 @@ var NeighborhoodResponseSchema = external_exports.strictObject({
   metadata: ReadMetadataSchema
 });
 var SyncRunResponseSchema = external_exports.strictObject({ run: SyncRunSchema, dataMode: external_exports.enum(["fixture", "live"]) });
+var repeated = (item, max) => external_exports.preprocess((value) => value === void 0 ? [] : Array.isArray(value) ? value : [value], external_exports.array(item).max(max));
+var AggregateQuerySchema = external_exports.strictObject({
+  typeId: IdSchema,
+  connectionId: IdSchema.optional(),
+  /** `field op value and …` in the definition rule language, without the type prefix. */
+  where: external_exports.string().max(2e3).optional(),
+  groupBy: repeated(external_exports.string().min(1).max(200), 2).default([]),
+  metric: repeated(external_exports.string().min(1).max(200), 6).default([]),
+  orderBy: external_exports.string().max(200).optional(),
+  limit: external_exports.coerce.number().int().min(1).max(500).default(50)
+});
+var AggregateValueSchema = external_exports.union([external_exports.number(), external_exports.string(), external_exports.null()]);
+var ViewFactsSchema = external_exports.record(external_exports.string().min(1).max(40), external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean(), external_exports.null()]));
+var ViewSchema = external_exports.strictObject({
+  id: IdSchema,
+  title: external_exports.string().min(1).max(120),
+  /** The question the view answers, in the person's words. */
+  question: external_exports.string().max(1e3),
+  /** The main form of the view: waterfall, funnel, line, bar, table, kpi, flow, heatmap, scatter, histogram, or another word. */
+  form: external_exports.string().min(1).max(40),
+  /** One paragraph naming the type, filter, snapshot, coverage and exactness the numbers come from. */
+  caption: external_exports.string().max(2e3),
+  facts: ViewFactsSchema,
+  /** Elements in the spec. */
+  elementCount: CountSchema,
+  createdBy: external_exports.strictObject({ subjectId: IdSchema, tokenId: IdSchema.nullable() }),
+  revision: external_exports.number().int().positive(),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema
+});
+var ViewDetailSchema = ViewSchema.extend({ spec: external_exports.record(external_exports.string(), external_exports.unknown()) });
+var SaveViewRequestSchema = external_exports.strictObject({
+  /** Present to replace an existing view (its link stays); absent to create one. */
+  id: IdSchema.optional(),
+  title: ViewSchema.shape.title,
+  question: ViewSchema.shape.question.default(""),
+  form: ViewSchema.shape.form,
+  caption: ViewSchema.shape.caption.default(""),
+  facts: ViewFactsSchema.default({}),
+  spec: external_exports.record(external_exports.string(), external_exports.unknown())
+});
+var ViewListResponseSchema = external_exports.strictObject({ items: external_exports.array(ViewSchema), serverTime: TimestampSchema });
+var ViewListQuerySchema = external_exports.strictObject({ limit: external_exports.coerce.number().int().min(1).max(200).default(50) });
+var AggregateResponseSchema = external_exports.strictObject({
+  type: external_exports.strictObject({ id: IdSchema, connectionId: IdSchema, nativeName: external_exports.string(), label: external_exports.string() }),
+  query: external_exports.strictObject({
+    where: DefinitionRuleSchema.nullable(),
+    groupBy: external_exports.array(external_exports.strictObject({ spec: external_exports.string(), field: external_exports.string(), attribute: external_exports.string().optional(), bucket: external_exports.enum(["day", "week", "month", "quarter", "year"]).optional() })),
+    metrics: external_exports.array(external_exports.strictObject({ spec: external_exports.string(), fn: external_exports.enum(["count", "sum", "avg", "min", "max", "distinct"]), field: external_exports.string().optional() })),
+    orderBy: external_exports.string(),
+    limit: CountSchema
+  }),
+  /** One row per group, in the requested order; `keys` align with `query.groupBy`, `values` with `query.metrics`. */
+  rows: external_exports.array(external_exports.strictObject({ keys: external_exports.array(external_exports.string().nullable()), values: external_exports.array(AggregateValueSchema), count: CountSchema })),
+  /** The same metrics over every matching record, so a chart can reconcile its parts to the whole. */
+  totals: external_exports.strictObject({ count: CountSchema, values: external_exports.array(AggregateValueSchema) }),
+  groups: external_exports.strictObject({ total: CountSchema, returned: CountSchema, truncated: external_exports.boolean() }),
+  /** Which snapshot answered: the connection's last complete import, or every retained record when there is none. */
+  snapshot: external_exports.strictObject({ syncRunId: IdSchema.nullable(), exact: external_exports.boolean(), reason: external_exports.string().nullable() }),
+  metadata: ReadMetadataSchema
+});
 var ApiErrorCodeSchema = external_exports.enum([
   "UNAUTHENTICATED",
   "FORBIDDEN",
@@ -36901,7 +36971,7 @@ var ApiErrorSchema = external_exports.strictObject({ error: external_exports.str
 var ConnectRequestSchema = external_exports.strictObject({
   displayName: external_exports.string().min(1).max(100),
   environment: external_exports.enum(["production", "sandbox"]),
-  allowedObjects: external_exports.array(external_exports.enum(["Account", "Contact", "Opportunity", "User"])).min(1).max(4)
+  allowedObjects: external_exports.array(external_exports.string().regex(/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)?$/).max(255)).min(1).max(500)
 });
 var ConnectResponseSchema = external_exports.strictObject({ authorizationUrl: external_exports.url(), expiresAt: external_exports.iso.datetime({ offset: true }) });
 var SyncRequestSchema = external_exports.strictObject({ mode: external_exports.enum(["initial", "refresh"]) });
@@ -37162,6 +37232,1687 @@ function parseOntologyMarkdown(markdown, entityTypes) {
   return document;
 }
 
+// ../shared/src/ontology/aggregate.ts
+var AGGREGATE_BUCKETS = ["day", "week", "month", "quarter", "year"];
+var IDENT = "[A-Za-z_][A-Za-z0-9_]*";
+var GROUP_PATTERN = new RegExp(`^(${IDENT})(?:\\.(${IDENT}))?(?::(${AGGREGATE_BUCKETS.join("|")}))?$`);
+var METRIC_PATTERN = new RegExp(`^(?:(count)|(sum|avg|min|max|distinct):(${IDENT}))$`);
+
+// ../node_modules/.bun/@json-render+core@0.20.0/node_modules/@json-render/core/dist/chunk-7V7ZCHEJ.mjs
+var DynamicValueSchema = external_exports.union([
+  external_exports.string(),
+  external_exports.number(),
+  external_exports.boolean(),
+  external_exports.null(),
+  external_exports.object({ $state: external_exports.string() })
+]);
+var DynamicStringSchema = external_exports.union([
+  external_exports.string(),
+  external_exports.object({ $state: external_exports.string() })
+]);
+var DynamicNumberSchema = external_exports.union([
+  external_exports.number(),
+  external_exports.object({ $state: external_exports.string() })
+]);
+var DynamicBooleanSchema = external_exports.union([
+  external_exports.boolean(),
+  external_exports.object({ $state: external_exports.string() })
+]);
+function unescapeJsonPointer(token) {
+  return token.replace(/~1/g, "/").replace(/~0/g, "~");
+}
+function parseJsonPointer(path7) {
+  const raw = path7.startsWith("/") ? path7.slice(1).split("/") : path7.split("/");
+  return raw.map(unescapeJsonPointer);
+}
+function getByPath(obj, path7) {
+  if (!path7 || path7 === "/") {
+    return obj;
+  }
+  const segments = parseJsonPointer(path7);
+  let current = obj;
+  for (const segment of segments) {
+    if (current === null || current === void 0) {
+      return void 0;
+    }
+    if (Array.isArray(current)) {
+      const index = parseInt(segment, 10);
+      current = current[index];
+    } else if (typeof current === "object") {
+      current = current[segment];
+    } else {
+      return void 0;
+    }
+  }
+  return current;
+}
+function resolveRepeatStatePath(statePath, repeatBasePath) {
+  if (typeof statePath === "string") {
+    return statePath;
+  }
+  if (repeatBasePath == null) {
+    return void 0;
+  }
+  if (statePath.$item === "" || statePath.$item === "/") {
+    return repeatBasePath;
+  }
+  return joinStatePath(repeatBasePath, statePath.$item);
+}
+function resolveRepeatItemStatePath(statePath, index) {
+  return joinStatePath(statePath, String(index));
+}
+function joinStatePath(basePath, childPath) {
+  const child = childPath.startsWith("/") ? childPath.slice(1) : childPath;
+  if (basePath === "" || basePath === "/") {
+    return `/${child}`;
+  }
+  return `${basePath}/${child}`;
+}
+var SPEC_DATA_PART = "spec";
+var SPEC_DATA_PART_TYPE = `data-${SPEC_DATA_PART}`;
+
+// ../node_modules/.bun/@json-render+core@0.20.0/node_modules/@json-render/core/dist/index.mjs
+var numericOrStateRef = external_exports.union([
+  external_exports.number(),
+  external_exports.object({ $state: external_exports.string() })
+]);
+var comparisonOps = {
+  eq: external_exports.unknown().optional(),
+  neq: external_exports.unknown().optional(),
+  gt: numericOrStateRef.optional(),
+  gte: numericOrStateRef.optional(),
+  lt: numericOrStateRef.optional(),
+  lte: numericOrStateRef.optional(),
+  not: external_exports.literal(true).optional()
+};
+var StateConditionSchema = external_exports.object({
+  $state: external_exports.string(),
+  ...comparisonOps
+});
+var ItemConditionSchema = external_exports.object({
+  $item: external_exports.string(),
+  ...comparisonOps
+});
+var IndexConditionSchema = external_exports.object({
+  $index: external_exports.literal(true),
+  ...comparisonOps
+});
+var SingleConditionSchema = external_exports.union([
+  StateConditionSchema,
+  ItemConditionSchema,
+  IndexConditionSchema
+]);
+var VisibilityConditionSchema = external_exports.lazy(
+  () => external_exports.union([
+    external_exports.boolean(),
+    SingleConditionSchema,
+    external_exports.array(SingleConditionSchema),
+    external_exports.object({ $and: external_exports.array(VisibilityConditionSchema) }),
+    external_exports.object({ $or: external_exports.array(VisibilityConditionSchema) })
+  ])
+);
+var StrictSingleConditionSchema = external_exports.union([
+  external_exports.strictObject({ $state: external_exports.string(), ...comparisonOps }),
+  external_exports.strictObject({ $item: external_exports.string(), ...comparisonOps }),
+  external_exports.strictObject({ $index: external_exports.literal(true), ...comparisonOps })
+]);
+var VisibilityConditionStrictSchema = external_exports.lazy(
+  () => external_exports.union([
+    external_exports.boolean(),
+    StrictSingleConditionSchema,
+    external_exports.array(StrictSingleConditionSchema),
+    external_exports.strictObject({ $and: external_exports.array(VisibilityConditionStrictSchema) }),
+    external_exports.strictObject({ $or: external_exports.array(VisibilityConditionStrictSchema) })
+  ])
+);
+var ActionConfirmSchema = external_exports.object({
+  title: external_exports.string(),
+  message: external_exports.string(),
+  confirmLabel: external_exports.string().optional(),
+  cancelLabel: external_exports.string().optional(),
+  variant: external_exports.enum(["default", "danger"]).optional()
+});
+var ActionOnSuccessSchema = external_exports.union([
+  external_exports.object({ navigate: external_exports.string() }),
+  external_exports.object({ set: external_exports.record(external_exports.string(), external_exports.unknown()) }),
+  external_exports.object({
+    action: external_exports.string(),
+    params: external_exports.record(external_exports.string(), DynamicValueSchema).optional()
+  })
+]);
+var ActionOnErrorSchema = external_exports.union([
+  external_exports.object({ set: external_exports.record(external_exports.string(), external_exports.unknown()) }),
+  external_exports.object({
+    action: external_exports.string(),
+    params: external_exports.record(external_exports.string(), DynamicValueSchema).optional()
+  })
+]);
+var ActionBindingSchema = external_exports.object({
+  action: external_exports.string(),
+  params: external_exports.record(external_exports.string(), DynamicValueSchema).optional(),
+  confirm: ActionConfirmSchema.optional(),
+  onSuccess: ActionOnSuccessSchema.optional(),
+  onError: ActionOnErrorSchema.optional(),
+  preventDefault: external_exports.boolean().optional()
+});
+var ValidationCheckSchema = external_exports.object({
+  type: external_exports.string(),
+  args: external_exports.record(external_exports.string(), DynamicValueSchema).optional(),
+  message: external_exports.string()
+});
+var ValidationConfigSchema = external_exports.object({
+  checks: external_exports.array(ValidationCheckSchema).optional(),
+  validateOn: external_exports.enum(["change", "blur", "submit"]).optional(),
+  enabled: VisibilityConditionSchema.optional()
+});
+function validateSpec(spec, options = {}) {
+  const { checkOrphans = false } = options;
+  const issues = [];
+  if (!spec.root) {
+    issues.push({
+      severity: "error",
+      message: "Spec has no root element defined.",
+      code: "missing_root"
+    });
+    return { valid: false, issues };
+  }
+  if (!spec.elements[spec.root]) {
+    issues.push({
+      severity: "error",
+      message: `Root element "${spec.root}" not found in elements map.`,
+      code: "root_not_found"
+    });
+  }
+  if (Object.keys(spec.elements).length === 0) {
+    issues.push({
+      severity: "error",
+      message: "Spec has no elements.",
+      code: "empty_spec"
+    });
+    return { valid: false, issues };
+  }
+  for (const [key, element] of Object.entries(spec.elements)) {
+    if (element.children) {
+      for (const childKey of element.children) {
+        if (!spec.elements[childKey]) {
+          issues.push({
+            severity: "error",
+            message: `Element "${key}" references child "${childKey}" which does not exist in the elements map.`,
+            elementKey: key,
+            code: "missing_child"
+          });
+        }
+      }
+    }
+    if (element.slots) {
+      for (const [slotName, childKeys] of Object.entries(element.slots)) {
+        for (const childKey of childKeys) {
+          if (!spec.elements[childKey]) {
+            issues.push({
+              severity: "error",
+              message: `Element "${key}" references child "${childKey}" in slot "${slotName}" which does not exist in the elements map.`,
+              elementKey: key,
+              code: "missing_child"
+            });
+          }
+        }
+      }
+    }
+    if (element.repeat !== void 0) {
+      if (!element.children || element.children.length === 0) {
+        issues.push({
+          severity: "error",
+          message: `Element "${key}" has "repeat" but no children. The repeated template must be a child element: add a child that renders one item (it may read fields with {"$item": "field"}).`,
+          elementKey: key,
+          code: "repeat_without_children"
+        });
+      }
+    }
+    if (element.visible !== void 0 && !VisibilityConditionStrictSchema.safeParse(element.visible).success) {
+      issues.push({
+        severity: "error",
+        message: `Element "${key}" has an invalid "visible" condition: ${JSON.stringify(element.visible)}. Valid forms: true, false, {"$state":"/path","eq":value}, {"$item":"field","eq":value}, {"$index":true,"eq":n}, an array of those (AND), or {"$and":[...]} / {"$or":[...]}. Use exactly one of $state, $item, or $index per condition object.`,
+        elementKey: key,
+        code: "invalid_visible"
+      });
+    }
+    const props = element.props;
+    if (props && "visible" in props && props.visible !== void 0) {
+      issues.push({
+        severity: "error",
+        message: `Element "${key}" has "visible" inside "props". It should be a top-level field on the element (sibling of type/props/children).`,
+        elementKey: key,
+        code: "visible_in_props"
+      });
+    }
+    if (props && "on" in props && props.on !== void 0) {
+      issues.push({
+        severity: "error",
+        message: `Element "${key}" has "on" inside "props". It should be a top-level field on the element (sibling of type/props/children).`,
+        elementKey: key,
+        code: "on_in_props"
+      });
+    }
+    if (props && "repeat" in props && props.repeat !== void 0) {
+      issues.push({
+        severity: "error",
+        message: `Element "${key}" has "repeat" inside "props". It should be a top-level field on the element (sibling of type/props/children).`,
+        elementKey: key,
+        code: "repeat_in_props"
+      });
+    }
+    if (props && "watch" in props && props.watch !== void 0) {
+      issues.push({
+        severity: "error",
+        message: `Element "${key}" has "watch" inside "props". It should be a top-level field on the element (sibling of type/props/children).`,
+        elementKey: key,
+        code: "watch_in_props"
+      });
+    }
+  }
+  const repeatValidatedKeys = /* @__PURE__ */ new Set();
+  const repeatValidatedContexts = /* @__PURE__ */ new Set();
+  const validateRepeatPaths = (key, repeatBasePath, sampleAvailable, ancestors) => {
+    if (ancestors.has(key)) return;
+    const element = spec.elements[key];
+    if (!element) return;
+    repeatValidatedKeys.add(key);
+    const contextKey = `${key}\0${repeatBasePath ?? ""}\0${sampleAvailable}`;
+    if (repeatValidatedContexts.has(contextKey)) return;
+    repeatValidatedContexts.add(contextKey);
+    let childRepeatBasePath = repeatBasePath;
+    let childSampleAvailable = sampleAvailable;
+    if (element.repeat !== void 0) {
+      const statePath = resolveRepeatStatePath(
+        element.repeat.statePath,
+        repeatBasePath
+      );
+      const displayPath = typeof element.repeat.statePath === "string" ? element.repeat.statePath : JSON.stringify(element.repeat.statePath);
+      if (statePath === void 0) {
+        issues.push({
+          severity: "error",
+          message: `Element "${key}" uses relative repeat statePath ${displayPath} outside a repeat scope.`,
+          elementKey: key,
+          code: "repeat_item_outside_scope"
+        });
+        childRepeatBasePath = void 0;
+        childSampleAvailable = false;
+      } else {
+        const canCheckSample = spec.state !== void 0 && (typeof element.repeat.statePath === "string" || sampleAvailable);
+        const value = canCheckSample ? getByPath(spec.state, statePath) : void 0;
+        if (canCheckSample && !Array.isArray(value)) {
+          issues.push({
+            severity: "error",
+            message: `Element "${key}" repeats over "${statePath}" but state${value === void 0 ? " has no value there" : ` has a ${typeof value} there`}. Repeat statePath must reference an array in state; add sample items to state at that path.`,
+            elementKey: key,
+            code: "repeat_state_mismatch"
+          });
+        }
+        childRepeatBasePath = resolveRepeatItemStatePath(statePath, 0);
+        childSampleAvailable = canCheckSample && Array.isArray(value) && value.length > 0;
+      }
+    }
+    const nextAncestors = new Set(ancestors);
+    nextAncestors.add(key);
+    for (const childKey of element.children ?? []) {
+      validateRepeatPaths(
+        childKey,
+        childRepeatBasePath,
+        childSampleAvailable,
+        nextAncestors
+      );
+    }
+    for (const childKeys of Object.values(element.slots ?? {})) {
+      for (const childKey of childKeys) {
+        validateRepeatPaths(
+          childKey,
+          repeatBasePath,
+          sampleAvailable,
+          nextAncestors
+        );
+      }
+    }
+  };
+  if (spec.elements[spec.root]) {
+    validateRepeatPaths(spec.root, void 0, true, /* @__PURE__ */ new Set());
+  }
+  for (const key of Object.keys(spec.elements)) {
+    if (!repeatValidatedKeys.has(key)) {
+      validateRepeatPaths(key, void 0, true, /* @__PURE__ */ new Set());
+    }
+  }
+  if (checkOrphans) {
+    const reachable = /* @__PURE__ */ new Set();
+    const walk = (key) => {
+      if (reachable.has(key)) return;
+      reachable.add(key);
+      const el = spec.elements[key];
+      if (el?.children) {
+        for (const childKey of el.children) {
+          if (spec.elements[childKey]) {
+            walk(childKey);
+          }
+        }
+      }
+      if (el?.slots) {
+        for (const childKeys of Object.values(el.slots)) {
+          for (const childKey of childKeys) {
+            if (spec.elements[childKey]) {
+              walk(childKey);
+            }
+          }
+        }
+      }
+    };
+    if (spec.elements[spec.root]) {
+      walk(spec.root);
+    }
+    for (const key of Object.keys(spec.elements)) {
+      if (!reachable.has(key)) {
+        issues.push({
+          severity: "warning",
+          message: `Element "${key}" is not reachable from root "${spec.root}".`,
+          elementKey: key,
+          code: "orphaned_element"
+        });
+      }
+    }
+  }
+  const hasErrors = issues.some((i) => i.severity === "error");
+  return { valid: !hasErrors, issues };
+}
+var DEFAULT_MODES = ["patch"];
+function normalizeModes(config2) {
+  if (!config2?.modes?.length) return DEFAULT_MODES;
+  return config2.modes;
+}
+function jsonPatchInstructions() {
+  return [
+    "PATCH MODE (RFC 6902 JSON Patch):",
+    "Output one JSON object per line. Each line is a patch operation.",
+    '- Add: {"op":"add","path":"/elements/new-key","value":{...}}',
+    '- Replace: {"op":"replace","path":"/elements/existing-key","value":{...}}',
+    '- Remove: {"op":"remove","path":"/elements/old-key"}',
+    "Only output patches for what needs to change."
+  ].join("\n");
+}
+function jsonMergeInstructions() {
+  return [
+    "MERGE MODE (RFC 7396 JSON Merge Patch):",
+    "Output a single JSON object on one line with __json_edit set to true.",
+    "Include only the keys that changed. Unmentioned keys are preserved.",
+    "Set a key to null to delete it.",
+    "",
+    "Example (update a title and add an element):",
+    '{"__json_edit":true,"elements":{"main":{"props":{"title":"New Title"}},"new-el":{"type":"Card","props":{},"children":[]}}}',
+    "",
+    "Example (delete an element):",
+    '{"__json_edit":true,"elements":{"old-widget":null}}'
+  ].join("\n");
+}
+function jsonDiffInstructions() {
+  return [
+    "DIFF MODE (unified diff):",
+    "Output a unified diff inside a ```diff code fence.",
+    "The diff applies against the JSON-serialized current spec.",
+    "",
+    "Example:",
+    "```diff",
+    "--- a/spec.json",
+    "+++ b/spec.json",
+    "@@ -3,1 +3,1 @@",
+    '-      "title": "Login"',
+    '+      "title": "Welcome Back"',
+    "```"
+  ].join("\n");
+}
+function yamlPatchInstructions() {
+  return [
+    "PATCH MODE (RFC 6902 JSON Patch):",
+    "Output RFC 6902 JSON Patch lines inside a ```yaml-patch code fence.",
+    "Each line is one JSON patch operation.",
+    "",
+    "Example:",
+    "```yaml-patch",
+    '{"op":"replace","path":"/elements/main/props/title","value":"New Title"}',
+    '{"op":"add","path":"/elements/new-el","value":{"type":"Card","props":{},"children":[]}}',
+    "```"
+  ].join("\n");
+}
+function yamlMergeInstructions() {
+  return [
+    "MERGE MODE (RFC 7396 JSON Merge Patch):",
+    "Output only the changed parts in a ```yaml-edit code fence.",
+    "Uses deep merge semantics: only keys you include are updated. Unmentioned elements and props are preserved.",
+    "Set a key to null to delete it.",
+    "",
+    "Example edit (update title, add a new element):",
+    "```yaml-edit",
+    "elements:",
+    "  main:",
+    "    props:",
+    "      title: Updated Title",
+    "  new-chart:",
+    "    type: Card",
+    "    props: {}",
+    "    children: []",
+    "```",
+    "",
+    "Example deletion:",
+    "```yaml-edit",
+    "elements:",
+    "  old-widget: null",
+    "```"
+  ].join("\n");
+}
+function yamlDiffInstructions() {
+  return [
+    "DIFF MODE (unified diff):",
+    "Output a unified diff inside a ```diff code fence.",
+    "The diff applies against the YAML-serialized current spec.",
+    "",
+    "Example:",
+    "```diff",
+    "--- a/spec.yaml",
+    "+++ b/spec.yaml",
+    "@@ -6,1 +6,1 @@",
+    "-      title: Login",
+    "+      title: Welcome Back",
+    "```"
+  ].join("\n");
+}
+function modeSelectionGuidance(modes) {
+  if (modes.length === 1) return "";
+  const parts = ["Choose the best edit strategy for the requested change:"];
+  if (modes.includes("patch")) {
+    parts.push("- PATCH: best for precise, targeted single-field updates");
+  }
+  if (modes.includes("merge")) {
+    parts.push(
+      "- MERGE: best for structural changes (add/remove elements, reparent children, update multiple props at once)"
+    );
+  }
+  if (modes.includes("diff")) {
+    parts.push(
+      "- DIFF: best for small text-level changes when you can see the exact lines to change"
+    );
+  }
+  return parts.join("\n");
+}
+function buildEditInstructions(config2, format) {
+  const modes = normalizeModes(config2);
+  const sections2 = [];
+  sections2.push("EDITING EXISTING SPECS:");
+  sections2.push("");
+  const guidance = modeSelectionGuidance(modes);
+  if (guidance) {
+    sections2.push(guidance);
+    sections2.push("");
+  }
+  for (const mode of modes) {
+    if (format === "json") {
+      switch (mode) {
+        case "patch":
+          sections2.push(jsonPatchInstructions());
+          break;
+        case "merge":
+          sections2.push(jsonMergeInstructions());
+          break;
+        case "diff":
+          sections2.push(jsonDiffInstructions());
+          break;
+      }
+    } else {
+      switch (mode) {
+        case "patch":
+          sections2.push(yamlPatchInstructions());
+          break;
+        case "merge":
+          sections2.push(yamlMergeInstructions());
+          break;
+        case "diff":
+          sections2.push(yamlDiffInstructions());
+          break;
+      }
+    }
+    sections2.push("");
+  }
+  return sections2.join("\n");
+}
+function createBuilder() {
+  return {
+    string: () => ({ kind: "string" }),
+    number: () => ({ kind: "number" }),
+    boolean: () => ({ kind: "boolean" }),
+    array: (item) => ({ kind: "array", inner: item }),
+    object: (shape) => ({ kind: "object", inner: shape }),
+    record: (value) => ({ kind: "record", inner: value }),
+    any: () => ({ kind: "any" }),
+    zod: () => ({ kind: "zod" }),
+    ref: (path7) => ({ kind: "ref", inner: path7 }),
+    propsOf: (path7) => ({ kind: "propsOf", inner: path7 }),
+    map: (entryShape) => ({ kind: "map", inner: entryShape }),
+    optional: () => ({ optional: true })
+  };
+}
+function defineSchema(builder, options) {
+  const s = createBuilder();
+  const definition = builder(s);
+  return {
+    definition,
+    promptTemplate: options?.promptTemplate,
+    defaultRules: options?.defaultRules,
+    builtInActions: options?.builtInActions,
+    createCatalog(catalog) {
+      return createCatalogFromSchema(this, catalog);
+    }
+  };
+}
+function createCatalogFromSchema(schema, catalogData) {
+  const components = catalogData.components;
+  const actions = catalogData.actions;
+  const componentNames = components ? Object.keys(components) : [];
+  const actionNames = actions ? Object.keys(actions) : [];
+  const zodSchema = buildZodSchemaFromDefinition(
+    schema.definition,
+    catalogData
+  );
+  return {
+    schema,
+    data: catalogData,
+    componentNames,
+    actionNames,
+    prompt(options = {}) {
+      return generatePrompt(this, options);
+    },
+    jsonSchema(options = {}) {
+      return zodToJsonSchema2(zodSchema, options.strict ?? false);
+    },
+    validate(spec) {
+      const result = zodSchema.safeParse(spec);
+      if (result.success) {
+        return {
+          success: true,
+          data: result.data
+        };
+      }
+      return { success: false, error: result.error };
+    },
+    zodSchema() {
+      return zodSchema;
+    },
+    get _specType() {
+      throw new Error("_specType is only for type inference");
+    }
+  };
+}
+function buildZodSchemaFromDefinition(definition, catalogData) {
+  return buildZodType(definition.spec, catalogData);
+}
+function buildZodType(schemaType, catalogData) {
+  switch (schemaType.kind) {
+    case "string":
+      return external_exports.string();
+    case "number":
+      return external_exports.number();
+    case "boolean":
+      return external_exports.boolean();
+    case "any":
+      return external_exports.any();
+    case "array": {
+      const inner = buildZodType(schemaType.inner, catalogData);
+      return external_exports.array(inner);
+    }
+    case "object": {
+      const shape = schemaType.inner;
+      const zodShape = {};
+      for (const [key, value] of Object.entries(shape)) {
+        let zodType = buildZodType(value, catalogData);
+        if (value.optional) {
+          zodType = zodType.optional();
+        }
+        zodShape[key] = zodType;
+      }
+      return external_exports.object(zodShape);
+    }
+    case "record": {
+      const inner = buildZodType(schemaType.inner, catalogData);
+      return external_exports.record(external_exports.string(), inner);
+    }
+    case "ref": {
+      const path7 = schemaType.inner;
+      const keys = getKeysFromPath(path7, catalogData);
+      if (keys.length === 0) {
+        return external_exports.string();
+      }
+      if (keys.length === 1) {
+        return external_exports.literal(keys[0]);
+      }
+      return external_exports.enum(keys);
+    }
+    case "propsOf": {
+      const path7 = schemaType.inner;
+      const propsSchemas = getPropsFromPath(path7, catalogData);
+      if (propsSchemas.length === 0) {
+        return external_exports.record(external_exports.string(), external_exports.unknown());
+      }
+      if (propsSchemas.length === 1) {
+        return propsSchemas[0];
+      }
+      return external_exports.record(external_exports.string(), external_exports.unknown());
+    }
+    default:
+      return external_exports.unknown();
+  }
+}
+function getKeysFromPath(path7, catalogData) {
+  const parts = path7.split(".");
+  let current = { catalog: catalogData };
+  for (const part of parts) {
+    if (current && typeof current === "object") {
+      current = current[part];
+    } else {
+      return [];
+    }
+  }
+  if (current && typeof current === "object") {
+    return Object.keys(current);
+  }
+  return [];
+}
+function getPropsFromPath(path7, catalogData) {
+  const parts = path7.split(".");
+  let current = { catalog: catalogData };
+  for (const part of parts) {
+    if (current && typeof current === "object") {
+      current = current[part];
+    } else {
+      return [];
+    }
+  }
+  if (current && typeof current === "object") {
+    return Object.values(current).map((entry) => entry.props).filter((props) => props !== void 0);
+  }
+  return [];
+}
+function generatePrompt(catalog, options) {
+  if (catalog.schema.promptTemplate) {
+    const context = {
+      catalog: catalog.data,
+      componentNames: catalog.componentNames,
+      actionNames: catalog.actionNames,
+      options,
+      formatZodType
+    };
+    return catalog.schema.promptTemplate(context);
+  }
+  const {
+    system = "You are a UI generator that outputs JSON.",
+    customRules = [],
+    mode: rawMode = "standalone"
+  } = options;
+  const mode = rawMode === "chat" ? (console.warn(
+    '[json-render] mode "chat" is deprecated, use "inline" instead'
+  ), "inline") : rawMode === "generate" ? (console.warn(
+    '[json-render] mode "generate" is deprecated, use "standalone" instead'
+  ), "standalone") : rawMode;
+  const lines = [];
+  lines.push(system);
+  lines.push("");
+  if (mode === "inline") {
+    lines.push("OUTPUT FORMAT (text + JSONL, RFC 6902 JSON Patch):");
+    lines.push(
+      "You respond conversationally. When generating UI, first write a brief explanation (1-3 sentences), then output JSONL patch lines wrapped in a ```spec code fence."
+    );
+    lines.push(
+      "The JSONL lines use RFC 6902 JSON Patch operations to build a UI tree. Always wrap them in a ```spec fence block:"
+    );
+    lines.push("  ```spec");
+    lines.push('  {"op":"add","path":"/root","value":"main"}');
+    lines.push(
+      '  {"op":"add","path":"/elements/main","value":{"type":"Card","props":{"title":"Hello"},"children":[]}}'
+    );
+    lines.push("  ```");
+    lines.push(
+      "If the user's message does not require a UI (e.g. a greeting or clarifying question), respond with text only \u2014 no JSONL."
+    );
+  } else {
+    lines.push("OUTPUT FORMAT (JSONL, RFC 6902 JSON Patch):");
+    lines.push(
+      "Output JSONL (one JSON object per line) using RFC 6902 JSON Patch operations to build a UI tree."
+    );
+  }
+  lines.push(
+    "Each line is a JSON patch operation (add, remove, replace). Start with /root, then stream /elements and /state patches interleaved so the UI fills in progressively as it streams."
+  );
+  lines.push("");
+  lines.push("Example output (each line is a separate JSON object):");
+  lines.push("");
+  const allComponents = catalog.data.components;
+  const specDefinition = catalog.schema.definition.spec;
+  const specShape = specDefinition.kind === "object" ? specDefinition.inner : void 0;
+  const elementsDefinition = specShape?.elements;
+  const elementDefinition = elementsDefinition?.kind === "record" ? elementsDefinition.inner : void 0;
+  const elementShape = elementDefinition?.kind === "object" ? elementDefinition.inner : void 0;
+  const supportsNamedSlots = elementShape?.slots !== void 0;
+  const cn = catalog.componentNames;
+  const comp1 = cn[0] || "Component";
+  const comp2 = cn.length > 1 ? cn[1] : comp1;
+  const comp1Def = allComponents?.[comp1];
+  const comp2Def = allComponents?.[comp2];
+  const comp1Props = comp1Def ? getExampleProps(comp1Def) : {};
+  const comp2Props = comp2Def ? getExampleProps(comp2Def) : {};
+  const dynamicPropName = comp2Def?.props ? findFirstStringProp(comp2Def.props) : null;
+  const dynamicProps = dynamicPropName ? { ...comp2Props, [dynamicPropName]: { $item: "title" } } : comp2Props;
+  const exampleOutput = [
+    JSON.stringify({ op: "add", path: "/root", value: "main" }),
+    JSON.stringify({
+      op: "add",
+      path: "/elements/main",
+      value: {
+        type: comp1,
+        props: comp1Props,
+        children: ["child-1", "list"]
+      }
+    }),
+    JSON.stringify({
+      op: "add",
+      path: "/elements/child-1",
+      value: { type: comp2, props: comp2Props, children: [] }
+    }),
+    JSON.stringify({
+      op: "add",
+      path: "/elements/list",
+      value: {
+        type: comp1,
+        props: comp1Props,
+        repeat: { statePath: "/items", key: "id" },
+        children: ["item"]
+      }
+    }),
+    JSON.stringify({
+      op: "add",
+      path: "/elements/item",
+      value: { type: comp2, props: dynamicProps, children: [] }
+    }),
+    JSON.stringify({ op: "add", path: "/state/items", value: [] }),
+    JSON.stringify({
+      op: "add",
+      path: "/state/items/0",
+      value: { id: "1", title: "First Item" }
+    }),
+    JSON.stringify({
+      op: "add",
+      path: "/state/items/1",
+      value: { id: "2", title: "Second Item" }
+    })
+  ].join("\n");
+  lines.push(`${exampleOutput}
+
+Note: state patches appear right after the elements that use them, so the UI fills in as it streams. ONLY use component types from the AVAILABLE COMPONENTS list below.`);
+  lines.push("");
+  lines.push("INITIAL STATE:");
+  lines.push(
+    "Specs include a /state field to seed the state model. Components with { $bindState } or { $bindItem } read from and write to this state, and $state expressions read from it."
+  );
+  lines.push(
+    "CRITICAL: You MUST include state patches whenever your UI displays data via $state, $bindState, $bindItem, $item, or $index expressions, or uses repeat to iterate over arrays. Without state, these references resolve to nothing and repeat lists render zero items."
+  );
+  lines.push(
+    "Output state patches right after the elements that reference them, so the UI fills in progressively as it streams."
+  );
+  lines.push(
+    "Stream state progressively - output one patch per array item instead of one giant blob:"
+  );
+  lines.push(
+    '  For arrays: {"op":"add","path":"/state/posts/0","value":{"id":"1","title":"First Post",...}} then /state/posts/1, /state/posts/2, etc.'
+  );
+  lines.push(
+    '  For scalars: {"op":"add","path":"/state/newTodoText","value":""}'
+  );
+  lines.push(
+    '  Initialize the array first if needed: {"op":"add","path":"/state/posts","value":[]}'
+  );
+  lines.push(
+    'When content comes from the state model, use { "$state": "/some/path" } dynamic props to display it instead of hardcoding the same value in both state and props. The state model is the single source of truth.'
+  );
+  lines.push(
+    "Include realistic sample data in state. For blogs: 3-4 posts with titles, excerpts, authors, dates. For product lists: 3-5 items with names, prices, descriptions. Never leave arrays empty."
+  );
+  lines.push("");
+  lines.push("DYNAMIC LISTS (repeat field):");
+  lines.push(
+    'Any element can have a top-level "repeat" field to render its children once per item in a state array: { "repeat": { "statePath": "/arrayPath", "key": "id" } }.'
+  );
+  lines.push(
+    'The element itself renders once (as the container), and its children are expanded once per array item. "statePath" is the state array path. "key" is an optional field name on each item for stable React keys.'
+  );
+  lines.push(
+    'For nested lists, an inner repeat can read an array from the enclosing item with { "statePath": { "$item": "field" } }. This form is valid only inside another repeat. Use an empty field to repeat over the enclosing item itself.'
+  );
+  lines.push(
+    `Example: ${JSON.stringify({ type: comp1, props: comp1Props, repeat: { statePath: "/todos", key: "id" }, children: ["todo-item"] })}`
+  );
+  lines.push(
+    'Inside children of a repeated element, use { "$item": "field" } to read a field from the current item, and { "$index": true } to get the current array index. For two-way binding to an item field use { "$bindItem": "completed" } on the appropriate prop.'
+  );
+  lines.push(
+    "ALWAYS use the repeat field for lists backed by state arrays. NEVER hardcode individual elements for each array item."
+  );
+  lines.push(
+    'IMPORTANT: "repeat" is a top-level field on the element (sibling of type/props/children), NOT inside props.'
+  );
+  lines.push("");
+  lines.push("ARRAY STATE ACTIONS:");
+  lines.push(
+    'Use action "pushState" to append items to arrays. Params: { statePath: "/arrayPath", value: { ...item }, clearStatePath: "/inputPath" }.'
+  );
+  lines.push(
+    'Values inside pushState can contain { "$state": "/statePath" } references to read current state (e.g. the text from an input field).'
+  );
+  lines.push(
+    'Use "$id" inside a pushState value to auto-generate a unique ID.'
+  );
+  lines.push(
+    'Example: on: { "press": { "action": "pushState", "params": { "statePath": "/todos", "value": { "id": "$id", "title": { "$state": "/newTodoText" }, "completed": false }, "clearStatePath": "/newTodoText" } } }'
+  );
+  lines.push(
+    `Use action "removeState" to remove items from arrays by index. Params: { statePath: "/arrayPath", index: N }. Inside a repeated element's children, use { "$index": true } for the current item index. Action params support the same expressions as props: { "$item": "field" } resolves to the absolute state path, { "$index": true } resolves to the index number, and { "$state": "/path" } reads a value from state.`
+  );
+  lines.push(
+    "For lists where users can add/remove items (todos, carts, etc.), use pushState and removeState instead of hardcoding with setState."
+  );
+  lines.push("");
+  lines.push(
+    'IMPORTANT: State paths use RFC 6901 JSON Pointer syntax (e.g. "/todos/0/title"). Do NOT use JavaScript-style dot notation (e.g. "/todos.length" is WRONG). To generate unique IDs for new items, use "$id" instead of trying to read array length.'
+  );
+  lines.push("");
+  const components = allComponents;
+  if (components) {
+    lines.push(`AVAILABLE COMPONENTS (${catalog.componentNames.length}):`);
+    lines.push("");
+    for (const [name, def] of Object.entries(components)) {
+      const propsStr = def.props ? formatZodType(def.props) : "{}";
+      const slotNames = def.slots ?? [];
+      const namedSlotNames = slotNames.filter((slot) => slot !== "default");
+      const acceptsChildren = slotNames.includes("default");
+      const slotsStr = supportsNamedSlots ? [
+        acceptsChildren ? "accepts children" : "",
+        namedSlotNames.length > 0 ? `slots: ${namedSlotNames.join(", ")}` : ""
+      ].filter(Boolean).join("; ") : slotNames.length > 0 ? "accepts children" : "";
+      const slotsSuffix = slotsStr ? ` [${slotsStr}]` : "";
+      const eventsStr = def.events && def.events.length > 0 ? ` [events: ${def.events.join(", ")}]` : "";
+      const descStr = def.description ? ` - ${def.description}` : "";
+      lines.push(`- ${name}: ${propsStr}${descStr}${slotsSuffix}${eventsStr}`);
+    }
+    lines.push("");
+  }
+  const actions = catalog.data.actions;
+  const builtInActions = catalog.schema.builtInActions ?? [];
+  const hasCustomActions = actions && catalog.actionNames.length > 0;
+  const hasBuiltInActions = builtInActions.length > 0;
+  if (hasCustomActions || hasBuiltInActions) {
+    lines.push("AVAILABLE ACTIONS:");
+    lines.push("");
+    for (const action2 of builtInActions) {
+      lines.push(`- ${action2.name}: ${action2.description} [built-in]`);
+    }
+    if (hasCustomActions) {
+      for (const [name, def] of Object.entries(actions)) {
+        lines.push(`- ${name}${def.description ? `: ${def.description}` : ""}`);
+      }
+    }
+    lines.push("");
+  }
+  lines.push("EVENTS (the `on` field):");
+  lines.push(
+    "Elements can have an optional `on` field to bind events to actions. The `on` field is a top-level field on the element (sibling of type/props/children), NOT inside props."
+  );
+  lines.push(
+    'Each key in `on` is an event name (from the component\'s supported events), and the value is an action binding: `{ "action": "<actionName>", "params": { ... } }`.'
+  );
+  lines.push("");
+  lines.push("Example:");
+  lines.push(
+    `  ${JSON.stringify({ type: comp1, props: comp1Props, on: { press: { action: "setState", params: { statePath: "/saved", value: true } } }, children: [] })}`
+  );
+  lines.push("");
+  lines.push(
+    'Action params can use dynamic references to read from state: { "$state": "/statePath" }.'
+  );
+  lines.push(
+    "IMPORTANT: Do NOT put action/actionParams inside props. Always use the `on` field for event bindings."
+  );
+  lines.push("");
+  lines.push("VISIBILITY CONDITIONS:");
+  lines.push(
+    "Elements can have an optional `visible` field to conditionally show/hide based on state. IMPORTANT: `visible` is a top-level field on the element object (sibling of type/props/children), NOT inside props."
+  );
+  lines.push(
+    `Correct: ${JSON.stringify({ type: comp1, props: comp1Props, visible: { $state: "/activeTab", eq: "home" }, children: ["..."] })}`
+  );
+  lines.push(
+    '- `{ "$state": "/path" }` - visible when state at path is truthy'
+  );
+  lines.push(
+    '- `{ "$state": "/path", "not": true }` - visible when state at path is falsy'
+  );
+  lines.push(
+    '- `{ "$state": "/path", "eq": "value" }` - visible when state equals value'
+  );
+  lines.push(
+    '- `{ "$state": "/path", "neq": "value" }` - visible when state does not equal value'
+  );
+  lines.push(
+    '- `{ "$state": "/path", "gt": N }` / `gte` / `lt` / `lte` - numeric comparisons'
+  );
+  lines.push(
+    "- Use ONE operator per condition (eq, neq, gt, gte, lt, lte). Do not combine multiple operators."
+  );
+  lines.push('- Any condition can add `"not": true` to invert its result');
+  lines.push(
+    "- `[condition, condition]` - all conditions must be true (implicit AND)"
+  );
+  lines.push(
+    '- `{ "$and": [condition, condition] }` - explicit AND (use when nesting inside $or)'
+  );
+  lines.push(
+    '- `{ "$or": [condition, condition] }` - at least one must be true (OR)'
+  );
+  lines.push("- `true` / `false` - always visible/hidden");
+  lines.push("");
+  lines.push(
+    "Use a component with on.press bound to setState to update state and drive visibility."
+  );
+  lines.push(
+    `Example: A ${comp1} with on: { "press": { "action": "setState", "params": { "statePath": "/activeTab", "value": "home" } } } sets state, then a container with visible: { "$state": "/activeTab", "eq": "home" } shows only when that tab is active.`
+  );
+  lines.push("");
+  lines.push(
+    'For tab patterns where the first/default tab should be visible when no tab is selected yet, use $or to handle both cases: visible: { "$or": [{ "$state": "/activeTab", "eq": "home" }, { "$state": "/activeTab", "not": true }] }. This ensures the first tab is visible both when explicitly selected AND when /activeTab is not yet set.'
+  );
+  lines.push("");
+  lines.push("DYNAMIC PROPS:");
+  lines.push(
+    "Any prop value can be a dynamic expression that resolves based on state. Three forms are supported:"
+  );
+  lines.push("");
+  lines.push(
+    '1. Read-only state: `{ "$state": "/statePath" }` - resolves to the value at that state path (one-way read).'
+  );
+  lines.push(
+    '   Example: `"color": { "$state": "/theme/primary" }` reads the color from state.'
+  );
+  lines.push("");
+  lines.push(
+    '2. Two-way binding: `{ "$bindState": "/statePath" }` - resolves to the value at the state path AND enables write-back. Use on form input props (value, checked, pressed, etc.).'
+  );
+  lines.push(
+    '   Example: `"value": { "$bindState": "/form/email" }` binds the input value to /form/email.'
+  );
+  lines.push(
+    '   Inside repeat scopes: `"checked": { "$bindItem": "completed" }` binds to the current item\'s completed field.'
+  );
+  lines.push("");
+  lines.push(
+    '3. Conditional: `{ "$cond": <condition>, "$then": <value>, "$else": <value> }` - evaluates the condition (same syntax as visibility conditions) and picks the matching value.'
+  );
+  lines.push(
+    '   Example: `"color": { "$cond": { "$state": "/activeTab", "eq": "home" }, "$then": "#007AFF", "$else": "#8E8E93" }`'
+  );
+  lines.push("");
+  lines.push(
+    "Use $bindState for form inputs (text fields, checkboxes, selects, sliders, etc.) and $state for read-only data display. Inside repeat scopes, use $bindItem for form inputs bound to the current item. Use dynamic props instead of duplicating elements with opposing visible conditions when only prop values differ."
+  );
+  lines.push("");
+  lines.push(
+    '4. Template: `{ "$template": "Hello, ${/name}!" }` - interpolates references in the string. Absolute paths like `${/path}` resolve against the state model. Bare names like `${field}` resolve against the current repeat item first, then fall back to the state model at `/<field>`.'
+  );
+  lines.push(
+    '   Example: `"label": { "$template": "Items: ${/cart/count} | Total: ${/cart/total}" }` renders "Items: 3 | Total: 42.00" when /cart/count is 3 and /cart/total is 42.00. Inside a repeat, `{ "$template": "${name} - ${email}" }` reads name and email from each item.'
+  );
+  lines.push("");
+  const catalogFunctions = catalog.data.functions;
+  if (catalogFunctions && Object.keys(catalogFunctions).length > 0) {
+    lines.push(
+      '5. Computed: `{ "$computed": "<functionName>", "args": { "key": <expression> } }` - calls a registered function with resolved args and returns the result.'
+    );
+    lines.push(
+      '   Example: `"value": { "$computed": "fullName", "args": { "first": { "$state": "/form/firstName" }, "last": { "$state": "/form/lastName" } } }`'
+    );
+    lines.push("   Available functions:");
+    for (const name of Object.keys(
+      catalogFunctions
+    )) {
+      lines.push(`   - ${name}`);
+    }
+    lines.push("");
+  }
+  const directives = options.directives;
+  if (directives && directives.length > 0) {
+    lines.push("CUSTOM DYNAMIC VALUES:");
+    lines.push("");
+    for (const d of directives) {
+      const desc = d.description ? ` (${d.description})` : "";
+      lines.push(`- ${d.name}${desc}: ${formatZodType(d.schema)}`);
+    }
+    lines.push("");
+    lines.push(
+      "Directives compose: any value field can contain another directive or a $state expression, resolved inside-out."
+    );
+    lines.push("");
+  }
+  const hasChecksComponents = allComponents ? Object.entries(allComponents).some(([, def]) => {
+    if (!def.props) return false;
+    const formatted = formatZodType(def.props);
+    return formatted.includes("checks");
+  }) : false;
+  if (hasChecksComponents) {
+    lines.push("VALIDATION:");
+    lines.push(
+      "Form components that accept a `checks` prop support client-side validation."
+    );
+    lines.push(
+      'Each check is an object: { "type": "<name>", "message": "...", "args": { ... } }'
+    );
+    lines.push("");
+    lines.push("Built-in validation types:");
+    lines.push("  - required \u2014 value must be non-empty");
+    lines.push("  - email \u2014 valid email format");
+    lines.push('  - minLength \u2014 minimum string length (args: { "min": N })');
+    lines.push('  - maxLength \u2014 maximum string length (args: { "max": N })');
+    lines.push('  - pattern \u2014 match a regex (args: { "pattern": "regex" })');
+    lines.push('  - min \u2014 minimum numeric value (args: { "min": N })');
+    lines.push('  - max \u2014 maximum numeric value (args: { "max": N })');
+    lines.push("  - numeric \u2014 value must be a number");
+    lines.push("  - url \u2014 valid URL format");
+    lines.push(
+      '  - matches \u2014 must equal another field (args: { "other": { "$state": "/path" } })'
+    );
+    lines.push(
+      '  - equalTo \u2014 alias for matches (args: { "other": { "$state": "/path" } })'
+    );
+    lines.push(
+      '  - lessThan \u2014 value must be less than another field (args: { "other": { "$state": "/path" } })'
+    );
+    lines.push(
+      '  - greaterThan \u2014 value must be greater than another field (args: { "other": { "$state": "/path" } })'
+    );
+    lines.push(
+      '  - requiredIf \u2014 required only when another field is truthy (args: { "field": { "$state": "/path" } })'
+    );
+    lines.push("");
+    lines.push("Example:");
+    lines.push(
+      '  "checks": [{ "type": "required", "message": "Email is required" }, { "type": "email", "message": "Invalid email" }]'
+    );
+    lines.push("");
+    lines.push(
+      "IMPORTANT: When using checks, the component must also have a { $bindState } or { $bindItem } on its value/checked prop for two-way binding."
+    );
+    lines.push(
+      "Always include validation checks on form inputs for a good user experience (e.g. required, email, minLength)."
+    );
+    lines.push("");
+  }
+  if (hasCustomActions || hasBuiltInActions) {
+    lines.push("STATE WATCHERS:");
+    lines.push(
+      "Elements can have an optional `watch` field to react to state changes and trigger actions. The `watch` field is a top-level field on the element (sibling of type/props/children), NOT inside props."
+    );
+    lines.push(
+      "Maps state paths (JSON Pointers) to action bindings. When the value at a watched path changes, the bound actions fire automatically."
+    );
+    lines.push("");
+    lines.push(
+      "Example (cascading select \u2014 country changes trigger city loading):"
+    );
+    lines.push(
+      `  ${JSON.stringify({ type: "Select", props: { value: { $bindState: "/form/country" }, options: ["US", "Canada", "UK"] }, watch: { "/form/country": { action: "loadCities", params: { country: { $state: "/form/country" } } } }, children: [] })}`
+    );
+    lines.push("");
+    lines.push(
+      "Use `watch` for cascading dependencies where changing one field should trigger side effects (loading data, resetting dependent fields, computing derived values)."
+    );
+    lines.push(
+      "IMPORTANT: `watch` is a top-level field on the element (sibling of type/props/children), NOT inside props. Watchers only fire when the value changes, not on initial render."
+    );
+    lines.push("");
+  }
+  const editModes = options.editModes;
+  if (editModes && editModes.length > 0) {
+    lines.push(buildEditInstructions({ modes: editModes }, "json"));
+  }
+  lines.push("RULES:");
+  const baseRules = mode === "inline" ? [
+    "When generating UI, wrap all JSONL patches in a ```spec code fence - one JSON object per line inside the fence",
+    "Write a brief conversational response before any JSONL output",
+    'First set root: {"op":"add","path":"/root","value":"<root-key>"}',
+    'Then add each element: {"op":"add","path":"/elements/<key>","value":{...}}',
+    "Output /state patches right after the elements that use them, one per array item for progressive loading. REQUIRED whenever using $state, $bindState, $bindItem, $item, $index, or repeat.",
+    "ONLY use components listed above",
+    "Each element value needs: type, props, children (array of child keys)",
+    "Use unique keys for the element map entries (e.g., 'header', 'metric-1', 'chart-revenue')"
+  ] : [
+    "Output ONLY JSONL patches - one JSON object per line, no markdown, no code fences",
+    'First set root: {"op":"add","path":"/root","value":"<root-key>"}',
+    'Then add each element: {"op":"add","path":"/elements/<key>","value":{...}}',
+    "Output /state patches right after the elements that use them, one per array item for progressive loading. REQUIRED whenever using $state, $bindState, $bindItem, $item, $index, or repeat.",
+    "ONLY use components listed above",
+    "Each element value needs: type, props, children (array of child keys)",
+    "Use unique keys for the element map entries (e.g., 'header', 'metric-1', 'chart-revenue')"
+  ];
+  const schemaRules = catalog.schema.defaultRules ?? [];
+  const allRules = [...baseRules, ...schemaRules, ...customRules];
+  allRules.forEach((rule, i) => {
+    lines.push(`${i + 1}. ${rule}`);
+  });
+  return lines.join("\n");
+}
+function getExampleProps(def) {
+  if (def.example && Object.keys(def.example).length > 0) {
+    return def.example;
+  }
+  if (def.props) {
+    return generateExamplePropsFromZod(def.props);
+  }
+  return {};
+}
+function generateExamplePropsFromZod(schema) {
+  if (!schema || !schema._def) return {};
+  const def = schema._def;
+  const typeName = getZodTypeName(schema);
+  if (typeName !== "ZodObject" && typeName !== "object") return {};
+  const shape = typeof def.shape === "function" ? def.shape() : def.shape;
+  if (!shape) return {};
+  const result = {};
+  for (const [key, value] of Object.entries(shape)) {
+    const innerTypeName = getZodTypeName(value);
+    if (innerTypeName === "ZodOptional" || innerTypeName === "optional" || innerTypeName === "ZodNullable" || innerTypeName === "nullable") {
+      continue;
+    }
+    result[key] = generateExampleValue(value);
+  }
+  return result;
+}
+function generateExampleValue(schema) {
+  if (!schema || !schema._def) return "...";
+  const def = schema._def;
+  const typeName = getZodTypeName(schema);
+  switch (typeName) {
+    case "ZodString":
+    case "string":
+      return "example";
+    case "ZodNumber":
+    case "number":
+      return 0;
+    case "ZodBoolean":
+    case "boolean":
+      return true;
+    case "ZodLiteral":
+    case "literal":
+      return def.value;
+    case "ZodEnum":
+    case "enum": {
+      if (Array.isArray(def.values) && def.values.length > 0)
+        return def.values[0];
+      if (def.entries && typeof def.entries === "object") {
+        const values = Object.values(def.entries);
+        return values.length > 0 ? values[0] : "example";
+      }
+      return "example";
+    }
+    case "ZodOptional":
+    case "optional":
+    case "ZodNullable":
+    case "nullable":
+    case "ZodDefault":
+    case "default": {
+      const inner = def.innerType ?? def.wrapped;
+      return inner ? generateExampleValue(inner) : null;
+    }
+    case "ZodArray":
+    case "array":
+      return [];
+    case "ZodObject":
+    case "object":
+      return generateExamplePropsFromZod(schema);
+    case "ZodUnion":
+    case "union": {
+      const options = def.options;
+      return options && options.length > 0 ? generateExampleValue(options[0]) : "...";
+    }
+    default:
+      return "...";
+  }
+}
+function findFirstStringProp(schema) {
+  if (!schema || !schema._def) return null;
+  const def = schema._def;
+  const typeName = getZodTypeName(schema);
+  if (typeName !== "ZodObject" && typeName !== "object") return null;
+  const shape = typeof def.shape === "function" ? def.shape() : def.shape;
+  if (!shape) return null;
+  for (const [key, value] of Object.entries(shape)) {
+    const innerTypeName = getZodTypeName(value);
+    if (innerTypeName === "ZodOptional" || innerTypeName === "optional" || innerTypeName === "ZodNullable" || innerTypeName === "nullable") {
+      continue;
+    }
+    if (innerTypeName === "ZodString" || innerTypeName === "string") {
+      return key;
+    }
+  }
+  return null;
+}
+function getZodTypeName(schema) {
+  if (!schema || !schema._def) return "";
+  const def = schema._def;
+  return def.typeName ?? def.type ?? "";
+}
+function formatZodType(schema) {
+  if (!schema || !schema._def) return "unknown";
+  const def = schema._def;
+  const typeName = getZodTypeName(schema);
+  switch (typeName) {
+    case "ZodString":
+    case "string":
+      return "string";
+    case "ZodNumber":
+    case "number":
+      return "number";
+    case "ZodBoolean":
+    case "boolean":
+      return "boolean";
+    case "ZodLiteral":
+    case "literal": {
+      const litValues = def.values;
+      const litValue = litValues?.[0] ?? def.value;
+      return JSON.stringify(litValue);
+    }
+    case "ZodEnum":
+    case "enum": {
+      let values;
+      if (Array.isArray(def.values)) {
+        values = def.values;
+      } else if (def.entries && typeof def.entries === "object") {
+        values = Object.values(def.entries);
+      } else {
+        return "enum";
+      }
+      return values.map((v) => `"${v}"`).join(" | ");
+    }
+    case "ZodArray":
+    case "array": {
+      const inner = typeof def.element === "object" ? def.element : typeof def.type === "object" ? def.type : void 0;
+      return inner ? `Array<${formatZodType(inner)}>` : "Array<unknown>";
+    }
+    case "ZodObject":
+    case "object": {
+      const shape = typeof def.shape === "function" ? def.shape() : def.shape;
+      if (!shape) return "object";
+      const props = Object.entries(shape).map(([key, value]) => {
+        const innerTypeName = getZodTypeName(value);
+        const isOptional = innerTypeName === "ZodOptional" || innerTypeName === "ZodNullable" || innerTypeName === "optional" || innerTypeName === "nullable";
+        return `${key}${isOptional ? "?" : ""}: ${formatZodType(value)}`;
+      }).join(", ");
+      return `{ ${props} }`;
+    }
+    case "ZodOptional":
+    case "optional":
+    case "ZodNullable":
+    case "nullable": {
+      const inner = def.innerType ?? def.wrapped;
+      return inner ? formatZodType(inner) : "unknown";
+    }
+    case "ZodUnion":
+    case "union": {
+      const options = def.options;
+      return options ? options.map((opt) => formatZodType(opt)).join(" | ") : "unknown";
+    }
+    case "ZodRecord":
+    case "record": {
+      const keyType = def.keyType ?? void 0;
+      const valueType = def.valueType ?? def.element ?? void 0;
+      const keyStr = keyType ? formatZodType(keyType) : "string";
+      const valueStr = valueType ? formatZodType(valueType) : "unknown";
+      return `Record<${keyStr}, ${valueStr}>`;
+    }
+    case "ZodDefault":
+    case "default": {
+      const inner = def.innerType ?? def.wrapped;
+      return inner ? formatZodType(inner) : "unknown";
+    }
+    default:
+      return "unknown";
+  }
+}
+function zodTypeName(def) {
+  if (typeof def.type === "string") return def.type;
+  if (typeof def.typeName === "string") return def.typeName;
+  return "";
+}
+function normalizeTypeName(raw) {
+  if (raw.startsWith("Zod")) {
+    return raw.slice(3).toLowerCase();
+  }
+  return raw.toLowerCase();
+}
+function zodToJsonSchema2(schema, strict = false) {
+  const def = schema._def;
+  const kind = normalizeTypeName(zodTypeName(def));
+  switch (kind) {
+    case "string":
+      return { type: "string" };
+    case "number":
+      return { type: "number" };
+    case "boolean":
+      return { type: "boolean" };
+    case "literal": {
+      const values = def.values;
+      const value = values ? values[0] : def.value;
+      return { const: value };
+    }
+    case "enum": {
+      const entries = def.entries;
+      const values = entries ? Object.values(entries) : def.values;
+      return { enum: values ?? [] };
+    }
+    case "array": {
+      const inner = def.element ?? def.type;
+      return {
+        type: "array",
+        items: inner ? zodToJsonSchema2(inner, strict) : {}
+      };
+    }
+    case "object": {
+      const rawShape2 = def.shape;
+      const shape = typeof rawShape2 === "function" ? rawShape2() : rawShape2;
+      if (!shape) {
+        if (strict) {
+          return {
+            type: "object",
+            properties: {},
+            required: [],
+            additionalProperties: false
+          };
+        }
+        return { type: "object" };
+      }
+      const properties = {};
+      const required2 = [];
+      for (const [key, value] of Object.entries(shape)) {
+        const innerDef = value._def;
+        const innerKind = normalizeTypeName(zodTypeName(innerDef));
+        const isOptional = innerKind === "optional" || innerKind === "nullable";
+        if (strict) {
+          required2.push(key);
+          if (isOptional) {
+            const unwrapped = zodToJsonSchema2(value, strict);
+            properties[key] = { anyOf: [unwrapped, { type: "null" }] };
+          } else {
+            properties[key] = zodToJsonSchema2(value, strict);
+          }
+        } else {
+          properties[key] = zodToJsonSchema2(value);
+          if (!isOptional) {
+            required2.push(key);
+          }
+        }
+      }
+      return {
+        type: "object",
+        properties,
+        required: required2.length > 0 ? required2 : void 0,
+        additionalProperties: false
+      };
+    }
+    case "record": {
+      const valueType = def.valueType;
+      if (strict) {
+        return {
+          type: "object",
+          properties: {},
+          required: [],
+          additionalProperties: false
+        };
+      }
+      return {
+        type: "object",
+        additionalProperties: valueType ? zodToJsonSchema2(valueType) : true
+      };
+    }
+    case "optional":
+    case "nullable": {
+      const inner = def.innerType;
+      return inner ? zodToJsonSchema2(inner, strict) : {};
+    }
+    case "union": {
+      const options = def.options;
+      return options ? { anyOf: options.map((o) => zodToJsonSchema2(o, strict)) } : {};
+    }
+    case "any":
+    case "unknown":
+      if (strict) {
+        return {
+          type: "object",
+          properties: {},
+          required: [],
+          additionalProperties: false
+        };
+      }
+      return {};
+    default:
+      return {};
+  }
+}
+function defineCatalog(schema, catalog) {
+  return schema.createCatalog(catalog);
+}
+
+// ../shared/src/views/catalog.ts
+var VIEW_SPEC_MAX_LENGTH = 1e6;
+var ViewValueSchema = external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()]);
+var ViewTableSchema = external_exports.object({
+  columns: external_exports.array(external_exports.string().min(1).max(200)).min(1).max(12).describe('Column headers, e.g. ["StageName","count","sum:Amount"].'),
+  rows: external_exports.array(external_exports.array(ViewValueSchema)).max(2e3).describe("One array per row, values in column order. Copy the aggregate result as is.")
+}).describe("A data table: the JSON block aggregate_records returns, or rows from export_records.");
+var column = (what) => external_exports.string().min(1).describe(`Header in data.columns of ${what}.`);
+var optionalColumn = (what) => external_exports.string().nullable().describe(`Header in data.columns of ${what}, or null.`);
+var title = external_exports.string().nullable().describe("Short title above the chart, or null.");
+var unit = external_exports.string().nullable().describe('Unit written after values, such as "USD", "opportunities" or "%", or null when the source states none. Never invent a currency.');
+var sampleTable = { columns: ["StageName", "count", "sum:Amount"], rows: [["Closed Won", 90, 11783485], ["Closed Lost", 217, 33440754], ["Prospecting", 41, 4430914]] };
+var VIEW_COMPONENTS = {
+  Page: {
+    props: external_exports.object({ title: external_exports.string().min(1).max(120).describe("The question answered, in words."), subtitle: external_exports.string().nullable().describe("One line under the title, or null.") }),
+    slots: ["default"],
+    description: "The root of every view: a heading, then its children stacked top to bottom. Use exactly one, as the root.",
+    example: { title: "How closed-won revenue builds up by industry", subtitle: null }
+  },
+  Caption: {
+    props: external_exports.object({ text: external_exports.string().min(1).max(2e3) }),
+    slots: [],
+    description: "Provenance under the heading: type and record count, the where clause in words, the definition applied, snapshot date, coverage, and whether counts are exact. Every view has one.",
+    example: { text: 'Opportunity records where StageName = "Closed Won" (90 of 520). Snapshot of 2026-09-15, coverage complete, counts exact.' }
+  },
+  Note: {
+    props: external_exports.object({ text: external_exports.string().min(1).max(2e3), tone: external_exports.enum(["muted", "warning"]).nullable().describe("warning for assumptions or inexact counts, else null.") }),
+    slots: [],
+    description: "A short paragraph: an assumption that was made, a caveat, or how to read the chart.",
+    example: { text: "Opportunities whose account has no industry are shown on their own row.", tone: null }
+  },
+  Row: {
+    props: external_exports.object({}),
+    slots: ["default"],
+    description: "Lays its children side by side, wrapping on narrow screens. Use for a row of Kpi tiles or two small charts.",
+    example: {}
+  },
+  Kpi: {
+    props: external_exports.object({ label: external_exports.string().min(1).max(80), value: external_exports.union([external_exports.string(), external_exports.number()]), unit, note: external_exports.string().nullable().describe('What is behind the number, e.g. "90 opportunities", or null.') }),
+    slots: [],
+    description: "One headline number with its label. Put several in a Row for a KPI strip. Not a chart with one bar.",
+    example: { label: "Closed-won amount", value: 11783485, unit: null, note: "90 opportunities" }
+  },
+  BarChart: {
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      category: column("the category on the axis"),
+      value: column("the numeric value drawn as bar length"),
+      series: optionalColumn("a second category that splits each bar into stacked segments"),
+      sort: external_exports.enum(["value", "category", "none"]).nullable().describe("Order of the bars: by value (largest first), by category, or as the rows come. Null means value."),
+      unit
+    }),
+    slots: [],
+    description: 'Horizontal bars, sorted, direct-labelled: compare categories, or share of a whole when series stacks them. More than about 8 bars: fold the tail into "Other" first.',
+    example: { title: "Opportunities by stage", data: sampleTable, category: "StageName", value: "count", series: null, sort: "value", unit: "opportunities" }
+  },
+  LineChart: {
+    props: external_exports.object({ title, data: ViewTableSchema, x: column("the ordered x axis, usually a date bucket such as CloseDate:month"), y: column("the numeric value"), series: optionalColumn("a category that gives one line per value (at most four)"), unit }),
+    slots: [],
+    description: "A trend over an ordered axis; one line per series with a legend. Never two y axes: use two charts.",
+    example: { title: "Bookings per quarter", data: { columns: ["CloseDate:quarter", "sum:Amount"], rows: [["2026-01-01", 1390239], ["2026-04-01", 4608898], ["2026-07-01", 12955576]] }, x: "CloseDate:quarter", y: "sum:Amount", series: null, unit: null }
+  },
+  Waterfall: {
+    props: external_exports.object({ title, data: ViewTableSchema, category: column("each contributor"), value: column("its signed contribution"), totalLabel: external_exports.string().nullable().describe('Label of the closing total bar, or null for "Total".'), unit }),
+    slots: [],
+    description: "How a total is built up or bridged: one floating bar per contributor from the running total before it to the running total after it, then a total bar. Attribution, revenue bridges, what added and what took away.",
+    example: { title: "Closed-won amount by industry", data: { columns: ["AccountId.Industry", "sum:Amount"], rows: [["Finance", 2312731], ["Banking", 1911207], ["Technology", 1758867]] }, category: "AccountId.Industry", value: "sum:Amount", totalLabel: "Total closed-won", unit: null }
+  },
+  Funnel: {
+    props: external_exports.object({ title, data: ViewTableSchema, stage: column("the stage"), value: column("the count or amount at that stage"), order: external_exports.array(external_exports.string()).nullable().describe("Stage names in process order (from the picklist), or null to keep the row order."), unit }),
+    slots: [],
+    description: "Progression through ordered stages with the conversion between steps written on them. Order by the process, never by size.",
+    example: { title: "Pipeline by stage", data: sampleTable, stage: "StageName", value: "count", order: ["Prospecting", "Closed Won", "Closed Lost"], unit: "opportunities" }
+  },
+  Heatmap: {
+    props: external_exports.object({ title, data: ViewTableSchema, row: column("the row dimension"), col: column("the column dimension"), value: column("the numeric cell value"), unit }),
+    slots: [],
+    description: "A grid of two dimensions, one hue light to dark by value: for example month by stage from a two-way grouping.",
+    example: { title: "Closed deals by quarter and stage", data: { columns: ["CloseDate:quarter", "StageName", "count"], rows: [["2026-01-01", "Closed Won", 8], ["2026-01-01", "Closed Lost", 12]] }, row: "StageName", col: "CloseDate:quarter", value: "count", unit: null }
+  },
+  Scatter: {
+    props: external_exports.object({ title, data: ViewTableSchema, x: column("the numeric x value"), y: column("the numeric y value"), label: optionalColumn("the point label shown on hover"), series: optionalColumn("a category colouring the points (at most three values)"), xUnit: unit, yUnit: unit }),
+    slots: [],
+    description: "Relates two measures per record, from exported rows. Fewer than about 2,000 points.",
+    example: { title: "Amount against days open", data: { columns: ["label", "Amount", "daysOpen"], rows: [["Acme renewal", 12e4, 45]] }, x: "daysOpen", y: "Amount", label: "label", series: null, xUnit: "days", yUnit: null }
+  },
+  Histogram: {
+    props: external_exports.object({ title, data: ViewTableSchema, value: column("the numeric value to bin"), bins: external_exports.number().int().min(2).max(60).nullable().describe("Number of equal-width bins, or null for about 12."), unit }),
+    slots: [],
+    description: "The distribution of one numeric column from exported rows, binned in the app.",
+    example: { title: "Deal sizes", data: { columns: ["Amount"], rows: [[12e4], [15e3], [43e3]] }, value: "Amount", bins: null, unit: null }
+  },
+  Flow: {
+    props: external_exports.object({ title, data: ViewTableSchema, source: column("the left-hand category"), target: column("the right-hand category"), value: column("the numeric weight of the link"), unit }),
+    slots: [],
+    description: "A flow between two dimensions (sankey): each row is a link from a source category to a target category with a weight, from a two-way grouping.",
+    example: { title: "Lead source to stage", data: { columns: ["LeadSource", "StageName", "count"], rows: [["Web", "Closed Won", 12], ["Web", "Closed Lost", 30]] }, source: "LeadSource", target: "StageName", value: "count", unit: "opportunities" }
+  },
+  DataTable: {
+    props: external_exports.object({ title, data: ViewTableSchema, totals: external_exports.array(ViewValueSchema).nullable().describe("A totals row aligned with the columns (null for grouping columns), or null."), unit }),
+    slots: [],
+    description: "The numbers themselves, sortable by any column, with an optional totals row. Put one under every chart so every value can be read.",
+    example: { title: null, data: sampleTable, totals: [null, 348, 49655153], unit: null }
+  }
+};
+var viewSchema = defineSchema((s) => ({
+  spec: s.object({
+    root: s.string(),
+    elements: s.record(s.object({
+      type: s.ref("catalog.components"),
+      props: s.propsOf("catalog.components"),
+      children: s.array(s.string()),
+      slots: { ...s.record(s.array(s.string())), ...s.optional() },
+      visible: { ...s.any(), ...s.optional() },
+      repeat: { ...s.any(), ...s.optional() }
+    }))
+  }),
+  catalog: s.object({
+    components: s.map({ props: s.zod(), slots: s.array(s.string()), description: s.string(), example: s.any() }),
+    actions: s.map({ params: s.zod(), description: s.string() })
+  })
+}));
+var viewCatalog = defineCatalog(viewSchema, { components: VIEW_COMPONENTS, actions: {} });
+var VIEW_COMPONENT_NAMES = Object.keys(VIEW_COMPONENTS);
+var COLUMN_PROPS = ["category", "value", "series", "x", "y", "stage", "row", "col", "label", "source", "target"];
+function validateViewSpec(input2) {
+  const text3 = JSON.stringify(input2);
+  if (typeof text3 !== "string" || text3.length > VIEW_SPEC_MAX_LENGTH) return { ok: false, issues: [`The spec must be JSON of at most ${VIEW_SPEC_MAX_LENGTH} characters.`] };
+  const parsed = viewCatalog.validate(input2);
+  const issues = [];
+  const shape = input2;
+  const usable = typeof shape === "object" && shape !== null && typeof shape.root === "string" && typeof shape.elements === "object" && shape.elements !== null && !Array.isArray(shape.elements);
+  if (!parsed.success || !parsed.data) {
+    for (const issue2 of parsed.error?.issues ?? []) {
+      const path7 = issue2.path.map(String);
+      if (usable && path7[0] === "elements" && (path7[2] === "props" || path7[2] === "type")) continue;
+      issues.push(`${path7.join(".") || "spec"}: ${issue2.message}`);
+    }
+    if (!usable) return { ok: false, issues: issues.slice(0, 20) };
+  }
+  const spec = parsed.data ?? input2;
+  if (!issues.length) {
+    const structural = validateSpec(spec);
+    for (const issue2 of structural.issues) if (issue2.severity === "error") issues.push(`${issue2.elementKey ? `${issue2.elementKey}: ` : ""}${issue2.message}`);
+  }
+  const elements = spec.elements;
+  const root = elements[spec.root];
+  if (!root) issues.push(`root "${spec.root}" is not an element key`);
+  else if (root.type !== "Page") issues.push(`The root element must be a Page, not ${root.type}`);
+  const referenced = /* @__PURE__ */ new Set([spec.root]);
+  for (const [key, element] of Object.entries(elements)) {
+    if (typeof element !== "object" || element === null) {
+      issues.push(`${key}: must be an element object`);
+      continue;
+    }
+    const slotChildren = element.slots && typeof element.slots === "object" ? Object.values(element.slots).filter(Array.isArray).flat() : [];
+    const children = [...Array.isArray(element.children) ? element.children : [], ...slotChildren].filter((child) => typeof child === "string");
+    for (const child of children) {
+      if (!elements[child]) issues.push(`${key}: child "${child}" is not an element key`);
+      else if (referenced.has(child)) issues.push(`${key}: child "${child}" is used more than once`);
+      referenced.add(child);
+    }
+    const definition = Object.hasOwn(VIEW_COMPONENTS, element.type) ? VIEW_COMPONENTS[element.type] : void 0;
+    if (!definition) {
+      issues.push(`${key}: unknown component ${String(element.type)}; use one of ${VIEW_COMPONENT_NAMES.join(", ")}`);
+      continue;
+    }
+    if (definition.slots.length === 0 && children.length) issues.push(`${key}: ${element.type} takes no children`);
+    if (key !== spec.root && element.type === "Page") issues.push(`${key}: only the root may be a Page`);
+    const props = definition.props.safeParse(element.props);
+    if (!props.success) {
+      for (const issue2 of props.error.issues.slice(0, 5)) issues.push(`${key}: ${element.type}.${issue2.path.join(".") || "props"}: ${issue2.message}`);
+      continue;
+    }
+    const data = element.props.data;
+    if (data) {
+      for (const prop of COLUMN_PROPS) {
+        const name = element.props[prop];
+        if (typeof name === "string" && !data.columns.includes(name)) issues.push(`${key}: ${prop} names column "${name}", which is not in data.columns (${data.columns.join(", ")})`);
+      }
+      for (const [index, row] of data.rows.entries()) if (row.length !== data.columns.length) {
+        issues.push(`${key}: data.rows[${index}] has ${row.length} values for ${data.columns.length} columns`);
+        break;
+      }
+    }
+  }
+  for (const key of Object.keys(elements)) if (!referenced.has(key)) issues.push(`${key} is not reachable from the root`);
+  return issues.length ? { ok: false, issues: issues.slice(0, 20) } : { ok: true, spec };
+}
+function viewCatalogPrompt() {
+  return viewCatalog.prompt({
+    system: "You compose views of business data for the Context graph app. A view is a flat tree of catalog components whose root is a Page.",
+    customRules: [
+      "Every view: one Page as root, a Caption right after the heading naming the type, record count, where clause, definition applied, snapshot date, coverage and exactness, then the chart(s), then a DataTable of the same numbers.",
+      'Charts take `data` as { columns, rows }: paste the JSON block aggregate_records returned; name columns by their headers (e.g. "sum:Amount").',
+      "Pick the form by the reader's job: Kpi for one number, BarChart to compare or (with series) share of a whole, Waterfall for how a total builds up or is attributed, Funnel for ordered stages with drop-off, LineChart for a trend, Heatmap for a two-way grid, Flow for a flow between two dimensions, Scatter and Histogram over exported rows, DataTable to look values up.",
+      'Never a pie, never two y axes, never more than about 8 categories without folding the tail into "Other" using the totals.',
+      "Use the unit the source states; otherwise leave unit null. Never invent a currency.",
+      'Element keys are short slugs such as "page", "caption", "chart", "table".'
+    ]
+  });
+}
+
 // ../shared/src/plugin.ts
 var PLUGIN_HOSTS = ["claude"];
 var PluginHostSchema = external_exports.enum(PLUGIN_HOSTS);
@@ -37315,16 +39066,20 @@ function createApiClient(platform2, pluginVersion, options = {}) {
   const config2 = options.config ?? getConfig();
   const fetcher = options.fetcher ?? fetch;
   const root = `${config2.serviceUrl}/api/v1`;
-  async function request(method, path6, input2) {
+  async function request(method, path7, input2) {
     if (input2.auth && !config2.token) throw new ApiError("UNAUTHENTICATED", `Not signed in. Run ${platform2.loginHint} first.`, 401);
     const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(input2.query ?? {})) if (value !== void 0) params.set(key, String(value));
+    for (const [key, value] of Object.entries(input2.query ?? {})) {
+      if (value === void 0) continue;
+      if (Array.isArray(value)) for (const item of value) params.append(key, item);
+      else params.set(key, String(value));
+    }
     const headers = { Accept: "application/json", ...clientHeaders(pluginVersion, platform2) };
     if (input2.auth && config2.token) headers.Authorization = `Bearer ${config2.token}`;
     if (input2.body !== void 0) headers["Content-Type"] = "application/json";
     let response;
     try {
-      response = await fetcher(`${root}${path6}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(options.timeoutMs ?? 6e4) });
+      response = await fetcher(`${root}${path7}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(options.timeoutMs ?? 6e4) });
     } catch (error62) {
       throw new ApiError("UNAVAILABLE", `Could not reach ${config2.serviceUrl}: ${error62 instanceof Error ? error62.message : "network error"}`, 0);
     }
@@ -37345,10 +39100,10 @@ function createApiClient(platform2, pluginVersion, options = {}) {
   }
   return {
     serviceUrl: config2.serviceUrl,
-    get: (path6, query) => request("GET", path6, { query, auth: true }),
-    post: (path6, body) => request("POST", path6, { body, auth: true }),
-    delete: (path6) => request("DELETE", path6, { auth: true }),
-    anonymous: (method, path6, body) => request(method, path6, { body, auth: false })
+    get: (path7, query) => request("GET", path7, { query, auth: true }),
+    post: (path7, body) => request("POST", path7, { body, auth: true }),
+    delete: (path7) => request("DELETE", path7, { auth: true }),
+    anonymous: (method, path7, body) => request(method, path7, { body, auth: false })
   };
 }
 
@@ -37446,6 +39201,33 @@ var searchEntities = { name: "search_entities", title: "Search entities", descri
   search: external_exports.string().max(200).optional(),
   limit: int2(external_exports.number().min(1).max(100)).optional()
 } };
+var aggregateRecords = { name: "aggregate_records", title: "Aggregate records", description: 'Group and total every imported record of one type on the server (not a 100-row sample): counts, sums, averages, minimums, maximums and distinct counts per group, plus the same totals over all matching records. Groups are fields (`StageName`), date buckets (`CloseDate:month`) or an attribute of the referenced record (`AccountId.Industry`); `where` uses the definition rule language without the type prefix (`StageName != "Closed Lost" and Amount > 0`). Returns a caption line, the coverage and snapshot the numbers come from, and a JSON block ready to embed in a chart or table.', inputSchema: {
+  typeId: external_exports.string().min(1).max(200).describe("Type id or native name from get_imported_model, e.g. Opportunity."),
+  connectionId: external_exports.string().min(1).max(200).optional().describe("Only when the same type name exists in several connections."),
+  where: external_exports.string().max(2e3).optional().describe("`field op value and \u2026`, operators = != > >= < <=, strings in double quotes."),
+  groupBy: external_exports.array(external_exports.string().min(1).max(200)).max(2).optional().describe("Up to two of: field, field:day|week|month|quarter|year, referenceField.attribute."),
+  metrics: external_exports.array(external_exports.string().min(1).max(200)).max(6).optional().describe("count, sum:field, avg:field, min:field, max:field, distinct:field (default count)."),
+  orderBy: external_exports.string().max(200).optional().describe("A metric or grouping of this query, optionally followed by asc or desc (default: first metric desc, or the date bucket asc)."),
+  limit: int2(external_exports.number().min(1).max(500)).optional().describe("Maximum groups returned (default 50). The result says when groups were left out.")
+} };
+var exportRecords = { name: "export_records", title: "Export records", description: "Write every imported record of one type (up to 5,000) to a JSON file on this machine, with the fields you name, for a chart or table that needs row-level data (scatter, timeline, drill-down table). Returns the file path, the row count and the columns; the file holds `{ type, fields, snapshot, rows: [{ id, label, ...attributes }] }`. Prefer aggregate_records whenever grouped numbers are enough.", inputSchema: {
+  typeId: external_exports.string().min(1).max(200),
+  connectionId: external_exports.string().min(1).max(200).optional(),
+  search: external_exports.string().max(200).optional().describe("Case-insensitive filter on the record label."),
+  fields: external_exports.array(external_exports.string().min(1).max(200)).max(60).optional().describe("Attributes to keep; every attribute when omitted."),
+  limit: int2(external_exports.number().min(1).max(5e3)).optional().describe("Maximum rows (default 5000).")
+} };
+var getViewCatalog = { name: "get_view_catalog", title: "Get the view catalog", description: "The components a view may be built from (Page, Caption, Note, Row, Kpi, BarChart, LineChart, Waterfall, Funnel, Heatmap, Scatter, Histogram, Flow, DataTable), each with its props, an example and the rules views follow, plus the spec format save_view expects. Read it once before composing a view.", inputSchema: {} };
+var saveView = { name: "save_view", title: "Save a view", description: 'Save a view to the workspace so it appears on the app\'s Views page (step 5), rendered by the app\'s own components. A view is a json-render spec: `{ "root": "page", "elements": { "page": { "type": "Page", "props": {\u2026}, "children": ["caption","chart","table"] }, \u2026 } }` using only the components get_view_catalog lists; every chart takes the JSON block aggregate_records returned as its `data`. The spec is validated against the catalog here and on the server; problems come back as a list to fix. Record beside it the question, the main form, a one-paragraph caption and the facts the numbers rest on (type, where clause, record count, snapshot, coverage, exact). Pass the id of an earlier view to replace it in place so its link keeps working. Returns the view id and the page link.', inputSchema: {
+  id: external_exports.string().min(1).max(200).optional().describe("An existing view id to replace; omit to create a new view."),
+  title: external_exports.string().min(1).max(120).describe('Two to six words naming the view, e.g. "Closed-won revenue by industry".'),
+  question: external_exports.string().max(1e3).optional().describe("The question in the person's words."),
+  form: external_exports.string().min(1).max(40).describe("The main form: waterfall, funnel, bar, line, table, kpi, flow, heatmap, scatter, histogram, or another single word."),
+  caption: external_exports.string().max(2e3).optional().describe("Type and record count, the where clause in words, the definition applied, the snapshot date and coverage, and whether counts are exact."),
+  facts: external_exports.record(external_exports.string().min(1).max(40), external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean(), external_exports.null()])).optional().describe('Machine-readable facts, e.g. {"typeId":"Opportunity","where":"StageName = \\"Closed Won\\"","records":90,"snapshot":"2026-09-15","coverage":"complete","exact":true}.'),
+  spec: external_exports.record(external_exports.string(), external_exports.unknown()).describe("The json-render spec: { root, elements }.")
+} };
+var listViews = { name: "list_views", title: "List views", description: "The views saved in this workspace (newest first): id, title, form, question, revision, who saved it and when, plus each one's page link. Use it to find the id of a view to replace or to point the person at an existing view.", inputSchema: { limit: int2(external_exports.number().min(1).max(200)).optional() } };
 var whoAmI = { name: "whoami", title: "Who am I", description: "Which workspace and person this plugin token acts as, the app URL, and the token label. Call when a write is refused or the person cannot see a change.", inputSchema: {} };
 var getPluginActivity = { name: "get_plugin_activity", title: "Get plugin activity", description: "The ledger of changes editor plugins made in this workspace (the same feed the browser shows), newest first.", inputSchema: { limit: int2(external_exports.number().min(1).max(100)).optional() } };
 var ALL_TOOL_CONTRACTS = [
@@ -37474,6 +39256,11 @@ var ALL_TOOL_CONTRACTS = [
   listSources,
   getImportedModel,
   searchEntities,
+  aggregateRecords,
+  exportRecords,
+  getViewCatalog,
+  saveView,
+  listViews,
   whoAmI,
   getPluginActivity
 ];
@@ -37533,6 +39320,24 @@ var platform = {
     ...pluginUpdateScopes(scopes).map((scope) => `claude plugin update ${PLUGIN_KEY} --scope ${scope}`)
   ]
 };
+
+// src/toolHandlers.ts
+import fs4 from "node:fs";
+import os4 from "node:os";
+import path4 from "node:path";
+
+// src/links.ts
+function buildPagePath(page, options = {}) {
+  const params = new URLSearchParams({ stage: page });
+  if (options.contextId) params.set("context", options.contextId);
+  if (options.sectionId) params.set("section", options.sectionId);
+  if (options.nodeId) params.set("node", options.nodeId);
+  if (options.viewId) params.set("view", options.viewId);
+  return `/?${params}`;
+}
+function pageUrl(serviceUrl, page, options = {}) {
+  return `${serviceUrl.replace(/\/$/, "")}${buildPagePath(page, options)}`;
+}
 
 // src/contextDocument.ts
 var LABEL = /^\s*(?:[-*]\s+)?(?:\*\*)?([A-Za-z][A-Za-z ]*)(?:\*\*)?:(?:\*\*)?\s*(.*)$/;
@@ -37814,6 +39619,19 @@ function describeOp(op) {
 // src/toolHandlers.ts
 var text2 = (value) => ({ content: [{ type: "text", text: value }] });
 var failure2 = (message) => ({ content: [{ type: "text", text: message }], isError: true });
+async function resolveType(client, requested, connectionId) {
+  const found = [];
+  let cursor;
+  for (let pages = 0; pages < 20; pages++) {
+    const page = ModelResponseSchema.parse(await client.get("/graph/model", { limit: 100, cursor, connectionId }));
+    for (const node2 of page.nodes) if (node2.type.id === requested || node2.type.nativeName === requested) found.push({ id: node2.type.id, nativeName: node2.type.nativeName, connectionId: node2.type.connectionId });
+    if (!page.page.nextCursor) break;
+    cursor = page.page.nextCursor;
+  }
+  if (!found.length) throw new ApiError("NOT_FOUND", `Unknown entity type: ${requested}. get_imported_model lists the imported types.`, 404);
+  if (found.length > 1) throw new ApiError("INVALID_REQUEST", `Ambiguous entity type ${requested}: pass connectionId or the type id.`, 400);
+  return found[0];
+}
 var ContextListSchema = external_exports.object({ items: external_exports.array(external_exports.object({ id: external_exports.string(), label: external_exports.string(), revision: external_exports.number().int(), ontologyVersion: external_exports.number().int().nullable(), sources: external_exports.array(external_exports.string()), createdAt: external_exports.string() })) });
 var ContextStateSchema = external_exports.object({ proposal: ContextProposalSchema, publication: ContextPublicationSchema.nullable(), answerRevision: external_exports.number().int(), discoveryRevision: external_exports.number().int() });
 var ContextDocumentSchema = external_exports.object({ proposalId: external_exports.string(), revision: external_exports.number().int(), markdown: external_exports.string(), sections: external_exports.array(DocumentSectionSchema), comments: external_exports.array(DocumentCommentSchema) });
@@ -38139,6 +39957,77 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
       if (!page.items.length) return text2(`No records of ${typeId}${search ? ` matching "${search}"` : ""}.`);
       return text2([`Records of ${typeId}${search ? ` matching "${search}"` : ""} (${page.items.length}${page.page.hasMore ? ", more available" : ""}):`, ...page.items.map((entity) => `- ${entity.id} \xB7 "${entity.label}" \xB7 ${shorten(JSON.stringify(entity.attributes), 240)}`)].join("\n"));
     },
+    async aggregate_records(args) {
+      const { typeId, connectionId, where, groupBy, metrics, orderBy, limit } = args;
+      const result = parse3(AggregateResponseSchema, await client.get("/graph/aggregate", { typeId, connectionId, where, groupBy: groupBy ?? [], metric: metrics ?? [], orderBy, limit }));
+      const columns = [...result.query.groupBy.map((group) => group.spec), ...result.query.metrics.map((metric) => metric.spec)];
+      const caption = [`${result.type.label} (${result.type.nativeName})`, where ? `where ${where}` : null, result.query.groupBy.length ? `by ${result.query.groupBy.map((group) => group.spec).join(", ")}` : null, `metrics ${result.query.metrics.map((metric) => metric.spec).join(", ")}`].filter(Boolean).join(" \xB7 ");
+      const lines = [
+        caption,
+        `Matching records: ${result.totals.count} \xB7 groups: ${result.groups.returned} of ${result.groups.total}${result.groups.truncated ? " (more groups exist; raise limit or narrow with where)" : ""} \xB7 order ${result.query.orderBy}`,
+        `Snapshot: ${result.snapshot.syncRunId ?? "none"} \xB7 coverage ${result.metadata.coverage.status} \xB7 last sync ${result.metadata.freshness.lastSuccessfulSyncAt ? when(result.metadata.freshness.lastSuccessfulSyncAt) : "never"} \xB7 ${result.snapshot.exact ? "exact counts" : `NOT exact: ${result.snapshot.reason}`}`,
+        "Caption every view with the snapshot, coverage and where clause above.",
+        "```json",
+        JSON.stringify({ columns, rows: result.rows.map((row) => [...row.keys, ...row.values]), totals: [...result.query.groupBy.map(() => null), ...result.totals.values], count: result.totals.count }),
+        "```"
+      ];
+      return text2(lines.join("\n"));
+    },
+    async export_records(args) {
+      const { typeId: requested, connectionId, search, fields, limit } = args;
+      const type = await resolveType(client, requested, connectionId);
+      const typeId = type.id;
+      const max = limit ?? 5e3;
+      const rows2 = [];
+      let cursor;
+      let hasMore = false;
+      let metadata;
+      while (rows2.length < max) {
+        const page = parse3(EntityListResponseSchema, await client.get("/entities", { typeId, connectionId: type.connectionId, search, limit: Math.min(100, max - rows2.length), cursor }));
+        metadata = page.metadata;
+        for (const entity of page.items) {
+          const attributes = fields ? Object.fromEntries(fields.map((field) => [field, entity.attributes[field] ?? null])) : entity.attributes;
+          rows2.push({ id: entity.id, label: entity.label, ...attributes });
+        }
+        hasMore = page.page.hasMore;
+        if (!page.page.nextCursor || !hasMore) break;
+        cursor = page.page.nextCursor;
+      }
+      const directory = path4.join(os4.tmpdir(), "context-graph", "exports");
+      fs4.mkdirSync(directory, { recursive: true });
+      const file2 = path4.join(directory, `${type.nativeName.replace(/[^A-Za-z0-9_-]/g, "_")}-${Date.now()}.json`);
+      const snapshot = metadata ? { coverage: metadata.coverage.status, lastSuccessfulSyncAt: metadata.freshness.lastSuccessfulSyncAt } : null;
+      fs4.writeFileSync(file2, JSON.stringify({ type: type.nativeName, typeId, fields: fields ?? null, snapshot, rows: rows2 }));
+      const columns = [...new Set(rows2.flatMap((row) => Object.keys(row)))];
+      return text2([
+        `Wrote ${rows2.length} ${type.nativeName} record(s) to ${file2}${hasMore ? " (more records exist beyond the limit; the file is a partial export)" : ""}.`,
+        `Columns: ${columns.slice(0, 60).join(", ")}${columns.length > 60 ? ", \u2026" : ""}`,
+        snapshot ? `Snapshot: coverage ${snapshot.coverage} \xB7 last sync ${snapshot.lastSuccessfulSyncAt ? when(snapshot.lastSuccessfulSyncAt) : "never"}` : "Snapshot: unknown",
+        "Embed the rows into the page (read the file, or splice it in with a short node script); a browser cannot fetch a local file."
+      ].join("\n"));
+    },
+    async get_view_catalog() {
+      return text2([
+        viewCatalogPrompt(),
+        "",
+        'Spec format for save_view: {"root":"page","elements":{"page":{"type":"Page","props":{\u2026},"children":["caption","chart","table"]},"caption":{"type":"Caption","props":{\u2026},"children":[]},\u2026}}.',
+        "Every chart's `data` is the JSON block aggregate_records returned ({columns, rows}); column props name headers from data.columns."
+      ].join("\n"));
+    },
+    async save_view(args) {
+      const { id, title: title2, question, form, caption, facts, spec } = args;
+      const checked = validateViewSpec(spec);
+      if (!checked.ok) return failure2(`The spec does not match the view catalog. Fix these and save again:
+${checked.issues.map((issue2) => `- ${issue2}`).join("\n")}`);
+      const view = parse3(ViewSchema, await client.post("/views", { ...id ? { id } : {}, title: title2, question: question ?? "", form, caption: caption ?? "", facts: facts ?? {}, spec }));
+      return text2(`${id ? "Replaced" : "Saved"} view "${view.title}" (${view.id}, revision ${view.revision}, ${form}, ${view.elementCount} elements). It is on the Views page: ${pageUrl(client.serviceUrl, "views", { viewId: view.id })}`);
+    },
+    async list_views(args) {
+      const { limit } = args;
+      const views = parse3(ViewListResponseSchema, await client.get("/views", { limit: limit ?? 50 }));
+      if (!views.items.length) return text2("No views saved yet. Render one and call save_view.");
+      return text2([`Views (${views.items.length}, newest first):`, ...views.items.map((view) => `- ${view.id} \xB7 "${view.title}" \xB7 ${view.form} \xB7 revision ${view.revision} \xB7 ${when(view.updatedAt)} \xB7 by ${view.createdBy.subjectId}${view.question ? ` \xB7 asks "${shorten(view.question, 120)}"` : ""} \xB7 ${pageUrl(client.serviceUrl, "views", { viewId: view.id })}`)].join("\n"));
+    },
     async whoami() {
       const who = parse3(PluginWhoAmISchema, await client.get("/plugin/whoami"));
       return text2(`Signed in to ${client.serviceUrl} as ${who.principal.subjectId} (${who.principal.role}) in workspace ${who.principal.workspaceId}. Token "${who.token.label}" created ${when(who.token.createdAt)}.`);
@@ -38168,25 +40057,25 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
 }
 
 // src/version.ts
-import fs5 from "node:fs";
-import path5 from "node:path";
+import fs6 from "node:fs";
+import path6 from "node:path";
 
 // src/pluginRoot.ts
-import fs4 from "node:fs";
-import path4 from "node:path";
+import fs5 from "node:fs";
+import path5 from "node:path";
 import { fileURLToPath } from "node:url";
 function findRoot(start) {
   let dir = start;
   for (let depth = 0; depth < 5; depth++) {
-    if (fs4.existsSync(path4.join(dir, "package.json")) && fs4.existsSync(path4.join(dir, ".claude-plugin"))) return dir;
-    dir = path4.dirname(dir);
+    if (fs5.existsSync(path5.join(dir, "package.json")) && fs5.existsSync(path5.join(dir, ".claude-plugin"))) return dir;
+    dir = path5.dirname(dir);
   }
-  return path4.resolve(start, "..");
+  return path5.resolve(start, "..");
 }
-var PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT ?? findRoot(path4.dirname(fileURLToPath(import.meta.url)));
+var PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT ?? findRoot(path5.dirname(fileURLToPath(import.meta.url)));
 
 // src/version.ts
-var PLUGIN_VERSION = JSON.parse(fs5.readFileSync(path5.join(PLUGIN_ROOT, "package.json"), "utf8")).version;
+var PLUGIN_VERSION = JSON.parse(fs6.readFileSync(path6.join(PLUGIN_ROOT, "package.json"), "utf8")).version;
 function getVersion() {
   return PLUGIN_VERSION;
 }
@@ -38198,10 +40087,10 @@ function createMcpServer() {
     get serviceUrl() {
       return createApiClient(platform, getVersion()).serviceUrl;
     },
-    get: (path6, query) => createApiClient(platform, getVersion()).get(path6, query),
-    post: (path6, body) => createApiClient(platform, getVersion()).post(path6, body),
-    delete: (path6) => createApiClient(platform, getVersion()).delete(path6),
-    anonymous: (method, path6, body) => createApiClient(platform, getVersion()).anonymous(method, path6, body)
+    get: (path7, query) => createApiClient(platform, getVersion()).get(path7, query),
+    post: (path7, body) => createApiClient(platform, getVersion()).post(path7, body),
+    delete: (path7) => createApiClient(platform, getVersion()).delete(path7),
+    anonymous: (method, path7, body) => createApiClient(platform, getVersion()).anonymous(method, path7, body)
   });
   for (const { contract, handle } of handlers) server2.registerTool(contract.name, toolConfig(contract), (args) => handle(args));
   return server2;

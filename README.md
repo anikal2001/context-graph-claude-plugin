@@ -28,6 +28,7 @@ This opens a sign-in page in your browser. Approve it and the plugin is connecte
 | `/context-graph:setup [login\|status\|logout\|url <app-url>]` | Sign in from the browser, check the connection, sign out, or switch deployments |
 | `/context-graph:graph [edit\|review\|history\|revert]` | Change section headings, prose and rules of the context model one revision at a time; review sections; diff revisions; revert a section |
 | `/context-graph:ontology [edit\|versions\|save\|draft\|publish\|compare\|settings]` | Stage edits to entities, definitions, relationships, metrics or processes, see the diff against the original, and save them as the next draft only when you say save; list versions; ask the model for a draft; preview exact membership changes and publish; diff versions; set automatic drafting |
+| `/context-graph:view <question>` | Show what the data represents on the app's Views page (step 5) as whatever UI the question needs (a waterfall for revenue attribution, a funnel for pipeline stages, a trend, a sankey, a heatmap, a table, a KPI row), computed over every imported record with the published definitions applied; the page opens in the app within seconds and is replaced in place when you ask for a change |
 | `/context-graph:update [check]` | Update the plugin to the latest published version |
 
 ## MCP tools
@@ -39,6 +40,8 @@ Context model: `list_context_models`, `get_context_model`, `get_context_document
 Ontology: `get_ontology`, `get_ontology_version`, `edit_ontology_entry` (stages), `show_ontology_changes`, `save_ontology_changes`, `discard_ontology_changes`, `save_ontology_version`, `configure_ontology`, `request_ontology_draft`, `preview_ontology_publication`, `publish_ontology`, `update_ontology_settings`, `compare_ontology_versions`.
 
 Sources and identity: `list_sources`, `get_imported_model`, `search_entities`, `whoami`, `get_plugin_activity`.
+
+Views: `aggregate_records` (group and total every record of a type on the server: fields, date buckets such as `CloseDate:month`, or a referenced record's attribute such as `AccountId.Industry`, filtered with the rule language `StageName != "Closed Lost" and Amount > 0`), `export_records` (every record of a type, up to 5,000, to a JSON file on this machine for row-level charts), `get_view_catalog` (the components a view may use), `save_view` (validate a json-render spec against that catalog and put it on the app's Views page with its caption and facts, or replace one by id) and `list_views`.
 
 Every write takes the revision you read as `expectedRevision` and is refused when a newer revision landed first, the same rule the browser follows.
 
@@ -52,7 +55,7 @@ Every `dist/commands/*.js` answers `-h`:
 | `logout.js` | Revoke the token on the server and forget it |
 | `status.js` | Service URL, version, build, update availability, sign-in state |
 | `update.js [--check]` | Apply the latest published version through `claude plugin` |
-| `pageLink.js [path] [--page graph\|document] [--context <id>] [--section <id>] [--node <id>]` | Print a link into the app |
+| `pageLink.js [path] [--page graph\|document\|views] [--context <id>] [--section <id>] [--node <id>] [--view <id>]` | Print a link into the app |
 
 ## Configuration
 
