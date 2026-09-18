@@ -19677,7 +19677,7 @@ function date4(params) {
 import os2 from "node:os";
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.6.0";
+var CONTRACT_VERSION = "1.9.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -19870,7 +19870,7 @@ var DefinitionVersionSchema = external_exports.strictObject({
   publishedAt: TimestampSchema.nullable()
 });
 var ExtractionBatchSchema = external_exports.strictObject({
-  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", CONTRACT_VERSION]),
+  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", CONTRACT_VERSION]),
   connectionId: IdSchema,
   runId: IdSchema,
   batchId: IdSchema,
@@ -19896,8 +19896,8 @@ var refs = external_exports.array(EvidenceRefSchema);
 var CoveragePhaseSchema = external_exports.enum(["discovery", "retrieval", "parsing", "inspection", "validation", "review"]);
 var CoverageStateSchema = external_exports.enum(["queued", "running", "complete", "failed", "unsupported", "excluded", "blocked_by_access"]);
 var SourceCapabilitySchema = external_exports.strictObject({ ...base, connectionId: IdSchema, kind: text, state: external_exports.enum(["available", "unsupported", "blocked_by_access", "unknown"]), reason: text.nullable(), apiVersion: IdSchema, accessVersion: IdSchema });
-var CatalogKindSchema = external_exports.enum(["object", "field", "report", "flow", "validation_rule", "formula", "record_type", "role", "profile", "permission_set", "other"]);
-var ReaderKindSchema = external_exports.enum(["object", "report", "flow", "validation_rule", "role", "profile", "permission_set"]);
+var CatalogKindSchema = external_exports.enum(["object", "field", "report", "flow", "validation_rule", "formula", "record_type", "role", "profile", "permission_set", "path_assistant", "assignment_rule", "opportunity_stage", "lead_status", "organization", "user", "connected_application", "other"]);
+var ReaderKindSchema = external_exports.enum(["object", "report", "flow", "validation_rule", "role", "profile", "permission_set", "path_assistant", "assignment_rule", "record_type", "opportunity_stage", "lead_status", "organization", "user", "connected_application"]);
 var ReaderDescriptorSchema = external_exports.strictObject({ kind: CatalogKindSchema, nativeId: text, label: text, providerId: IdSchema, active: external_exports.boolean().nullable(), objectType: text.optional(), description: external_exports.string().max(3e4).optional(), artifactPath: external_exports.string().optional() });
 var ReaderGapSchema = external_exports.strictObject({ kind: CatalogKindSchema, state: external_exports.enum(["blocked_by_access", "unsupported", "failed"]), reason: text, retryable: external_exports.boolean() });
 var ReaderInventorySchema = external_exports.strictObject({ components: external_exports.array(ReaderDescriptorSchema), nextCursor: external_exports.string().nullable(), gaps: external_exports.array(ReaderGapSchema) });
@@ -19916,19 +19916,34 @@ var InvestigationCheckpointSchema = external_exports.strictObject({ queue: ids, 
 var InvestigationRunSchema = external_exports.strictObject({ ...base, expectedRevision: CountSchema, snapshot: SnapshotVectorSchema, status: external_exports.enum(["queued", "running", "waiting_for_input", "completed", "failed", "superseded"]), model: IdSchema, checkpoint: InvestigationCheckpointSchema, leaseToken: IdSchema.nullable(), leaseExpiresAt: TimestampSchema.nullable(), failure: text.nullable(), createdAt: TimestampSchema, updatedAt: TimestampSchema });
 var DiscoveryEventSchema = external_exports.strictObject({ id: IdSchema, deduplicationKey: IdSchema, kind: external_exports.enum(["batch_accepted", "catalog_updated", "answer_submitted", "run_progress", "run_completed", "message", "proposal_updated"]), actor: external_exports.enum(["system", "assistant", "user"]), message: external_exports.string().max(3e4), runId: IdSchema.nullable(), recordIds: ids, evidence: refs, createdAt: TimestampSchema });
 var ClaimScopeSchema = external_exports.strictObject({ subject: text, purpose: text, population: text, timeWindow: text, grain: text.nullable().optional(), unit: text.nullable().optional(), currency: text.nullable().optional() });
-var BusinessClaimSchema = external_exports.strictObject({ ...base, scope: ClaimScopeSchema, predicate: text, value: external_exports.json(), basis: external_exports.enum(["configured", "observed", "confirmed", "derived"]), status: external_exports.enum(["proposed", "supported", "confirmed_by_user", "disputed", "rejected", "superseded"]), supportingEvidence: refs, contradictingEvidence: refs, answerIds: ids, premiseClaimIds: ids, uncertainty: external_exports.array(text), rationale: text, runId: IdSchema });
+var WorkflowStepSchema = external_exports.strictObject({ id: IdSchema, label: text, conceptIds: ids, claimIds: ids, evidence: refs, kind: external_exports.enum(["action", "decision", "handoff", "terminal"]).optional(), roleIds: ids.optional(), systemIds: ids.optional(), inputIds: ids.optional(), outputIds: ids.optional() });
+var WorkflowTriggerSchema = external_exports.strictObject({ description: text, entryStepId: IdSchema, conceptIds: ids, evidence: refs });
+var WorkflowTransitionSchema = external_exports.strictObject({ id: IdSchema, sourceStepId: IdSchema, targetStepId: IdSchema, kind: external_exports.enum(["next", "conditional", "default", "fault"]), condition: text.nullable(), claimIds: ids, evidence: refs });
+var BusinessWorkflowSchema = external_exports.strictObject({ ...base, name: text, description: text, steps: external_exports.array(WorkflowStepSchema), trigger: WorkflowTriggerSchema.optional(), transitions: external_exports.array(WorkflowTransitionSchema).optional(), unresolvedRequirements: external_exports.array(text) });
+var EvidenceCheckSchema = external_exports.strictObject({ id: IdSchema, requirement: text, result: external_exports.enum(["passed", "failed", "unknown", "not_applicable"]), rationale: text, evidence: refs });
+var EvidenceAssessmentSchema = external_exports.strictObject({ status: external_exports.enum(["supported", "provisional", "disputed", "unresolved"]), checks: external_exports.array(EvidenceCheckSchema), gaps: external_exports.array(text), rationale: text, assessedAt: TimestampSchema });
+var InvestigationTaskSchema = external_exports.strictObject({ ...base, runId: IdSchema, question: text, scope: ClaimScopeSchema, queue: external_exports.enum(["coverage", "investigation"]), status: external_exports.enum(["queued", "running", "waiting_for_input", "supported", "provisional", "unresolved", "disputed", "unsupported", "superseded"]), domain: IdSchema.optional(), attempts: CountSchema.optional(), snapshot: SnapshotVectorSchema, componentIds: ids, claimIds: ids, dependencyTaskIds: ids, checks: external_exports.array(EvidenceCheckSchema), gaps: external_exports.array(text), nextAction: text.nullable(), stopReason: text.nullable(), createdAt: TimestampSchema, updatedAt: TimestampSchema });
+var BusinessConceptKindSchema = external_exports.enum(["company", "customer", "product", "process", "metric", "term", "other", "department", "team", "role", "person", "system", "business_object", "customer_segment", "journey_stage"]);
+var ContextRelationSchema = external_exports.enum(["supported_by", "contradicted_by", "maps_to", "depends_on", "clarifies", "buys", "renews", "delivered_through", "related_to", "owns", "performs", "uses", "reads", "produces", "updates", "hands_off_to", "measured_by", "contains"]);
+var BusinessFindingSchema = external_exports.strictObject({ key: IdSchema, name: text, kind: BusinessConceptKindSchema, relationships: external_exports.array(external_exports.strictObject({ relation: ContextRelationSchema, targetKey: IdSchema, evidence: refs })), workflow: BusinessWorkflowSchema.optional() });
+var BusinessClaimSchema = external_exports.strictObject({ ...base, scope: ClaimScopeSchema, predicate: text, value: external_exports.json(), business: BusinessFindingSchema.optional(), assessment: EvidenceAssessmentSchema.optional(), basis: external_exports.enum(["configured", "observed", "confirmed", "derived"]), status: external_exports.enum(["proposed", "supported", "confirmed_by_user", "disputed", "rejected", "superseded"]), supportingEvidence: refs, contradictingEvidence: refs, answerIds: ids, premiseClaimIds: ids, uncertainty: external_exports.array(text), rationale: text, runId: IdSchema });
 var ClarificationQuestionSchema = external_exports.strictObject({ ...base, deduplicationKey: IdSchema, question: text, whyItMatters: text, choices: external_exports.array(text), claimIds: ids, evidence: refs, state: external_exports.enum(["proposed", "open", "answered", "deferred", "superseded"]), createdAt: TimestampSchema });
 var ClarificationAnswerSchema = external_exports.strictObject({ ...base, questionId: IdSchema, questionRevision: external_exports.number().int().positive(), subjectId: IdSchema, response: text, action: external_exports.enum(["confirm", "correct", "defer", "unknown"]), scope: ClaimScopeSchema, supersedesAnswerId: IdSchema.nullable(), createdAt: TimestampSchema });
 var SourceMappingSchema = external_exports.strictObject({ ...base, conceptId: IdSchema, connectionId: IdSchema, componentIds: ids, description: text, execution: external_exports.enum(["descriptive", "executable"]), rule: external_exports.string().nullable(), unresolvedRequirements: external_exports.array(text), evidence: refs });
-var BusinessConceptSchema = external_exports.strictObject({ ...base, name: text, aliases: external_exports.array(text), description: text, scope: ClaimScopeSchema.optional(), metric: external_exports.strictObject({ population: text, measure: text, grain: text, timeWindow: text, unit: text, currency: text.nullable(), execution: external_exports.literal("descriptive"), unresolvedRequirements: external_exports.array(text) }).optional(), kind: external_exports.enum(["company", "customer", "product", "process", "metric", "term", "other"]), claimIds: ids, mappingIds: ids, questionIds: ids, evidence: refs });
-var BusinessWorkflowSchema = external_exports.strictObject({ ...base, name: text, description: text, steps: external_exports.array(external_exports.strictObject({ id: IdSchema, label: text, conceptIds: ids, claimIds: ids, evidence: refs })), unresolvedRequirements: external_exports.array(text) });
-var ContextEdgeSchema = external_exports.strictObject({ ...base, sourceId: IdSchema, targetId: IdSchema, relation: external_exports.enum(["supported_by", "contradicted_by", "maps_to", "depends_on", "clarifies", "buys", "renews", "delivered_through", "related_to"]), layer: external_exports.literal("context"), claimIds: ids, evidence: refs });
+var BusinessConceptSchema = external_exports.strictObject({ ...base, businessKey: IdSchema.optional(), name: text, aliases: external_exports.array(text), description: text, scope: ClaimScopeSchema.optional(), metric: external_exports.strictObject({ population: text, measure: text, grain: text, timeWindow: text, unit: text, currency: text.nullable(), execution: external_exports.literal("descriptive"), unresolvedRequirements: external_exports.array(text) }).optional(), kind: BusinessConceptKindSchema, claimIds: ids, mappingIds: ids, questionIds: ids, evidence: refs });
+var ContextEdgeSchema = external_exports.strictObject({ ...base, sourceId: IdSchema, targetId: IdSchema, relation: ContextRelationSchema, layer: external_exports.literal("context"), claimIds: ids, evidence: refs });
 var GraphExpansionSchema = external_exports.strictObject({ rootId: IdSchema, depth: external_exports.number().int().min(0).max(5), concepts: external_exports.array(BusinessConceptSchema), edges: external_exports.array(ContextEdgeSchema), frontierIds: ids, truncated: external_exports.boolean(), nextCursor: external_exports.string().nullable() });
 var DocumentSectionSchema = external_exports.strictObject({ ...base, conceptId: IdSchema.nullable(), heading: text, markdown: external_exports.string().max(2e5), evidence: refs, answerIds: ids, questionIds: ids, review: external_exports.enum(["unreviewed", "approved", "changes_requested"]) });
 var DocumentCommentSchema = external_exports.strictObject({ ...base, sectionId: IdSchema, sectionRevision: external_exports.number().int().positive(), subjectId: IdSchema, body: text, createdAt: TimestampSchema, resolvedAt: TimestampSchema.nullable() });
 var ContextProposalSchema = external_exports.strictObject({ ...base, discoveryRevision: CountSchema.optional(), snapshot: SnapshotVectorSchema, ontologyVersion: external_exports.number().int().positive().nullable(), concepts: external_exports.array(BusinessConceptSchema), workflows: external_exports.array(BusinessWorkflowSchema), mappings: external_exports.array(SourceMappingSchema), claims: external_exports.array(BusinessClaimSchema), edges: external_exports.array(ContextEdgeSchema), sections: external_exports.array(DocumentSectionSchema), openQuestionIds: ids, createdAt: TimestampSchema });
 var ContextPublicationSchema = external_exports.strictObject({ ...base, ontologyVersion: external_exports.number().int().positive(), proposalId: IdSchema, proposalRevision: external_exports.number().int().positive(), snapshot: SnapshotVectorSchema, publishedBy: IdSchema, publishedAt: TimestampSchema });
 var DiscoverySnapshotSchema = external_exports.strictObject({ ...base, vector: SnapshotVectorSchema });
+var ModelRevisionRefSchema = external_exports.strictObject({ proposalId: IdSchema, proposalRevision: external_exports.number().int().positive() });
+var GraphPerspectiveSchema = external_exports.enum(["company", "department", "journey"]);
+var GraphDetailLevelSchema = external_exports.enum(["company", "department", "workflow", "step", "evidence"]);
+var GraphProjectionRequestSchema = external_exports.strictObject({ model: ModelRevisionRefSchema, perspective: GraphPerspectiveSchema, detail: GraphDetailLevelSchema, focusId: IdSchema.nullable(), cursor: external_exports.string().nullable().optional() });
+var GraphProjectionSchema = external_exports.strictObject({ request: GraphProjectionRequestSchema, concepts: external_exports.array(BusinessConceptSchema), workflows: external_exports.array(BusinessWorkflowSchema), edges: external_exports.array(ContextEdgeSchema), groups: external_exports.array(external_exports.strictObject({ id: IdSchema, label: text, lane: external_exports.enum(["people", "process", "technology", "unclassified"]), memberIds: ids })), frontierIds: ids, truncated: external_exports.boolean(), nextCursor: external_exports.string().nullable() });
+var ConversationScopeSchema = external_exports.strictObject({ model: ModelRevisionRefSchema, conceptIds: ids, workflowIds: ids });
 
 // ../shared/src/ontology/workflow.ts
 var OntologySourceSelectionSchema = external_exports.strictObject({ connectionId: IdSchema, objects: external_exports.array(external_exports.string().min(1)).min(1).max(500) });
@@ -22298,6 +22313,21 @@ function viewCatalogPrompt() {
     ]
   });
 }
+
+// ../shared/src/discovery/conversation.ts
+var BusinessConversationRequestSchema = external_exports.strictObject({
+  scope: ConversationScopeSchema,
+  message: external_exports.string().trim().min(1).max(4e3),
+  history: external_exports.array(external_exports.strictObject({ role: external_exports.enum(["user", "assistant"]), content: external_exports.string().max(8e3) })).max(12).default([])
+});
+var BusinessConversationReplySchema = external_exports.strictObject({
+  scope: ConversationScopeSchema,
+  answer: external_exports.string().max(3e4),
+  citations: external_exports.array(external_exports.strictObject({ claimId: external_exports.string(), evidence: external_exports.array(EvidenceRefSchema), conceptIds: external_exports.array(external_exports.string()) })).max(20),
+  limitations: external_exports.array(external_exports.string().max(2e3)).max(100),
+  model: external_exports.string(),
+  usage: external_exports.strictObject({ inputTokens: external_exports.number().int().nonnegative(), outputTokens: external_exports.number().int().nonnegative() })
+});
 
 // ../shared/src/plugin.ts
 var PLUGIN_HOSTS = ["claude"];
