@@ -19888,6 +19888,28 @@ var ExtractionBatchSchema = external_exports.strictObject({
   coverage: CoverageSchema
 });
 
+// ../shared/src/interviews/roles.ts
+var ROLE_KEYS = [
+  "executive",
+  "sales",
+  "marketing",
+  "customer_success",
+  "support",
+  "finance",
+  "operations",
+  "product",
+  "engineering",
+  "data",
+  "people",
+  "legal",
+  "other"
+];
+var RoleKeySchema = external_exports.enum(ROLE_KEYS);
+var InterviewAudienceSchema = external_exports.strictObject({
+  roles: external_exports.array(RoleKeySchema).min(1).max(5),
+  rationale: external_exports.string().min(1).max(2e3)
+});
+
 // ../shared/src/discovery/index.ts
 var text = external_exports.string().min(1).max(1e4);
 var ids = external_exports.array(IdSchema);
@@ -19915,7 +19937,7 @@ var SnapshotVectorSchema = external_exports.strictObject({ sources: external_exp
 var SourceProfileSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, componentId: IdSchema, snapshot: SnapshotVectorSchema, method: external_exports.enum(["exact", "sampled"]), population: text, denominator: CountSchema, sampleSize: CountSchema.nullable(), complete: external_exports.boolean(), statistics: external_exports.record(external_exports.string(), external_exports.json()), evidence: refs, gaps: external_exports.array(text) });
 var InvestigationCheckpointSchema = external_exports.strictObject({ queue: ids, visited: ids, cursors: external_exports.record(IdSchema, external_exports.string()), toolCalls: CountSchema, sampledRecords: CountSchema, inputTokens: CountSchema, outputTokens: CountSchema, elapsedMs: CountSchema, agentState: external_exports.json().optional() });
 var InvestigationRunSchema = external_exports.strictObject({ ...base, expectedRevision: CountSchema, snapshot: SnapshotVectorSchema, status: external_exports.enum(["queued", "running", "waiting_for_input", "completed", "failed", "superseded"]), model: IdSchema, checkpoint: InvestigationCheckpointSchema, leaseToken: IdSchema.nullable(), leaseExpiresAt: TimestampSchema.nullable(), failure: text.nullable(), createdAt: TimestampSchema, updatedAt: TimestampSchema });
-var DiscoveryEventSchema = external_exports.strictObject({ id: IdSchema, deduplicationKey: IdSchema, kind: external_exports.enum(["batch_accepted", "catalog_updated", "answer_submitted", "run_progress", "run_completed", "message", "proposal_updated"]), actor: external_exports.enum(["system", "assistant", "user"]), message: external_exports.string().max(3e4), runId: IdSchema.nullable(), recordIds: ids, evidence: refs, createdAt: TimestampSchema });
+var DiscoveryEventSchema = external_exports.strictObject({ id: IdSchema, deduplicationKey: IdSchema, kind: external_exports.enum(["batch_accepted", "catalog_updated", "answer_submitted", "run_progress", "run_completed", "message", "proposal_updated", "interview_planned", "interview_sent"]), actor: external_exports.enum(["system", "assistant", "user"]), message: external_exports.string().max(3e4), runId: IdSchema.nullable(), recordIds: ids, evidence: refs, createdAt: TimestampSchema });
 var ClaimScopeSchema = external_exports.strictObject({ subject: text, purpose: text, population: text, timeWindow: text, grain: text.nullable().optional(), unit: text.nullable().optional(), currency: text.nullable().optional() });
 var WorkflowStepSchema = external_exports.strictObject({ id: IdSchema, label: text, conceptIds: ids, claimIds: ids, evidence: refs, kind: external_exports.enum(["action", "decision", "handoff", "terminal"]).optional(), roleIds: ids.optional(), systemIds: ids.optional(), inputIds: ids.optional(), outputIds: ids.optional() });
 var WorkflowTriggerSchema = external_exports.strictObject({ description: text, entryStepId: IdSchema, conceptIds: ids, evidence: refs });
@@ -19928,7 +19950,19 @@ var BusinessConceptKindSchema = external_exports.enum(["company", "customer", "p
 var ContextRelationSchema = external_exports.enum(["supported_by", "contradicted_by", "maps_to", "depends_on", "clarifies", "buys", "renews", "delivered_through", "related_to", "owns", "performs", "uses", "reads", "produces", "updates", "hands_off_to", "measured_by", "contains"]);
 var BusinessFindingSchema = external_exports.strictObject({ key: IdSchema, name: text, kind: BusinessConceptKindSchema, relationships: external_exports.array(external_exports.strictObject({ relation: ContextRelationSchema, targetKey: IdSchema, evidence: refs })), workflow: BusinessWorkflowSchema.optional() });
 var BusinessClaimSchema = external_exports.strictObject({ ...base, scope: ClaimScopeSchema, predicate: text, value: external_exports.json(), business: BusinessFindingSchema.optional(), assessment: EvidenceAssessmentSchema.optional(), basis: external_exports.enum(["configured", "observed", "confirmed", "derived"]), status: external_exports.enum(["proposed", "supported", "confirmed_by_user", "disputed", "rejected", "superseded"]), supportingEvidence: refs, contradictingEvidence: refs, answerIds: ids, premiseClaimIds: ids, uncertainty: external_exports.array(text), rationale: text, runId: IdSchema });
-var ClarificationQuestionSchema = external_exports.strictObject({ ...base, deduplicationKey: IdSchema, question: text, whyItMatters: text, choices: external_exports.array(text), claimIds: ids, evidence: refs, state: external_exports.enum(["proposed", "open", "answered", "deferred", "superseded"]), createdAt: TimestampSchema });
+var ClarificationQuestionSchema = external_exports.strictObject({
+  ...base,
+  deduplicationKey: IdSchema,
+  question: text,
+  whyItMatters: text,
+  choices: external_exports.array(text),
+  claimIds: ids,
+  evidence: refs,
+  state: external_exports.enum(["proposed", "open", "answered", "deferred", "superseded"]),
+  createdAt: TimestampSchema,
+  /** Roles the question should reach and why (1.7.0). Set by the interview planner; absent until a question is routed. */
+  audience: InterviewAudienceSchema.optional()
+});
 var ClarificationAnswerSchema = external_exports.strictObject({ ...base, questionId: IdSchema, questionRevision: external_exports.number().int().positive(), subjectId: IdSchema, response: text, action: external_exports.enum(["confirm", "correct", "defer", "unknown"]), scope: ClaimScopeSchema, supersedesAnswerId: IdSchema.nullable(), createdAt: TimestampSchema });
 var SourceMappingSchema = external_exports.strictObject({ ...base, conceptId: IdSchema, connectionId: IdSchema, componentIds: ids, description: text, execution: external_exports.enum(["descriptive", "executable"]), rule: external_exports.string().nullable(), unresolvedRequirements: external_exports.array(text), evidence: refs });
 var BusinessConceptSchema = external_exports.strictObject({ ...base, businessKey: IdSchema.optional(), name: text, aliases: external_exports.array(text), description: text, scope: ClaimScopeSchema.optional(), metric: external_exports.strictObject({ population: text, measure: text, grain: text, timeWindow: text, unit: text, currency: text.nullable(), execution: external_exports.literal("descriptive"), unresolvedRequirements: external_exports.array(text) }).optional(), kind: BusinessConceptKindSchema, claimIds: ids, mappingIds: ids, questionIds: ids, evidence: refs });
@@ -20191,9 +20225,9 @@ var SyncRequestSchema = external_exports.strictObject({ mode: external_exports.e
 var SourceConnectRequestSchema = external_exports.strictObject({ displayName: external_exports.string().min(1).max(100), credentials: external_exports.unknown() });
 var SourceConnectResponseSchema = external_exports.strictObject({ connectionId: IdSchema, runId: IdSchema, status: external_exports.literal("pending"), dispatched: external_exports.boolean() });
 var ChangeRefRequestSchema = external_exports.strictObject({ ref: external_exports.string().min(1).max(200) });
-var GithubLinkStatusSchema = external_exports.strictObject({ configured: external_exports.boolean(), linked: external_exports.boolean(), login: external_exports.string().nullable() });
-var GithubInstallationsResponseSchema = external_exports.strictObject({ installations: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), account: external_exports.string(), targetType: external_exports.string() })) });
-var GithubRepositoriesResponseSchema = external_exports.strictObject({ repositories: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), fullName: external_exports.string(), defaultBranch: external_exports.string(), private: external_exports.boolean() })) });
+var GithubLinkStatusSchema = external_exports.strictObject({ configured: external_exports.boolean(), linked: external_exports.boolean(), login: external_exports.string().nullable(), installUrl: external_exports.string().url().nullable() });
+var GithubInstallationsResponseSchema = external_exports.strictObject({ installations: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), account: external_exports.string(), targetType: external_exports.string(), repositorySelection: external_exports.enum(["all", "selected"]), settingsUrl: external_exports.string().url().nullable() })) });
+var GithubRepositoriesResponseSchema = external_exports.strictObject({ repositories: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), fullName: external_exports.string(), defaultBranch: external_exports.string(), private: external_exports.boolean() })), truncated: external_exports.boolean() });
 var GithubBranchesResponseSchema = external_exports.strictObject({ branches: external_exports.array(external_exports.string()) });
 var NotionLinkStatusSchema = external_exports.strictObject({ configured: external_exports.boolean(), linked: external_exports.boolean(), workspaceName: external_exports.string().nullable() });
 var NotionSearchQuerySchema = external_exports.strictObject({ query: external_exports.string().max(200).optional(), kind: external_exports.enum(["data_source", "page"]).default("data_source") });
@@ -21885,6 +21919,108 @@ var WorkspaceClearedSchema = external_exports.strictObject({
   deleted: external_exports.record(external_exports.string().min(1).max(80), external_exports.number().int().nonnegative()),
   total: external_exports.number().int().nonnegative()
 });
+
+// ../shared/src/interviews/index.ts
+var positive = external_exports.number().int().positive();
+var short = external_exports.string().min(1).max(200);
+var PERSON_SOURCE_PROVIDERS = ["salesforce", "rippling", "slack", "manual"];
+var PersonSourceSchema = external_exports.strictObject({ provider: external_exports.enum(PERSON_SOURCE_PROVIDERS), nativeId: short, connectionId: IdSchema.nullable() });
+var PersonSchema = external_exports.strictObject({
+  id: IdSchema,
+  revision: positive,
+  displayName: short,
+  email: external_exports.string().max(320).nullable(),
+  title: external_exports.string().max(200).nullable(),
+  department: external_exports.string().max(200).nullable(),
+  role: RoleKeySchema,
+  /** True when an operator set the role by hand; syncs then keep it instead of re-deriving it from the title. */
+  rolePinned: external_exports.boolean(),
+  sources: external_exports.array(PersonSourceSchema).max(20),
+  /** Slack member id (U…); the only channel a question can be delivered through today. */
+  slackUserId: external_exports.string().max(64).nullable(),
+  active: external_exports.boolean(),
+  updatedAt: TimestampSchema
+});
+var PersonUpsertSchema = external_exports.strictObject({
+  displayName: short,
+  email: external_exports.string().max(320).nullable().default(null),
+  title: external_exports.string().max(200).nullable().default(null),
+  department: external_exports.string().max(200).nullable().default(null),
+  role: RoleKeySchema.optional(),
+  slackUserId: external_exports.string().max(64).nullable().default(null),
+  active: external_exports.boolean().default(true)
+});
+var PeopleQuerySchema = external_exports.strictObject({
+  role: RoleKeySchema.optional(),
+  search: external_exports.string().max(100).optional(),
+  cursor: external_exports.string().max(2048).optional(),
+  limit: external_exports.coerce.number().int().min(1).max(200).default(50)
+});
+var PeopleListSchema = external_exports.strictObject({ items: external_exports.array(PersonSchema), nextCursor: external_exports.string().nullable() });
+var PeopleSyncRequestSchema = external_exports.strictObject({ source: external_exports.enum(["slack", "sources"]) });
+var PeopleSyncResultSchema = external_exports.strictObject({ source: external_exports.enum(["slack", "sources"]), upserted: CountSchema, skipped: CountSchema, reason: external_exports.string().max(500).nullable() });
+var RoleSummarySchema = external_exports.strictObject({ role: RoleKeySchema, count: CountSchema, reachable: CountSchema, titles: external_exports.array(external_exports.string().max(200)).max(10) });
+var AssignmentStateSchema = external_exports.enum(["proposed", "queued", "sent", "answered", "cancelled", "failed"]);
+var DeliveryAttemptSchema = external_exports.strictObject({
+  attempt: positive,
+  at: TimestampSchema,
+  status: external_exports.enum(["sent", "failed"]),
+  channel: external_exports.literal("slack"),
+  /** Provider reference of the delivered message (channel and timestamp), for later updates. Never a secret. */
+  reference: external_exports.string().max(200).nullable(),
+  reason: external_exports.string().max(500).nullable()
+});
+var InterviewAssignmentSchema = external_exports.strictObject({
+  id: IdSchema,
+  revision: positive,
+  questionId: IdSchema,
+  questionRevision: positive,
+  personId: IdSchema,
+  /** Tagged by an operator in the app, or planned by the interview planner for the person's role. */
+  origin: external_exports.enum(["tagged", "planned"]),
+  requestedBy: IdSchema,
+  /** Display name shown to the person asked; a tagger's name, or the agent's. Never an identifier. */
+  requestedByName: external_exports.string().max(120).nullable(),
+  note: external_exports.string().max(2e3).nullable(),
+  state: AssignmentStateSchema,
+  deliveries: external_exports.array(DeliveryAttemptSchema).max(20),
+  answerId: IdSchema.nullable(),
+  reason: external_exports.string().max(500).nullable(),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema
+});
+var InterviewSettingsSchema = external_exports.strictObject({
+  /** Planned assignments go straight to delivery instead of waiting for approval. */
+  autoSend: external_exports.boolean(),
+  maxPeoplePerQuestion: external_exports.number().int().min(1).max(10)
+});
+var InterviewSettingsUpdateSchema = InterviewSettingsSchema.partial();
+var SlackInstallSchema = external_exports.strictObject({ teamId: short, teamName: short, installedBy: IdSchema, scopes: external_exports.array(external_exports.string().max(100)).max(50), installedAt: TimestampSchema });
+var SlackInstallStatusSchema = external_exports.strictObject({
+  configured: external_exports.boolean(),
+  installed: external_exports.boolean(),
+  install: SlackInstallSchema.nullable(),
+  /** Bot scopes the app now needs that this installation did not grant; reinstalling adds them. Absent when nothing is missing. */
+  missingScopes: external_exports.array(external_exports.string().max(100)).max(50).optional()
+});
+var InterviewStateSchema = external_exports.strictObject({
+  settings: InterviewSettingsSchema,
+  slack: SlackInstallStatusSchema,
+  roles: external_exports.array(RoleSummarySchema),
+  people: CountSchema,
+  assignments: external_exports.strictObject({ items: external_exports.array(InterviewAssignmentSchema), nextCursor: external_exports.string().nullable() })
+});
+var InterviewPlanRequestSchema = external_exports.strictObject({ idempotencyKey: IdSchema });
+var InterviewPlanResultSchema = external_exports.strictObject({
+  /** `model` and `heuristic` ran in this request; `queued` means a background job will route the questions. */
+  mode: external_exports.enum(["model", "heuristic", "queued"]),
+  routed: CountSchema,
+  planned: CountSchema
+});
+var InterviewAssignRequestSchema = external_exports.strictObject({ questionId: IdSchema, personIds: external_exports.array(IdSchema).min(1).max(20), note: external_exports.string().max(2e3).optional(), askedBy: external_exports.string().max(120).optional() });
+var InterviewApproveRequestSchema = external_exports.strictObject({ assignmentIds: external_exports.array(IdSchema).min(1).max(100) });
+var InterviewCancelRequestSchema = external_exports.strictObject({ assignmentId: IdSchema });
+var InterviewAssignmentsResultSchema = external_exports.strictObject({ assignments: external_exports.array(InterviewAssignmentSchema) });
 
 // src/buildInfo.ts
 import fs from "node:fs";
