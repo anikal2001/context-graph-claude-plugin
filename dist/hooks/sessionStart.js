@@ -5,6 +5,10 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// src/hooks/sessionStart.ts
+import { spawn } from "node:child_process";
+import path7 from "node:path";
+
 // ../node_modules/.bun/zod@4.6.5/node_modules/zod/v4/classic/external.js
 var external_exports = {};
 __export(external_exports, {
@@ -821,10 +825,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path7) {
-  if (!path7)
+function getElementAtPath(obj, path8) {
+  if (!path8)
     return obj;
-  return path7.reduce((acc, key) => acc?.[key], obj);
+  return path8.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -1164,11 +1168,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path7, issues) {
+function prefixIssues(path8, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path7);
+    iss.path.unshift(path8);
     return iss;
   });
 }
@@ -1618,16 +1622,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path7 = []) => {
+  const processError = (error63, path8 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else {
-        const fullpath = [...path7, ...issue2.path];
+        const fullpath = [...path8, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -1666,17 +1670,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path7 = []) => {
+  const processError = (error63, path8 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else {
-        const fullpath = [...path7, ...issue2.path];
+        const fullpath = [...path8, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -1715,8 +1719,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path7 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path7) {
+  const path8 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path8) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -2257,8 +2261,8 @@ var $ZodCheckMaxSize = /* @__PURE__ */ $constructor("$ZodCheckMaxSize", (inst, d
   (_a3 = inst._zod.def).when ?? (_a3.when = _whenHasSize);
   inst._zod.check = (payload) => {
     const input2 = payload.value;
-    const size = input2.size;
-    if (size <= def.maximum)
+    const size2 = input2.size;
+    if (size2 <= def.maximum)
       return;
     payload.issues.push({
       origin: getSizableOrigin(input2),
@@ -2277,8 +2281,8 @@ var $ZodCheckMinSize = /* @__PURE__ */ $constructor("$ZodCheckMinSize", (inst, d
   (_a3 = inst._zod.def).when ?? (_a3.when = _whenHasSize);
   inst._zod.check = (payload) => {
     const input2 = payload.value;
-    const size = input2.size;
-    if (size >= def.minimum)
+    const size2 = input2.size;
+    if (size2 >= def.minimum)
       return;
     payload.issues.push({
       origin: getSizableOrigin(input2),
@@ -2297,10 +2301,10 @@ var $ZodCheckSizeEquals = /* @__PURE__ */ $constructor("$ZodCheckSizeEquals", (i
   (_a3 = inst._zod.def).when ?? (_a3.when = _whenHasSize);
   inst._zod.check = (payload) => {
     const input2 = payload.value;
-    const size = input2.size;
-    if (size === def.size)
+    const size2 = input2.size;
+    if (size2 === def.size)
       return;
-    const tooBig = size > def.size;
+    const tooBig = size2 > def.size;
     payload.issues.push({
       origin: getSizableOrigin(input2),
       ...tooBig ? { code: "too_big", maximum: def.size } : { code: "too_small", minimum: def.size },
@@ -15076,11 +15080,11 @@ function _minSize(minimum, params) {
   });
 }
 // @__NO_SIDE_EFFECTS__
-function _size(size, params) {
+function _size(size2, params) {
   return new $ZodCheckSizeEquals({
     check: "size_equals",
     ...normalizeParams(params),
-    size
+    size: size2
   });
 }
 // @__NO_SIDE_EFFECTS__
@@ -18329,8 +18333,8 @@ var ZodFile = /* @__PURE__ */ $constructor("ZodFile", (inst, def) => {
   $ZodFile.init(inst, def);
   ZodType.init(inst, def);
   inst._zod.processJSONSchema = (ctx, json2, params) => fileProcessor(inst, ctx, json2, params);
-  inst.min = (size, params) => inst.check(_minSize(size, params));
-  inst.max = (size, params) => inst.check(_maxSize(size, params));
+  inst.min = (size2, params) => inst.check(_minSize(size2, params));
+  inst.max = (size2, params) => inst.check(_maxSize(size2, params));
   inst.mime = (types, params) => inst.check(_mime(Array.isArray(types) ? types : [types], params));
 });
 function file(params) {
@@ -18818,13 +18822,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path7 = ref.slice(1).split("/").filter(Boolean);
-  if (path7.length === 0) {
+  const path8 = ref.slice(1).split("/").filter(Boolean);
+  if (path8.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path7[0] === defsKey) {
-    const key = path7[1] === void 0 ? void 0 : decodeJSONPointerSegment(path7[1]);
+  if (path8[0] === defsKey) {
+    const key = path8[1] === void 0 ? void 0 : decodeJSONPointerSegment(path8[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -20495,8 +20499,8 @@ function createBuilder() {
     record: (value) => ({ kind: "record", inner: value }),
     any: () => ({ kind: "any" }),
     zod: () => ({ kind: "zod" }),
-    ref: (path7) => ({ kind: "ref", inner: path7 }),
-    propsOf: (path7) => ({ kind: "propsOf", inner: path7 }),
+    ref: (path8) => ({ kind: "ref", inner: path8 }),
+    propsOf: (path8) => ({ kind: "propsOf", inner: path8 }),
     map: (entryShape) => ({ kind: "map", inner: entryShape }),
     optional: () => ({ optional: true })
   };
@@ -20586,8 +20590,8 @@ function buildZodType(schemaType, catalogData) {
       return external_exports.record(external_exports.string(), inner);
     }
     case "ref": {
-      const path7 = schemaType.inner;
-      const keys = getKeysFromPath(path7, catalogData);
+      const path8 = schemaType.inner;
+      const keys = getKeysFromPath(path8, catalogData);
       if (keys.length === 0) {
         return external_exports.string();
       }
@@ -20597,8 +20601,8 @@ function buildZodType(schemaType, catalogData) {
       return external_exports.enum(keys);
     }
     case "propsOf": {
-      const path7 = schemaType.inner;
-      const propsSchemas = getPropsFromPath(path7, catalogData);
+      const path8 = schemaType.inner;
+      const propsSchemas = getPropsFromPath(path8, catalogData);
       if (propsSchemas.length === 0) {
         return external_exports.record(external_exports.string(), external_exports.unknown());
       }
@@ -20611,8 +20615,8 @@ function buildZodType(schemaType, catalogData) {
       return external_exports.unknown();
   }
 }
-function getKeysFromPath(path7, catalogData) {
-  const parts = path7.split(".");
+function getKeysFromPath(path8, catalogData) {
+  const parts = path8.split(".");
   let current = { catalog: catalogData };
   for (const part of parts) {
     if (current && typeof current === "object") {
@@ -20626,8 +20630,8 @@ function getKeysFromPath(path7, catalogData) {
   }
   return [];
 }
-function getPropsFromPath(path7, catalogData) {
-  const parts = path7.split(".");
+function getPropsFromPath(path8, catalogData) {
+  const parts = path8.split(".");
   let current = { catalog: catalogData };
   for (const part of parts) {
     if (current && typeof current === "object") {
@@ -21426,9 +21430,23 @@ var optionalColumn = (what) => external_exports.string().nullable().describe(`He
 var title = external_exports.string().nullable().describe("Short title above the chart, or null.");
 var unit = external_exports.string().nullable().describe('Unit written after values, such as "USD", "opportunities" or "%", or null when the source states none. Never invent a currency.');
 var sampleTable = { columns: ["StageName", "count", "sum:Amount"], rows: [["Closed Won", 90, 11783485], ["Closed Lost", 217, 33440754], ["Prospecting", 41, 4430914]] };
+var palette = (fallback) => external_exports.enum(["single", "category", "signed", "sequential"]).nullish().describe(`How colour is assigned: single (one hue for every mark), category (a hue per category, folding past eight into "Other"), signed (one hue for what adds, red for what takes away), sequential (light to dark by value). Omit for ${fallback}.`);
+var emphasis = external_exports.array(external_exports.string().min(1).max(200)).max(12).nullish().describe("Category values drawn at full strength while the rest fade back, so the chart carries the point the caption makes. Omit to draw every mark equally.");
+var size = external_exports.enum(["small", "medium", "full"]).nullish().describe("How much width the chart asks for when it shares a Row: small (a third), medium (a half), full. Omit for full.");
+var annotations = external_exports.array(external_exports.object({
+  value: external_exports.number().describe("Where the line sits on the value axis."),
+  label: external_exports.string().min(1).max(60).describe('What the line means, e.g. "Target" or "Average deal".')
+})).max(4).nullish().describe("Reference lines across the value axis, each labelled: a target, an average, a threshold. Omit for none.");
+var labels = external_exports.enum(["none", "value", "share", "both"]).nullish().describe("What is written on the marks themselves: value (the number), share (its percentage of the whole, or of the step before it in a funnel), both, or none to leave the marks bare and let the table carry the numbers. Omit for value, which is what a chart read without hovering needs.");
+var tooltip = external_exports.enum(["auto", "detailed", "off"]).nullish().describe("What hovering a mark reveals: auto (its category and value), detailed (every measure the data holds for that row, not only the one drawn), or off. Omit for auto.");
+var overlay = external_exports.string().nullish().describe("A second column from the same data drawn behind the marks for comparison: an amount behind a count, last year behind this year, a target behind actuals. Null for none. It is drawn in a muted tone and always named in the legend, so the drawn measure stays the one the caption argues about.");
 var VIEW_COMPONENTS = {
   Page: {
-    props: external_exports.object({ title: external_exports.string().min(1).max(120).describe("The question answered, in words."), subtitle: external_exports.string().nullable().describe("One line under the title, or null.") }),
+    props: external_exports.object({
+      title: external_exports.string().min(1).max(120).describe("The question answered, in words."),
+      subtitle: external_exports.string().nullable().describe("One line under the title, or null."),
+      density: external_exports.enum(["comfortable", "compact"]).nullish().describe("How much air between the parts: comfortable for one chart, compact when the page stacks several. Omit for comfortable.")
+    }),
     slots: ["default"],
     description: "The root of every view: a heading, then its children stacked top to bottom. Use exactly one, as the root.",
     example: { title: "How closed-won revenue builds up by industry", subtitle: null }
@@ -21445,17 +21463,161 @@ var VIEW_COMPONENTS = {
     description: "A short paragraph: an assumption that was made, a caveat, or how to read the chart.",
     example: { text: "Opportunities whose account has no industry are shown on their own row.", tone: null }
   },
-  Row: {
-    props: external_exports.object({}),
+  Callout: {
+    props: external_exports.object({
+      text: external_exports.string().min(1).max(2e3),
+      tone: external_exports.enum(["info", "success", "warning", "danger"]).describe("What kind of thing this is: info for context, success for a target met, warning for an assumption or a caveat, danger for something wrong with the data."),
+      title: external_exports.string().max(120).nullable().describe("A few words of heading, or null.")
+    }),
+    slots: [],
+    description: "The one thing the reader should take away, set apart from the prose so it is not skipped. At most one or two per page: a page of callouts is a page of nothing.",
+    example: { text: "Conversion out of Negotiation fell by half this quarter, on 14 opportunities.", tone: "warning", title: "Worth looking at" }
+  },
+  Quote: {
+    props: external_exports.object({
+      text: external_exports.string().min(1).max(2e3).describe("The words themselves, as they were written."),
+      attribution: external_exports.string().max(200).nullable().describe('Who said or wrote it, or where it came from, e.g. "Customer definition, ontology v7". Null when it would add nothing.')
+    }),
+    slots: [],
+    description: "Words from somewhere else quoted verbatim: a definition from the ontology, a line of the context document, an answer someone gave. Never paraphrase inside one.",
+    example: { text: "An account with at least one closed-won opportunity in the last 12 months.", attribution: "Customer, ontology v7" }
+  },
+  Toggle: {
+    props: external_exports.object({
+      summary: external_exports.string().min(1).max(160).describe("The line always visible, naming what is folded away."),
+      open: external_exports.boolean().nullish().describe("Start open. Omit for closed, which is the point of a Toggle.")
+    }),
     slots: ["default"],
-    description: "Lays its children side by side, wrapping on narrow screens. Use for a row of Kpi tiles or two small charts.",
-    example: {}
+    description: 'Detail folded behind one line: the full table under a summary chart, the rows behind an "Other" bucket, the working behind a number. Keeps a crowded page readable without dropping anything.',
+    example: { summary: "Every stage, including the ones with no opportunities", open: null }
+  },
+  Checklist: {
+    props: external_exports.object({
+      items: external_exports.array(external_exports.object({
+        label: external_exports.string().min(1).max(200),
+        done: external_exports.boolean().describe("Whether this one holds today."),
+        note: external_exports.string().max(200).nullable().describe('What decided it, e.g. "3 of 40 accounts", or null.')
+      })).min(1).max(20)
+    }),
+    slots: [],
+    description: "A list of conditions with whether each one holds: data quality checks, the parts of a definition, what a workflow still needs. Not a to-do list for the reader.",
+    example: { items: [{ label: "Every opportunity has a close date", done: true, note: "520 of 520" }, { label: "Every account has an industry", done: false, note: "88 of 140 missing" }] }
+  },
+  Badges: {
+    props: external_exports.object({
+      items: external_exports.array(external_exports.object({
+        label: external_exports.string().min(1).max(60),
+        tone: external_exports.enum(["neutral", "info", "success", "warning", "danger"]).nullable().describe("What the badge says about the thing, or null for neutral.")
+      })).min(1).max(12)
+    }),
+    slots: [],
+    description: "A row of short labels: which sources a number came from, which filters are on, which stages are counted. Use for facts that fit in two words each.",
+    example: { items: [{ label: "Salesforce", tone: "neutral" }, { label: "Snapshot 2026-09-15", tone: "neutral" }, { label: "Counts exact", tone: "success" }] }
+  },
+  Row: {
+    props: external_exports.object({
+      weights: external_exports.array(external_exports.number().positive().max(12)).max(6).nullish().describe("Relative widths of the children, one number each, e.g. [2,1] for a chart twice the width of the table beside it. Omit for equal widths."),
+      align: external_exports.enum(["stretch", "top"]).nullish().describe("How children of different heights line up: stretch (equal height, the default) or top, for a tile beside a tall chart.")
+    }),
+    slots: ["default"],
+    description: "Lays its children side by side, wrapping on narrow screens. Use for a row of Kpi tiles or two charts that belong together.",
+    example: { weights: [2, 1] }
+  },
+  Section: {
+    props: external_exports.object({
+      title: external_exports.string().min(1).max(120).describe("What this part of the page answers."),
+      subtitle: external_exports.string().nullable().describe("One line under the heading, or null."),
+      collapsed: external_exports.boolean().nullish().describe("Start folded away, for detail a reader opens only when they want it. Omit for open.")
+    }),
+    slots: ["default"],
+    description: "A titled group of panels with its own heading and breathing room. Use it once a page carries more than one question, so the reader sees three short sections instead of nine stacked charts.",
+    example: { title: "Where the pipeline leaks", subtitle: "Stage by stage, this quarter", collapsed: null }
+  },
+  Divider: {
+    props: external_exports.object({ label: external_exports.string().max(80).nullable().describe("A few words naming what follows, or null for a plain rule.") }),
+    slots: [],
+    description: "A horizontal rule between parts of a page. Prefer a Section when the parts have names; use this for a single clean break.",
+    example: { label: null }
   },
   Kpi: {
     props: external_exports.object({ label: external_exports.string().min(1).max(80), value: external_exports.union([external_exports.string(), external_exports.number()]), unit, note: external_exports.string().nullable().describe('What is behind the number, e.g. "90 opportunities", or null.') }),
     slots: [],
     description: "One headline number with its label. Put several in a Row for a KPI strip. Not a chart with one bar.",
     example: { label: "Closed-won amount", value: 11783485, unit: null, note: "90 opportunities" }
+  },
+  Trend: {
+    props: external_exports.object({
+      label: external_exports.string().min(1).max(80),
+      value: external_exports.number(),
+      previous: external_exports.number().describe("The same measure over the period before, so the change can be drawn and named."),
+      unit,
+      periodLabel: external_exports.string().max(60).nullable().describe('What it is compared with, e.g. "last quarter", or null.'),
+      goodDirection: external_exports.enum(["up", "down", "neutral"]).nullish().describe("Which way is good for this measure, so a fall in churn does not read as bad news. Omit for up."),
+      size
+    }),
+    slots: [],
+    description: 'One number with the change from the period before it, drawn as an arrow and a percentage. Use instead of Kpi whenever the reader would ask "compared with what?".',
+    example: { label: "Closed-won amount", value: 11783485, previous: 9240110, unit: null, periodLabel: "last quarter", goodDirection: "up", size: null }
+  },
+  Progress: {
+    props: external_exports.object({
+      label: external_exports.string().min(1).max(80),
+      value: external_exports.number(),
+      target: external_exports.number().positive().describe("What counts as complete: a quota, a goal, a total to cover."),
+      unit,
+      note: external_exports.string().nullable().describe('What is behind it, e.g. "90 of 140 accounts", or null.'),
+      size
+    }),
+    slots: [],
+    description: "How far a number has come toward a target, as a filled bar with the share written on it. For quota, coverage, completeness; not for a value with no target.",
+    example: { label: "Bookings against quota", value: 11783485, target: 15e6, unit: null, note: "Q3, 90 opportunities", size: null }
+  },
+  Gauge: {
+    props: external_exports.object({
+      label: external_exports.string().min(1).max(80),
+      value: external_exports.number(),
+      min: external_exports.number(),
+      max: external_exports.number(),
+      bands: external_exports.array(external_exports.object({
+        upTo: external_exports.number().describe("Upper edge of this band on the scale."),
+        label: external_exports.string().min(1).max(40),
+        tone: external_exports.enum(["good", "fair", "poor"])
+      })).max(4).nullish().describe('Named ranges the value falls into, e.g. under 30 days "good". Omit for a plain scale.'),
+      unit,
+      size
+    }),
+    slots: [],
+    description: "One value on a named scale, for a measure a reader judges rather than compares: days to close, health, utilisation. Never for money or counts, which belong on a bar.",
+    example: { label: "Median days to close", value: 34, min: 0, max: 90, bands: [{ upTo: 30, label: "Fast", tone: "good" }, { upTo: 60, label: "Typical", tone: "fair" }, { upTo: 90, label: "Slow", tone: "poor" }], unit: "days", size: null }
+  },
+  Sparkline: {
+    props: external_exports.object({
+      label: external_exports.string().min(1).max(80),
+      data: ViewTableSchema,
+      x: column("the ordered axis, usually a date bucket"),
+      value: column("the numeric value"),
+      unit,
+      note: external_exports.string().nullable().describe("What is behind the line, or null."),
+      size
+    }),
+    slots: [],
+    description: "The shape of one series, small and unlabelled, beside a number rather than in place of a chart. Use in a Row of tiles where a full LineChart would not fit.",
+    example: { label: "Bookings", data: { columns: ["CloseDate:month", "sum:Amount"], rows: [["2026-05-01", 820431], ["2026-06-01", 1390239], ["2026-07-01", 2104880]] }, x: "CloseDate:month", value: "sum:Amount", unit: null, note: "Last 3 months", size: "small" }
+  },
+  Cards: {
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      heading: column("the line naming each card"),
+      body: optionalColumn("a line of detail under the heading"),
+      badge: optionalColumn("a short label in the corner, e.g. a stage or an owner"),
+      value: optionalColumn("a number shown large on the card"),
+      unit,
+      size
+    }),
+    slots: [],
+    description: "One small card per row: a gallery of accounts, deals or people, each with a name, a number and a label. Use when the reader is looking for particular records rather than reading a distribution; a DataTable is better once there are more than about a dozen.",
+    example: { title: "Largest open opportunities", data: { columns: ["Name", "StageName", "Amount", "AccountId.Name"], rows: [["Acme renewal", "Negotiation", 24e4, "Acme"]] }, heading: "Name", body: "AccountId.Name", badge: "StageName", value: "Amount", unit: null, size: null }
   },
   BarChart: {
     props: external_exports.object({
@@ -21465,56 +21627,81 @@ var VIEW_COMPONENTS = {
       value: column("the numeric value drawn as bar length"),
       series: optionalColumn("a second category that splits each bar into stacked segments"),
       sort: external_exports.enum(["value", "category", "none"]).nullable().describe("Order of the bars: by value (largest first), by category, or as the rows come. Null means value."),
-      unit
+      unit,
+      orientation: external_exports.enum(["horizontal", "vertical"]).nullish().describe("Which way the bars run: horizontal reads long category names and many bars; vertical (columns) suits short labels, a time order, or a shape the reader expects to stand up. Omit for horizontal."),
+      palette: palette("single, or a hue per series when series is set"),
+      emphasis,
+      size,
+      annotations,
+      labels,
+      tooltip,
+      overlay
     }),
     slots: [],
-    description: 'Horizontal bars, sorted, direct-labelled: compare categories, or share of a whole when series stacks them. More than about 8 bars: fold the tail into "Other" first.',
-    example: { title: "Opportunities by stage", data: sampleTable, category: "StageName", value: "count", series: null, sort: "value", unit: "opportunities" }
+    description: 'Bars, sorted and direct-labelled: compare categories, or share of a whole when series stacks them. Horizontal by default; orientation "vertical" draws columns. More than about 8 bars: fold the tail into "Other" first.',
+    example: { title: "Opportunities by stage", data: sampleTable, category: "StageName", value: "count", series: null, sort: "value", unit: "opportunities", orientation: "vertical", palette: "category", emphasis: ["Closed Won"], size: null, annotations: [{ value: 100, label: "Quarterly target" }], labels: "value", tooltip: "detailed", overlay: "sum:Amount" }
   },
   LineChart: {
-    props: external_exports.object({ title, data: ViewTableSchema, x: column("the ordered x axis, usually a date bucket such as CloseDate:month"), y: column("the numeric value"), series: optionalColumn("a category that gives one line per value (at most four)"), unit }),
+    props: external_exports.object({ title, data: ViewTableSchema, x: column("the ordered x axis, usually a date bucket such as CloseDate:month"), y: column("the numeric value"), series: optionalColumn("a category that gives one line per value (at most four)"), unit, emphasis, size, annotations, labels, tooltip, overlay }),
     slots: [],
     description: "A trend over an ordered axis; one line per series with a legend. Never two y axes: use two charts.",
     example: { title: "Bookings per quarter", data: { columns: ["CloseDate:quarter", "sum:Amount"], rows: [["2026-01-01", 1390239], ["2026-04-01", 4608898], ["2026-07-01", 12955576]] }, x: "CloseDate:quarter", y: "sum:Amount", series: null, unit: null }
   },
   Waterfall: {
-    props: external_exports.object({ title, data: ViewTableSchema, category: column("each contributor"), value: column("its signed contribution"), totalLabel: external_exports.string().nullable().describe('Label of the closing total bar, or null for "Total".'), unit }),
+    props: external_exports.object({ title, data: ViewTableSchema, category: column("each contributor"), value: column("its signed contribution"), totalLabel: external_exports.string().nullable().describe('Label of the closing total bar, or null for "Total".'), unit, palette: palette("signed, which is what a bridge usually wants"), emphasis, size, labels, tooltip }),
     slots: [],
     description: "How a total is built up or bridged: one floating bar per contributor from the running total before it to the running total after it, then a total bar. Attribution, revenue bridges, what added and what took away.",
     example: { title: "Closed-won amount by industry", data: { columns: ["AccountId.Industry", "sum:Amount"], rows: [["Finance", 2312731], ["Banking", 1911207], ["Technology", 1758867]] }, category: "AccountId.Industry", value: "sum:Amount", totalLabel: "Total closed-won", unit: null }
   },
   Funnel: {
-    props: external_exports.object({ title, data: ViewTableSchema, stage: column("the stage"), value: column("the count or amount at that stage"), order: external_exports.array(external_exports.string()).nullable().describe("Stage names in process order (from the picklist), or null to keep the row order."), unit }),
+    props: external_exports.object({ title, data: ViewTableSchema, stage: column("the stage"), value: column("the count or amount at that stage"), order: external_exports.array(external_exports.string()).nullable().describe("Stage names in process order (from the picklist), or null to keep the row order."), unit, palette: palette("single, so the eye follows the drop and not the colour"), emphasis, size, labels, tooltip, overlay }),
     slots: [],
-    description: "Progression through ordered stages with the conversion between steps written on them. Order by the process, never by size.",
-    example: { title: "Pipeline by stage", data: sampleTable, stage: "StageName", value: "count", order: ["Prospecting", "Closed Won", "Closed Lost"], unit: "opportunities" }
+    description: 'Progression through ordered stages, each step carrying its own value and the conversion from the step before it. Order by the process, never by size. `labels` decides what is written on the steps themselves and `overlay` draws a second measure behind them, so one funnel can show both the count and the amount at each stage. Only for cohorts that pass through the stages, where each step counts records that also reached the one before it: a snapshot of how many records sit in each stage today is not one, and drawing it here produces conversions above 100% that mean nothing. Use a BarChart with sort "none" and the stages in process order for a snapshot.',
+    example: { title: "Pipeline by stage", data: sampleTable, stage: "StageName", value: "count", order: ["Prospecting", "Closed Won", "Closed Lost"], unit: "opportunities", labels: "both", overlay: "sum:Amount", tooltip: "detailed" }
   },
   Heatmap: {
-    props: external_exports.object({ title, data: ViewTableSchema, row: column("the row dimension"), col: column("the column dimension"), value: column("the numeric cell value"), unit }),
+    props: external_exports.object({ title, data: ViewTableSchema, row: column("the row dimension"), col: column("the column dimension"), value: column("the numeric cell value"), unit, size }),
     slots: [],
     description: "A grid of two dimensions, one hue light to dark by value: for example month by stage from a two-way grouping.",
     example: { title: "Closed deals by quarter and stage", data: { columns: ["CloseDate:quarter", "StageName", "count"], rows: [["2026-01-01", "Closed Won", 8], ["2026-01-01", "Closed Lost", 12]] }, row: "StageName", col: "CloseDate:quarter", value: "count", unit: null }
   },
   Scatter: {
-    props: external_exports.object({ title, data: ViewTableSchema, x: column("the numeric x value"), y: column("the numeric y value"), label: optionalColumn("the point label shown on hover"), series: optionalColumn("a category colouring the points (at most three values)"), xUnit: unit, yUnit: unit }),
+    props: external_exports.object({ title, data: ViewTableSchema, x: column("the numeric x value"), y: column("the numeric y value"), label: optionalColumn("the point label shown on hover"), series: optionalColumn("a category colouring the points (at most three values)"), xUnit: unit, yUnit: unit, size, annotations }),
     slots: [],
     description: "Relates two measures per record, from exported rows. Fewer than about 2,000 points.",
     example: { title: "Amount against days open", data: { columns: ["label", "Amount", "daysOpen"], rows: [["Acme renewal", 12e4, 45]] }, x: "daysOpen", y: "Amount", label: "label", series: null, xUnit: "days", yUnit: null }
   },
   Histogram: {
-    props: external_exports.object({ title, data: ViewTableSchema, value: column("the numeric value to bin"), bins: external_exports.number().int().min(2).max(60).nullable().describe("Number of equal-width bins, or null for about 12."), unit }),
+    props: external_exports.object({ title, data: ViewTableSchema, value: column("the numeric value to bin"), bins: external_exports.number().int().min(2).max(60).nullable().describe("Number of equal-width bins, or null for about 12."), unit, palette: palette("single"), size, annotations }),
     slots: [],
     description: "The distribution of one numeric column from exported rows, binned in the app.",
     example: { title: "Deal sizes", data: { columns: ["Amount"], rows: [[12e4], [15e3], [43e3]] }, value: "Amount", bins: null, unit: null }
   },
   Flow: {
-    props: external_exports.object({ title, data: ViewTableSchema, source: column("the left-hand category"), target: column("the right-hand category"), value: column("the numeric weight of the link"), unit }),
+    props: external_exports.object({ title, data: ViewTableSchema, source: column("the left-hand category"), target: column("the right-hand category"), value: column("the numeric weight of the link"), unit, size }),
     slots: [],
     description: "A flow between two dimensions (sankey): each row is a link from a source category to a target category with a weight, from a two-way grouping.",
     example: { title: "Lead source to stage", data: { columns: ["LeadSource", "StageName", "count"], rows: [["Web", "Closed Won", 12], ["Web", "Closed Lost", 30]] }, source: "LeadSource", target: "StageName", value: "count", unit: "opportunities" }
   },
+  PieChart: {
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      category: column("each slice"),
+      value: column("the slice size, which must be a part of one whole"),
+      donut: external_exports.boolean().nullish().describe("Leave the middle open and write the total in it. Omit for a filled circle."),
+      unit,
+      labels,
+      tooltip,
+      emphasis,
+      size
+    }),
+    slots: [],
+    description: 'Parts of one whole as slices of a circle. Only when the parts really do sum to a meaningful total, the reader wants the shares rather than the values, and there are at most about six slices: fold the rest into "Other" first. A circle is harder to compare across than a bar, so every slice is direct-labelled and a DataTable goes underneath. For ranking categories, or for anything that does not add up to a whole, use a BarChart instead.',
+    example: { title: "Share of closed-won amount by lead source", data: { columns: ["LeadSource", "sum:Amount"], rows: [["Web", 4210331], ["Partner", 3120887], ["Outbound", 2402110], ["Other", 2050157]] }, category: "LeadSource", value: "sum:Amount", donut: true, unit: null, labels: "both", tooltip: "auto", emphasis: null, size: null }
+  },
   DataTable: {
-    props: external_exports.object({ title, data: ViewTableSchema, totals: external_exports.array(ViewValueSchema).nullable().describe("A totals row aligned with the columns (null for grouping columns), or null."), unit }),
+    props: external_exports.object({ title, data: ViewTableSchema, totals: external_exports.array(ViewValueSchema).nullable().describe("A totals row aligned with the columns (null for grouping columns), or null."), unit, size }),
     slots: [],
     description: "The numbers themselves, sortable by any column, with an optional totals row. Put one under every chart so every value can be read.",
     example: { title: null, data: sampleTable, totals: [null, 348, 49655153], unit: null }
@@ -21597,6 +21784,63 @@ var PluginActivitySchema = external_exports.strictObject({
   scope: external_exports.enum(["organization", "personal"]).optional()
 });
 var PluginActivityQuerySchema = external_exports.strictObject({ limit: external_exports.coerce.number().int().min(1).max(100).default(20) });
+var PluginOrganizationSchema = external_exports.strictObject({
+  /** The identity-provider organization id, or null for the shared personal workspace. */
+  id: IdSchema.nullable(),
+  /** The workspace that organization maps to; what every other route scopes by. */
+  workspaceId: IdSchema,
+  name: external_exports.string().min(1).max(200),
+  slug: external_exports.string().max(200).nullable(),
+  role: external_exports.enum(["viewer", "operator", "admin"]),
+  /** True for the organization this plugin token acts in today. */
+  current: external_exports.boolean()
+});
+var PluginOrganizationListSchema = external_exports.strictObject({
+  items: external_exports.array(PluginOrganizationSchema),
+  /** Absent when the directory could not be reached; the current organization is then the only one listed. */
+  complete: external_exports.boolean(),
+  serverTime: TimestampSchema
+});
+var SwitchOrganizationRequestSchema = external_exports.strictObject({
+  /** An organization id from the list, or null for the shared personal workspace. */
+  organizationId: IdSchema.nullable(),
+  /** Label for the token minted in the new organization; the old one is revoked. */
+  label: external_exports.string().min(1).max(120).optional()
+});
+var SwitchOrganizationResultSchema = external_exports.strictObject({
+  status: external_exports.enum(["switched", "already-current"]),
+  organization: PluginOrganizationSchema,
+  /** The new bearer token, handed over once. Absent when the plugin was already in that organization. */
+  token: external_exports.string().min(1).optional()
+});
+var PLUGIN_TELEMETRY_EVENTS = [
+  "session.start",
+  "skill.invoked",
+  "tool.called",
+  "command.run",
+  "update.checked",
+  "update.applied",
+  "error"
+];
+var PluginTelemetryEventSchema = external_exports.strictObject({
+  name: external_exports.enum(PLUGIN_TELEMETRY_EVENTS),
+  at: TimestampSchema,
+  /** How long the work took, when the event is a timed one. */
+  ms: external_exports.number().int().min(0).max(24 * 60 * 60 * 1e3).optional(),
+  ok: external_exports.boolean().optional(),
+  /*
+   * Bounded, non-secret facts: a tool or skill name, an error code, a version, a count. Never text the person wrote.
+   * The limit here is deliberately looser than what is stored: the server truncates every value to 200 characters,
+   * and losing a whole batch because one client rounded a limit differently would cost more than it protects.
+   */
+  detail: external_exports.record(external_exports.string().min(1).max(40), external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean(), external_exports.null()])).default({})
+});
+var PluginTelemetryBatchSchema = external_exports.strictObject({
+  /** Opaque per-session id the plugin makes up, so events of one session group together. Never the transcript id. */
+  sessionId: external_exports.string().min(1).max(100).optional(),
+  events: external_exports.array(PluginTelemetryEventSchema).min(1).max(50)
+});
+var PluginTelemetryAcceptedSchema = external_exports.strictObject({ accepted: external_exports.number().int().min(0) });
 var PLUGIN_ACTIVE_WINDOW_MS = 2 * 60 * 1e3;
 var HANDOFF_TICKET_TTL_MS = 10 * 60 * 1e3;
 
@@ -21671,7 +21915,8 @@ function getConfig(env = process.env) {
   const fromEnv = env.CONTEXT_GRAPH_URL;
   const serviceUrl = fromEnv ?? (typeof project?.serviceUrl === "string" ? project.serviceUrl : typeof global.serviceUrl === "string" ? global.serviceUrl : DEFAULT_SERVICE_URL);
   const token = env.CONTEXT_GRAPH_TOKEN ?? (typeof credentials.token === "string" ? credentials.token : null);
-  return { serviceUrl: normalizeServiceUrl(serviceUrl), token, verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true };
+  const telemetry = env.CONTEXT_GRAPH_TELEMETRY === "0" || env.CONTEXT_GRAPH_TELEMETRY === "false" ? false : global.telemetry !== false;
+  return { serviceUrl: normalizeServiceUrl(serviceUrl), token, verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true, telemetry };
 }
 function getOrCreateInstallId() {
   const existing = readJson(CONFIG_FILE) ?? {};
@@ -21682,6 +21927,21 @@ function getOrCreateInstallId() {
   } catch {
   }
   return installId;
+}
+var SESSION_FILE = path2.join(CONFIG_DIR, "session.json");
+var SESSION_TTL_MS = 24 * 60 * 60 * 1e3;
+function startTelemetrySession(now = Date.now()) {
+  const id = crypto.randomUUID();
+  try {
+    writeJson(SESSION_FILE, { id, startedAt: now });
+  } catch {
+  }
+  return id;
+}
+function getTelemetrySessionId(now = Date.now()) {
+  const saved = readJson(SESSION_FILE);
+  if (typeof saved?.id === "string" && typeof saved.startedAt === "number" && now - saved.startedAt < SESSION_TTL_MS) return saved.id;
+  return void 0;
 }
 function formatEndpointSuffix(serviceUrl) {
   return serviceUrl === DEFAULT_SERVICE_URL ? "" : ` @ ${new URL(serviceUrl).host}`;
@@ -21711,7 +21971,7 @@ function createApiClient(platform2, pluginVersion, options = {}) {
   const config2 = options.config ?? getConfig();
   const fetcher = options.fetcher ?? fetch;
   const root = `${config2.serviceUrl}/api/v1`;
-  async function request(method, path7, input2) {
+  async function request(method, path8, input2) {
     if (input2.auth && !config2.token) throw new ApiError("UNAUTHENTICATED", `Not signed in. Run ${platform2.loginHint} first.`, 401);
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(input2.query ?? {})) {
@@ -21724,7 +21984,7 @@ function createApiClient(platform2, pluginVersion, options = {}) {
     if (input2.body !== void 0) headers["Content-Type"] = "application/json";
     let response;
     try {
-      response = await fetcher(`${root}${path7}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(options.timeoutMs ?? 6e4) });
+      response = await fetcher(`${root}${path8}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(options.timeoutMs ?? 6e4) });
     } catch (error62) {
       throw new ApiError("UNAVAILABLE", `Could not reach ${config2.serviceUrl}: ${error62 instanceof Error ? error62.message : "network error"}`, 0);
     }
@@ -21745,10 +22005,10 @@ function createApiClient(platform2, pluginVersion, options = {}) {
   }
   return {
     serviceUrl: config2.serviceUrl,
-    get: (path7, query) => request("GET", path7, { query, auth: true }),
-    post: (path7, body) => request("POST", path7, { body, auth: true }),
-    delete: (path7) => request("DELETE", path7, { auth: true }),
-    anonymous: (method, path7, body) => request(method, path7, { body, auth: false })
+    get: (path8, query) => request("GET", path8, { query, auth: true }),
+    post: (path8, body) => request("POST", path8, { body, auth: true }),
+    delete: (path8) => request("DELETE", path8, { auth: true }),
+    anonymous: (method, path8, body) => request(method, path8, { body, auth: false })
   };
 }
 
@@ -21819,6 +22079,97 @@ function findRoot(start) {
 }
 var PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT ?? findRoot(path4.dirname(fileURLToPath(import.meta.url)));
 
+// src/telemetry.ts
+var MAX_QUEUED = 50;
+var MAX_VALUE = 200;
+var MAX_KEYS = 12;
+var TELEMETRY_TIMEOUT_MS = 4e3;
+function sanitize(detail) {
+  const clean = {};
+  if (!detail) return clean;
+  for (const [key, value] of Object.entries(detail)) {
+    if (Object.keys(clean).length >= MAX_KEYS) break;
+    if (value === void 0) continue;
+    if (typeof value === "string") clean[key.slice(0, 40)] = value.slice(0, MAX_VALUE);
+    else if (typeof value === "number") {
+      if (Number.isFinite(value)) clean[key.slice(0, 40)] = value;
+    } else if (typeof value === "boolean" || value === null) clean[key.slice(0, 40)] = value;
+  }
+  return clean;
+}
+var telemetryOff = {
+  record() {
+  },
+  async time(_name, _detail, work) {
+    return work();
+  },
+  async flush() {
+  },
+  flushOnExit() {
+  },
+  enabled: false
+};
+function createTelemetry(sender, options = {}) {
+  const config2 = options.config ?? getConfig();
+  if (!config2.telemetry || !config2.token) return telemetryOff;
+  const now = options.now ?? Date.now;
+  const sessionId = options.sessionId ?? getTelemetrySessionId();
+  let queue = [];
+  let installed = false;
+  const flush = async () => {
+    if (!queue.length) return;
+    const batch = queue;
+    queue = [];
+    try {
+      await sender.send(batch, sessionId);
+    } catch {
+    }
+  };
+  return {
+    enabled: true,
+    record(input2) {
+      if (queue.length >= MAX_QUEUED) return;
+      queue.push({
+        name: input2.name,
+        at: new Date(now()).toISOString(),
+        detail: sanitize(input2.detail),
+        ...input2.ms === void 0 ? {} : { ms: Math.max(0, Math.round(input2.ms)) },
+        ...input2.ok === void 0 ? {} : { ok: input2.ok }
+      });
+    },
+    async time(name, detail, work) {
+      const started = now();
+      try {
+        const result = await work();
+        this.record({ name, ms: now() - started, ok: true, detail });
+        return result;
+      } catch (error62) {
+        const code = error62 instanceof Error && "code" in error62 && typeof error62.code === "string" ? error62.code : error62 instanceof Error ? error62.name : "unknown";
+        this.record({ name, ms: now() - started, ok: false, detail: { ...detail, code } });
+        throw error62;
+      }
+    },
+    flush,
+    flushOnExit() {
+      if (installed) return;
+      installed = true;
+      process.once("beforeExit", () => {
+        void flush();
+      });
+    }
+  };
+}
+function createApiSender(post) {
+  return {
+    async send(events, sessionId) {
+      await Promise.race([
+        post("/plugin/telemetry", { ...sessionId ? { sessionId } : {}, events }),
+        new Promise((resolve) => setTimeout(resolve, TELEMETRY_TIMEOUT_MS).unref?.())
+      ]);
+    }
+  };
+}
+
 // src/updates.ts
 import fs5 from "node:fs";
 import os4 from "node:os";
@@ -21860,6 +22211,25 @@ async function checkForUpdate(currentVersion, platform2, localBuildSha, fetcher 
   }
   return { current: currentVersion, latest, updateAvailable: versionNewer || staleSameVersion, autoUpdateEnabled: isAutoUpdateEnabled(platform2, homeDir), staleSameVersion };
 }
+var AUTO_UPDATE_RETRY_MS = 30 * 60 * 1e3;
+var autoUpdateFile = (homeDir) => path5.join(homeDir, ".config", "context-graph", "auto-update.json");
+function readAutoUpdate(homeDir = os4.homedir()) {
+  try {
+    const parsed = JSON.parse(fs5.readFileSync(autoUpdateFile(homeDir), "utf8"));
+    if (typeof parsed.target !== "string" || typeof parsed.attemptedAt !== "number") return null;
+    return { target: parsed.target, attemptedAt: parsed.attemptedAt, outcome: parsed.outcome === "applied" ? "applied" : "failed" };
+  } catch {
+    return null;
+  }
+}
+function updateTarget(status) {
+  return status.staleSameVersion ? `${status.current}+build` : status.latest ?? status.current;
+}
+function shouldAutoUpdate(status, record2, now = Date.now()) {
+  if (!status.updateAvailable || status.autoUpdateEnabled) return false;
+  if (!record2 || record2.target !== updateTarget(status)) return true;
+  return record2.outcome === "failed" && now - record2.attemptedAt >= AUTO_UPDATE_RETRY_MS;
+}
 
 // src/version.ts
 import fs6 from "node:fs";
@@ -21881,37 +22251,88 @@ async function checkConnection(timeoutMs = 4e3) {
     return { state: "unreachable", serviceUrl: config2.serviceUrl };
   }
 }
-function describeConnection(connection) {
+async function checkOrganizations(timeoutMs = 4e3) {
+  const config2 = getConfig();
+  if (!config2.token) return null;
+  try {
+    return PluginOrganizationListSchema.parse(await createApiClient(platform, getVersion(), { config: config2, timeoutMs }).get("/plugin/organizations")).items;
+  } catch {
+    return null;
+  }
+}
+function describeConnection(connection, organizations = null) {
   switch (connection.state) {
     case "signed-out":
       return `[Context graph] Not connected. Run ${platform.loginHint} to connect the plugin to your workspace.`;
-    case "connected":
-      return `[Context graph] Connected to workspace ${connection.workspaceId}${formatEndpointSuffix(connection.serviceUrl)} as "${connection.label}" (${connection.role}). Skills: /context-graph:graph, /context-graph:ontology.`;
+    case "connected": {
+      const current = organizations?.find((item) => item.workspaceId === connection.workspaceId);
+      const where = current ? `${current.name} (workspace ${connection.workspaceId})` : `workspace ${connection.workspaceId}`;
+      return `[Context graph] Connected to ${where}${formatEndpointSuffix(connection.serviceUrl)} as "${connection.label}" (${connection.role}). Skills: /context-graph:graph, /context-graph:ontology, /context-graph:views.`;
+    }
     case "rejected":
       return `[Context graph] The saved sign-in for ${connection.serviceUrl} was rejected. Run ${platform.loginHint} to connect again.`;
     case "unreachable":
       return `[Context graph] Could not reach ${connection.serviceUrl} to verify the connection; it may be down or you may be offline.`;
   }
 }
-async function sessionStartMessages(update = () => checkForUpdate(getVersion(), platform, readBuildInfo(PLUGIN_ROOT)?.gitSha), connection = () => checkConnection()) {
+function describeOrganizations(organizations) {
+  if (!organizations || organizations.length < 2) return null;
+  const others = organizations.filter((item) => !item.current);
+  if (!others.length) return null;
+  const named = others.slice(0, 3).map((item) => item.name).join(", ");
+  return `[Context graph] ${others.length} other organization${others.length === 1 ? "" : "s"} to work in: ${named}${others.length > 3 ? `, and ${others.length - 3} more` : ""}.
+          Each has its own sources, ontology and views. Run ${platform.setupHint} org to switch.`;
+}
+function startBackgroundUpdate(spawnUpdate = defaultSpawnUpdate) {
+  try {
+    spawnUpdate();
+  } catch {
+  }
+}
+function defaultSpawnUpdate() {
+  const entry = path7.join(PLUGIN_ROOT, "dist", "commands", "update.js");
+  spawn(process.execPath, [entry, "--auto"], { detached: true, stdio: "ignore" }).unref();
+}
+async function sessionStartMessages(update = () => checkForUpdate(getVersion(), platform, readBuildInfo(PLUGIN_ROOT)?.gitSha), connection = () => checkConnection(), organizations = () => checkOrganizations(), startUpdate = () => startBackgroundUpdate()) {
   const messages = [];
-  const [connected, available] = await Promise.all([connection().catch(() => ({ state: "signed-out" })), update().catch(() => null)]);
-  messages.push(describeConnection(connected));
+  const [connected, available, orgs] = await Promise.all([
+    connection().catch(() => ({ state: "signed-out" })),
+    update().catch(() => null),
+    organizations().catch(() => null)
+  ]);
+  messages.push(describeConnection(connected, orgs));
+  const others = describeOrganizations(orgs);
+  if (others) messages.push(others);
   if (available?.updateAvailable) {
-    const first = available.staleSameVersion ? `[Context graph] The cached plugin build is behind the published v${available.current}.` : `[Context graph] Update available: v${available.current} \u2192 v${available.latest}.`;
-    messages.push(`${first}
-          ${available.autoUpdateEnabled ? "Auto-update is enabled, restart to apply." : `Run ${platform.updateHint} to update, or enable auto-update: /plugin \u2192 Marketplaces \u2192 ${platform.marketplaceName} \u2192 Enable auto-update`}`);
+    const what = available.staleSameVersion ? `the cached build of v${available.current}` : `v${available.current} \u2192 v${available.latest}`;
+    if (available.autoUpdateEnabled) {
+      messages.push(`[Context graph] Update ready (${what}).
+          Auto-update is enabled, so restart ${platform.displayName} to load it.`);
+    } else if (shouldAutoUpdate(available, readAutoUpdate())) {
+      startUpdate();
+      messages.push(`[Context graph] Updating ${what} in the background.
+          Restart ${platform.displayName} to load it.`);
+    } else {
+      messages.push(`[Context graph] Update ${what} could not be applied automatically.
+          Run ${platform.updateHint} to see why, or ${platform.cliBinary} plugin marketplace add ${platform.repo} if the marketplace is not registered.`);
+    }
   }
   return messages;
 }
 if (process.env.VITEST === void 0) {
-  sessionStartMessages().then((messages) => {
+  const telemetry = createTelemetry(createApiSender((path8, body) => createApiClient(platform, getVersion()).post(path8, body)), { sessionId: startTelemetrySession() });
+  sessionStartMessages().then(async (messages) => {
     if (messages.length) process.stdout.write(JSON.stringify({ systemMessage: `
 ${messages.join("\n")}` }));
+    telemetry.record({ name: "session.start", ok: true, detail: { version: getVersion(), connected: messages[0]?.includes("Connected to") === true, build: readBuildInfo(PLUGIN_ROOT)?.gitSha.slice(0, 7) ?? null } });
+    await telemetry.flush();
   }).catch(() => void 0);
 }
 export {
   checkConnection,
+  checkOrganizations,
   describeConnection,
-  sessionStartMessages
+  describeOrganizations,
+  sessionStartMessages,
+  startBackgroundUpdate
 };

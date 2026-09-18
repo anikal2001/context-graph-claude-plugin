@@ -5,10 +5,11 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// src/commands/login.ts
-import { createHash, randomBytes } from "node:crypto";
-import os5 from "node:os";
-import { setTimeout as delay } from "node:timers/promises";
+// src/hooks/userPromptSubmit.ts
+import fs5 from "node:fs";
+
+// src/client.ts
+import os2 from "node:os";
 
 // ../node_modules/.bun/zod@4.6.5/node_modules/zod/v4/classic/external.js
 var external_exports = {};
@@ -1293,8 +1294,8 @@ function uint8ArrayToBase64(bytes) {
   }
   return btoa(binaryString);
 }
-function base64urlToUint8Array(base64url4) {
-  const base643 = base64url4.replace(/-/g, "+").replace(/_/g, "/");
+function base64urlToUint8Array(base64url3) {
+  const base643 = base64url3.replace(/-/g, "+").replace(/_/g, "/");
   const padding = "=".repeat((4 - base643.length % 4) % 4);
   return base64ToUint8Array(base643 + padding);
 }
@@ -13190,9 +13191,9 @@ function codePointLengthVar(doc, ctx, accessor, inDoubt) {
   doc.write(`const ${v} = typeof ${accessor} === "string" && ${inDoubt} ? ${cpLen}(${accessor}) : ${accessor}.length;`);
   return v;
 }
-function numericOperand(value, label2) {
+function numericOperand(value, label) {
   if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new ZodCompileUnsupportedError(`${label2} bound of type ${typeof value}`);
+    throw new ZodCompileUnsupportedError(`${label} bound of type ${typeof value}`);
   }
   return `${value}`;
 }
@@ -21857,31 +21858,12 @@ var WorkspaceClearedSchema = external_exports.strictObject({
   total: external_exports.number().int().nonnegative()
 });
 
-// src/browser.ts
-import { spawn } from "node:child_process";
-import os from "node:os";
-function openBrowser(url2) {
-  if (process.env.VITEST) throw new Error("openBrowser called in a test without being mocked");
-  const [command, args] = os.platform() === "darwin" ? ["open", [url2]] : os.platform() === "win32" ? ["cmd", ["/c", "start", "", url2]] : ["xdg-open", [url2]];
-  try {
-    const child = spawn(command, args, { detached: true, stdio: "ignore" });
-    child.on("error", () => void 0);
-    child.unref();
-    return child.pid !== void 0;
-  } catch {
-    return false;
-  }
-}
-
-// src/client.ts
-import os3 from "node:os";
-
 // src/config.ts
 import fs from "node:fs";
-import os2 from "node:os";
+import os from "node:os";
 import path from "node:path";
 var DEFAULT_SERVICE_URL = "https://context-graph-geoff-yuens-projects.vercel.app";
-var CONFIG_DIR = path.join(os2.homedir(), ".config", "context-graph");
+var CONFIG_DIR = path.join(os.homedir(), ".config", "context-graph");
 var CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 var CREDENTIALS_FILE = path.join(CONFIG_DIR, "credentials.json");
 var PROJECT_CONFIG = path.join(".context-graph", "config.local.json");
@@ -21923,12 +21905,6 @@ function getConfig(env = process.env) {
   const telemetry = env.CONTEXT_GRAPH_TELEMETRY === "0" || env.CONTEXT_GRAPH_TELEMETRY === "false" ? false : global.telemetry !== false;
   return { serviceUrl: normalizeServiceUrl(serviceUrl), token, verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true, telemetry };
 }
-function saveServiceUrl(serviceUrl) {
-  writeJson(CONFIG_FILE, { ...readJson(CONFIG_FILE) ?? {}, serviceUrl: normalizeServiceUrl(serviceUrl) });
-}
-function saveToken(token) {
-  writeJson(CREDENTIALS_FILE, { token });
-}
 function getOrCreateInstallId() {
   const existing = readJson(CONFIG_FILE) ?? {};
   if (typeof existing.installId === "string" && existing.installId) return existing.installId;
@@ -21941,8 +21917,10 @@ function getOrCreateInstallId() {
 }
 var SESSION_FILE = path.join(CONFIG_DIR, "session.json");
 var SESSION_TTL_MS = 24 * 60 * 60 * 1e3;
-function formatEndpointSuffix(serviceUrl) {
-  return serviceUrl === DEFAULT_SERVICE_URL ? "" : ` @ ${new URL(serviceUrl).host}`;
+function getTelemetrySessionId(now = Date.now()) {
+  const saved = readJson(SESSION_FILE);
+  if (typeof saved?.id === "string" && typeof saved.startedAt === "number" && now - saved.startedAt < SESSION_TTL_MS) return saved.id;
+  return void 0;
 }
 
 // src/client.ts
@@ -21961,7 +21939,7 @@ function clientHeaders(pluginVersion, platform2) {
   return {
     "x-context-graph-client": platform2.cliBinary,
     "x-context-graph-client-version": pluginVersion,
-    "x-context-graph-client-os": os3.platform(),
+    "x-context-graph-client-os": os2.platform(),
     "x-context-graph-install-id": getOrCreateInstallId()
   };
 }
@@ -22010,82 +21988,9 @@ function createApiClient(platform2, pluginVersion, options = {}) {
   };
 }
 
-// src/parseArgs.ts
-var label = (spec) => spec.required !== false ? `<${spec.name}>` : `[${spec.name}]`;
-var flagLabel = (spec) => spec.boolean ? `[--${spec.name}]` : `[--${spec.name} <${spec.name}>${spec.default !== void 0 ? ` (default: ${spec.default})` : ""}]`;
-function commandName(argv) {
-  return argv[1]?.replace(/.*[\\/]/, "").replace(/\.[jt]s$/, "") ?? "command";
-}
-function buildHelp(command, spec) {
-  const positional = spec.positional ?? [];
-  const flags = spec.flags ?? [];
-  const lines = [`Usage: ${[command, ...positional.map(label), ...flags.map(flagLabel)].join(" ")}`, "", spec.description];
-  const width = Math.max(0, ...positional.map((item) => item.name.length), ...flags.map((item) => item.name.length + 2));
-  const described = positional.filter((item) => item.description);
-  if (described.length) {
-    lines.push("", "Arguments:");
-    for (const item of described) lines.push(`  ${item.name.padEnd(width)}  ${item.description}`);
-  }
-  if (flags.length) {
-    lines.push("", "Flags:");
-    for (const item of flags) lines.push(`  ${`--${item.name}`.padEnd(width)}  ${[item.description, item.default !== void 0 ? `(default: ${item.default})` : ""].filter(Boolean).join(" ")}`.trimEnd());
-  }
-  return lines.join("\n");
-}
-function printHelpIfRequested(spec) {
-  const argv = spec.argv ?? process.argv;
-  if (!argv.slice(2).some((token) => token === "-h" || token === "--help")) return;
-  console.log(buildHelp(commandName(argv), spec));
-  process.exit(0);
-}
-var UsageError = class extends Error {
-};
-function parseArgs(spec) {
-  const argv = spec.argv ?? process.argv;
-  printHelpIfRequested(spec);
-  const positional = [];
-  const flags = {};
-  for (const flag of spec.flags ?? []) if (flag.default !== void 0) flags[flag.name] = flag.default;
-  const raw = argv.slice(2);
-  for (let index = 0; index < raw.length; index++) {
-    const token = raw[index];
-    if (!token.startsWith("--")) {
-      positional.push(token);
-      continue;
-    }
-    const flag = (spec.flags ?? []).find((item) => `--${item.name}` === token);
-    if (!flag) throw new UsageError(`Unknown flag: ${token}`);
-    if (flag.boolean) {
-      flags[flag.name] = true;
-      continue;
-    }
-    const value = raw[index + 1];
-    if (value === void 0 || value.startsWith("--")) throw new UsageError(`Flag ${token} requires a value.`);
-    flags[flag.name] = value;
-    index += 1;
-  }
-  const required2 = (spec.positional ?? []).filter((item) => item.required !== false).length;
-  if (positional.length < required2) throw new UsageError(`Expected at least ${required2} argument${required2 === 1 ? "" : "s"}, got ${positional.length}.`);
-  if (positional.length > (spec.positional ?? []).length) throw new UsageError(`Expected at most ${(spec.positional ?? []).length} argument${(spec.positional ?? []).length === 1 ? "" : "s"}, got ${positional.length}.`);
-  return { positional, flags };
-}
-async function runCommand(spec, work) {
-  try {
-    await work(parseArgs(spec));
-  } catch (error62) {
-    if (error62 instanceof UsageError) {
-      console.error(buildHelp(commandName(spec.argv ?? process.argv), spec));
-      console.error(error62.message);
-      process.exit(1);
-    }
-    console.error(error62 instanceof Error ? error62.message : String(error62));
-    process.exit(1);
-  }
-}
-
 // src/installScope.ts
 import fs2 from "node:fs";
-import os4 from "node:os";
+import os3 from "node:os";
 import path2 from "node:path";
 var INSTALL_SCOPES = ["user", "project", "local", "managed"];
 function pluginUpdateScopes(scopes) {
@@ -22104,7 +22009,7 @@ function installScopeAppliesToProject(projectPath, projectDir) {
   const current = canonical(projectDir);
   return current === project || current.startsWith(`${project}${path2.sep}`);
 }
-function detectClaudeInstallScopes(pluginKey, homeDir = os4.homedir(), projectDir = process.cwd()) {
+function detectClaudeInstallScopes(pluginKey, homeDir = os3.homedir(), projectDir = process.cwd()) {
   try {
     const parsed = JSON.parse(fs2.readFileSync(path2.join(homeDir, ".claude", "plugins", "installed_plugins.json"), "utf8"));
     const scopes = /* @__PURE__ */ new Set();
@@ -22136,6 +22041,97 @@ var platform = {
   ]
 };
 
+// src/telemetry.ts
+var MAX_QUEUED = 50;
+var MAX_VALUE = 200;
+var MAX_KEYS = 12;
+var TELEMETRY_TIMEOUT_MS = 4e3;
+function sanitize(detail) {
+  const clean = {};
+  if (!detail) return clean;
+  for (const [key, value] of Object.entries(detail)) {
+    if (Object.keys(clean).length >= MAX_KEYS) break;
+    if (value === void 0) continue;
+    if (typeof value === "string") clean[key.slice(0, 40)] = value.slice(0, MAX_VALUE);
+    else if (typeof value === "number") {
+      if (Number.isFinite(value)) clean[key.slice(0, 40)] = value;
+    } else if (typeof value === "boolean" || value === null) clean[key.slice(0, 40)] = value;
+  }
+  return clean;
+}
+var telemetryOff = {
+  record() {
+  },
+  async time(_name, _detail, work) {
+    return work();
+  },
+  async flush() {
+  },
+  flushOnExit() {
+  },
+  enabled: false
+};
+function createTelemetry(sender, options = {}) {
+  const config2 = options.config ?? getConfig();
+  if (!config2.telemetry || !config2.token) return telemetryOff;
+  const now = options.now ?? Date.now;
+  const sessionId = options.sessionId ?? getTelemetrySessionId();
+  let queue = [];
+  let installed = false;
+  const flush = async () => {
+    if (!queue.length) return;
+    const batch = queue;
+    queue = [];
+    try {
+      await sender.send(batch, sessionId);
+    } catch {
+    }
+  };
+  return {
+    enabled: true,
+    record(input2) {
+      if (queue.length >= MAX_QUEUED) return;
+      queue.push({
+        name: input2.name,
+        at: new Date(now()).toISOString(),
+        detail: sanitize(input2.detail),
+        ...input2.ms === void 0 ? {} : { ms: Math.max(0, Math.round(input2.ms)) },
+        ...input2.ok === void 0 ? {} : { ok: input2.ok }
+      });
+    },
+    async time(name, detail, work) {
+      const started = now();
+      try {
+        const result = await work();
+        this.record({ name, ms: now() - started, ok: true, detail });
+        return result;
+      } catch (error62) {
+        const code = error62 instanceof Error && "code" in error62 && typeof error62.code === "string" ? error62.code : error62 instanceof Error ? error62.name : "unknown";
+        this.record({ name, ms: now() - started, ok: false, detail: { ...detail, code } });
+        throw error62;
+      }
+    },
+    flush,
+    flushOnExit() {
+      if (installed) return;
+      installed = true;
+      process.once("beforeExit", () => {
+        void flush();
+      });
+    }
+  };
+}
+function createApiSender(post) {
+  return {
+    async send(events, sessionId) {
+      await Promise.race([
+        post("/plugin/telemetry", { ...sessionId ? { sessionId } : {}, events }),
+        new Promise((resolve) => setTimeout(resolve, TELEMETRY_TIMEOUT_MS).unref?.())
+      ]);
+    }
+  };
+}
+
 // src/version.ts
 import fs4 from "node:fs";
 import path4 from "node:path";
@@ -22160,59 +22156,57 @@ function getVersion() {
   return PLUGIN_VERSION;
 }
 
-// src/commands/login.ts
-var base64url3 = (bytes) => bytes.toString("base64url");
-async function runLogin(options) {
-  if (options.url) saveServiceUrl(options.url);
-  const config2 = getConfig();
-  if (!options.force && config2.token) {
-    try {
-      const who = PluginWhoAmISchema.parse(await createApiClient(platform, getVersion(), { config: config2 }).get("/plugin/whoami"));
-      console.log(`Already signed in as ${who.principal.subjectId} (${who.principal.role}) in workspace ${who.principal.workspaceId}${formatEndpointSuffix(config2.serviceUrl)}.`);
-      return;
-    } catch (error62) {
-      if (!(error62 instanceof ApiError) || error62.code !== "UNAUTHENTICATED") throw error62;
-      console.log("Saved sign-in is no longer valid; signing in again.");
-    }
+// src/hooks/userPromptSubmit.ts
+var KNOWN_MODES = /* @__PURE__ */ new Set([
+  "login",
+  "status",
+  "logout",
+  "url",
+  "org",
+  "organizations",
+  "edit",
+  "review",
+  "history",
+  "revert",
+  "list",
+  "delete",
+  "open",
+  "versions",
+  "save",
+  "draft",
+  "publish",
+  "compare",
+  "settings",
+  "discard",
+  "check",
+  "apply"
+]);
+var INVOCATION = /^\/context-graph:([a-z-]+)(?:\s+([a-z-]+))?/;
+function readInvocation(prompt) {
+  if (typeof prompt !== "string") return null;
+  const match = INVOCATION.exec(prompt.trimStart());
+  if (!match) return null;
+  const mode = match[2] && KNOWN_MODES.has(match[2]) ? match[2] : null;
+  return { skill: match[1].slice(0, 40), mode };
+}
+function readHookStdin() {
+  try {
+    const raw = fs5.readFileSync(0, "utf8").trim();
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
   }
-  const anonymous = createApiClient(platform, getVersion(), { config: { ...config2, token: null } });
-  const verifier = base64url3(randomBytes(32));
-  const challenge = base64url3(createHash("sha256").update(verifier).digest());
-  const label2 = options.label ?? `Claude Code on ${os5.hostname()}`;
-  const ticket = HandoffTicketCreatedSchema.parse(await anonymous.anonymous("POST", "/plugin/handoff-tickets", { kind: "auth.login", host: platform.authPath, pkceChallenge: challenge, pkceMethod: "S256", label: label2 }));
-  const loginWindow = randomBytes(16).toString("hex");
-  const signInUrl = `${config2.serviceUrl}/plugin/auth/${platform.authPath}?ticket=${encodeURIComponent(ticket.id)}&loginWindow=${loginWindow}`;
-  console.log(`Sign in to Context graph: ${signInUrl}`);
-  if (!(options.open ?? openBrowser)(signInUrl)) console.log("Could not open a browser. Open the sign-in link above to continue.");
-  const deadline = new Date(ticket.expiresAt).getTime();
-  while (Date.now() < deadline) {
-    let poll = null;
-    try {
-      poll = HandoffTicketPollSchema.parse(await anonymous.anonymous("GET", `/plugin/handoff-tickets/${encodeURIComponent(ticket.id)}?verifier=${encodeURIComponent(verifier)}`));
-    } catch (error62) {
-      if (error62 instanceof ApiError && error62.status >= 400 && error62.status < 500 && error62.status !== 429) throw new Error(`Could not complete sign-in (${error62.code}). Run ${platform.loginHint} again.`, { cause: error62 });
-    }
-    if (poll?.status === "completed") {
-      saveToken(poll.data.token);
-      const who = PluginWhoAmISchema.parse(await createApiClient(platform, getVersion(), { config: { ...config2, token: poll.data.token } }).get("/plugin/whoami"));
-      console.log(`Signed in as ${who.principal.subjectId} (${who.principal.role}) in workspace ${who.principal.workspaceId}${formatEndpointSuffix(config2.serviceUrl)}.`);
-      return;
-    }
-    if (poll?.status === "expired") throw new Error(`Sign-in expired. Run ${platform.loginHint} again.`);
-    await delay(Math.max(250, Math.min(ticket.pollIntervalMs, deadline - Date.now())));
-  }
-  throw new Error(`Sign-in timed out. Run ${platform.loginHint} again.`);
 }
 if (process.env.VITEST === void 0) {
-  void runCommand({
-    description: "Sign in to Context graph from the browser and save a plugin token for this machine.",
-    flags: [
-      { name: "force", boolean: true, description: "Sign in again even when a saved token still works." },
-      { name: "url", description: "App URL to sign in to; saved as the service URL for later commands." },
-      { name: "label", description: "Name shown for this token in the app." }
-    ]
-  }, ({ flags }) => runLogin({ force: flags.force === true, url: typeof flags.url === "string" ? flags.url : void 0, label: typeof flags.label === "string" ? flags.label : void 0 }));
+  const invocation = readInvocation(readHookStdin()?.prompt);
+  if (invocation) {
+    const telemetry = createTelemetry(createApiSender((path5, body) => createApiClient(platform, getVersion()).post(path5, body)));
+    telemetry.record({ name: "skill.invoked", detail: { skill: invocation.skill, mode: invocation.mode, version: getVersion() } });
+    void telemetry.flush().catch(() => void 0);
+  }
 }
 export {
-  runLogin
+  KNOWN_MODES,
+  readHookStdin,
+  readInvocation
 };

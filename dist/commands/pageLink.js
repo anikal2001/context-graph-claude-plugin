@@ -39,8 +39,11 @@ function getConfig(env = process.env) {
   const fromEnv = env.CONTEXT_GRAPH_URL;
   const serviceUrl = fromEnv ?? (typeof project?.serviceUrl === "string" ? project.serviceUrl : typeof global.serviceUrl === "string" ? global.serviceUrl : DEFAULT_SERVICE_URL);
   const token = env.CONTEXT_GRAPH_TOKEN ?? (typeof credentials.token === "string" ? credentials.token : null);
-  return { serviceUrl: normalizeServiceUrl(serviceUrl), token, verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true };
+  const telemetry = env.CONTEXT_GRAPH_TELEMETRY === "0" || env.CONTEXT_GRAPH_TELEMETRY === "false" ? false : global.telemetry !== false;
+  return { serviceUrl: normalizeServiceUrl(serviceUrl), token, verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true, telemetry };
 }
+var SESSION_FILE = path.join(CONFIG_DIR, "session.json");
+var SESSION_TTL_MS = 24 * 60 * 60 * 1e3;
 
 // src/output.ts
 function emitJson(event) {

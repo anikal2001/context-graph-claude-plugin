@@ -5,11 +5,6 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// src/commands/login.ts
-import { createHash, randomBytes } from "node:crypto";
-import os5 from "node:os";
-import { setTimeout as delay } from "node:timers/promises";
-
 // ../node_modules/.bun/zod@4.6.5/node_modules/zod/v4/classic/external.js
 var external_exports = {};
 __export(external_exports, {
@@ -1293,8 +1288,8 @@ function uint8ArrayToBase64(bytes) {
   }
   return btoa(binaryString);
 }
-function base64urlToUint8Array(base64url4) {
-  const base643 = base64url4.replace(/-/g, "+").replace(/_/g, "/");
+function base64urlToUint8Array(base64url3) {
+  const base643 = base64url3.replace(/-/g, "+").replace(/_/g, "/");
   const padding = "=".repeat((4 - base643.length % 4) % 4);
   return base64ToUint8Array(base643 + padding);
 }
@@ -2582,8 +2577,8 @@ var Doc = class {
     const lines = content.split("\n").filter((x) => x);
     const minIndent = Math.min(...lines.map((x) => x.length - x.trimStart().length));
     const dedented = lines.map((x) => x.slice(minIndent)).map((x) => " ".repeat(this.indent * 2) + x);
-    for (const line of dedented) {
-      this.content.push(line);
+    for (const line2 of dedented) {
+      this.content.push(line2);
     }
   }
   compile() {
@@ -21857,31 +21852,15 @@ var WorkspaceClearedSchema = external_exports.strictObject({
   total: external_exports.number().int().nonnegative()
 });
 
-// src/browser.ts
-import { spawn } from "node:child_process";
-import os from "node:os";
-function openBrowser(url2) {
-  if (process.env.VITEST) throw new Error("openBrowser called in a test without being mocked");
-  const [command, args] = os.platform() === "darwin" ? ["open", [url2]] : os.platform() === "win32" ? ["cmd", ["/c", "start", "", url2]] : ["xdg-open", [url2]];
-  try {
-    const child = spawn(command, args, { detached: true, stdio: "ignore" });
-    child.on("error", () => void 0);
-    child.unref();
-    return child.pid !== void 0;
-  } catch {
-    return false;
-  }
-}
-
 // src/client.ts
-import os3 from "node:os";
+import os2 from "node:os";
 
 // src/config.ts
 import fs from "node:fs";
-import os2 from "node:os";
+import os from "node:os";
 import path from "node:path";
 var DEFAULT_SERVICE_URL = "https://context-graph-geoff-yuens-projects.vercel.app";
-var CONFIG_DIR = path.join(os2.homedir(), ".config", "context-graph");
+var CONFIG_DIR = path.join(os.homedir(), ".config", "context-graph");
 var CONFIG_FILE = path.join(CONFIG_DIR, "config.json");
 var CREDENTIALS_FILE = path.join(CONFIG_DIR, "credentials.json");
 var PROJECT_CONFIG = path.join(".context-graph", "config.local.json");
@@ -21923,9 +21902,6 @@ function getConfig(env = process.env) {
   const telemetry = env.CONTEXT_GRAPH_TELEMETRY === "0" || env.CONTEXT_GRAPH_TELEMETRY === "false" ? false : global.telemetry !== false;
   return { serviceUrl: normalizeServiceUrl(serviceUrl), token, verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true, telemetry };
 }
-function saveServiceUrl(serviceUrl) {
-  writeJson(CONFIG_FILE, { ...readJson(CONFIG_FILE) ?? {}, serviceUrl: normalizeServiceUrl(serviceUrl) });
-}
 function saveToken(token) {
   writeJson(CREDENTIALS_FILE, { token });
 }
@@ -21941,9 +21917,6 @@ function getOrCreateInstallId() {
 }
 var SESSION_FILE = path.join(CONFIG_DIR, "session.json");
 var SESSION_TTL_MS = 24 * 60 * 60 * 1e3;
-function formatEndpointSuffix(serviceUrl) {
-  return serviceUrl === DEFAULT_SERVICE_URL ? "" : ` @ ${new URL(serviceUrl).host}`;
-}
 
 // src/client.ts
 var ApiError = class extends Error {
@@ -21961,7 +21934,7 @@ function clientHeaders(pluginVersion, platform2) {
   return {
     "x-context-graph-client": platform2.cliBinary,
     "x-context-graph-client-version": pluginVersion,
-    "x-context-graph-client-os": os3.platform(),
+    "x-context-graph-client-os": os2.platform(),
     "x-context-graph-install-id": getOrCreateInstallId()
   };
 }
@@ -22085,7 +22058,7 @@ async function runCommand(spec, work) {
 
 // src/installScope.ts
 import fs2 from "node:fs";
-import os4 from "node:os";
+import os3 from "node:os";
 import path2 from "node:path";
 var INSTALL_SCOPES = ["user", "project", "local", "managed"];
 function pluginUpdateScopes(scopes) {
@@ -22104,7 +22077,7 @@ function installScopeAppliesToProject(projectPath, projectDir) {
   const current = canonical(projectDir);
   return current === project || current.startsWith(`${project}${path2.sep}`);
 }
-function detectClaudeInstallScopes(pluginKey, homeDir = os4.homedir(), projectDir = process.cwd()) {
+function detectClaudeInstallScopes(pluginKey, homeDir = os3.homedir(), projectDir = process.cwd()) {
   try {
     const parsed = JSON.parse(fs2.readFileSync(path2.join(homeDir, ".claude", "plugins", "installed_plugins.json"), "utf8"));
     const scopes = /* @__PURE__ */ new Set();
@@ -22160,59 +22133,42 @@ function getVersion() {
   return PLUGIN_VERSION;
 }
 
-// src/commands/login.ts
-var base64url3 = (bytes) => bytes.toString("base64url");
-async function runLogin(options) {
-  if (options.url) saveServiceUrl(options.url);
-  const config2 = getConfig();
-  if (!options.force && config2.token) {
-    try {
-      const who = PluginWhoAmISchema.parse(await createApiClient(platform, getVersion(), { config: config2 }).get("/plugin/whoami"));
-      console.log(`Already signed in as ${who.principal.subjectId} (${who.principal.role}) in workspace ${who.principal.workspaceId}${formatEndpointSuffix(config2.serviceUrl)}.`);
-      return;
-    } catch (error62) {
-      if (!(error62 instanceof ApiError) || error62.code !== "UNAUTHENTICATED") throw error62;
-      console.log("Saved sign-in is no longer valid; signing in again.");
-    }
+// src/commands/switchOrg.ts
+var line = (event) => {
+  console.log(JSON.stringify(event));
+};
+async function runSwitchOrg(organizationId, client, save = saveToken) {
+  if (organizationId === void 0) {
+    const list = PluginOrganizationListSchema.parse(await client.get("/plugin/organizations"));
+    return { event: "organizations", complete: list.complete, items: list.items };
   }
-  const anonymous = createApiClient(platform, getVersion(), { config: { ...config2, token: null } });
-  const verifier = base64url3(randomBytes(32));
-  const challenge = base64url3(createHash("sha256").update(verifier).digest());
-  const label2 = options.label ?? `Claude Code on ${os5.hostname()}`;
-  const ticket = HandoffTicketCreatedSchema.parse(await anonymous.anonymous("POST", "/plugin/handoff-tickets", { kind: "auth.login", host: platform.authPath, pkceChallenge: challenge, pkceMethod: "S256", label: label2 }));
-  const loginWindow = randomBytes(16).toString("hex");
-  const signInUrl = `${config2.serviceUrl}/plugin/auth/${platform.authPath}?ticket=${encodeURIComponent(ticket.id)}&loginWindow=${loginWindow}`;
-  console.log(`Sign in to Context graph: ${signInUrl}`);
-  if (!(options.open ?? openBrowser)(signInUrl)) console.log("Could not open a browser. Open the sign-in link above to continue.");
-  const deadline = new Date(ticket.expiresAt).getTime();
-  while (Date.now() < deadline) {
-    let poll = null;
-    try {
-      poll = HandoffTicketPollSchema.parse(await anonymous.anonymous("GET", `/plugin/handoff-tickets/${encodeURIComponent(ticket.id)}?verifier=${encodeURIComponent(verifier)}`));
-    } catch (error62) {
-      if (error62 instanceof ApiError && error62.status >= 400 && error62.status < 500 && error62.status !== 429) throw new Error(`Could not complete sign-in (${error62.code}). Run ${platform.loginHint} again.`, { cause: error62 });
-    }
-    if (poll?.status === "completed") {
-      saveToken(poll.data.token);
-      const who = PluginWhoAmISchema.parse(await createApiClient(platform, getVersion(), { config: { ...config2, token: poll.data.token } }).get("/plugin/whoami"));
-      console.log(`Signed in as ${who.principal.subjectId} (${who.principal.role}) in workspace ${who.principal.workspaceId}${formatEndpointSuffix(config2.serviceUrl)}.`);
-      return;
-    }
-    if (poll?.status === "expired") throw new Error(`Sign-in expired. Run ${platform.loginHint} again.`);
-    await delay(Math.max(250, Math.min(ticket.pollIntervalMs, deadline - Date.now())));
-  }
-  throw new Error(`Sign-in timed out. Run ${platform.loginHint} again.`);
+  const target = organizationId === "shared" || organizationId === "null" ? null : organizationId;
+  const result = SwitchOrganizationResultSchema.parse(await client.post("/plugin/organizations/switch", { organizationId: target }));
+  if (result.token) save(result.token);
+  return {
+    event: "switched",
+    status: result.status,
+    organizationId: result.organization.id,
+    name: result.organization.name,
+    workspaceId: result.organization.workspaceId,
+    role: result.organization.role
+  };
 }
 if (process.env.VITEST === void 0) {
   void runCommand({
-    description: "Sign in to Context graph from the browser and save a plugin token for this machine.",
-    flags: [
-      { name: "force", boolean: true, description: "Sign in again even when a saved token still works." },
-      { name: "url", description: "App URL to sign in to; saved as the service URL for later commands." },
-      { name: "label", description: "Name shown for this token in the app." }
-    ]
-  }, ({ flags }) => runLogin({ force: flags.force === true, url: typeof flags.url === "string" ? flags.url : void 0, label: typeof flags.label === "string" ? flags.label : void 0 }));
+    description: "List the organizations this person belongs to, or move this install to one of them. Each organization is a separate workspace with its own sources, ontology and views.",
+    positional: [{ name: "organizationId", required: false, description: 'Organization id to switch to, or "shared" for the shared workspace. Omit to list them.' }]
+  }, async ({ positional }) => {
+    const client = createApiClient(platform, getVersion());
+    try {
+      line(await runSwitchOrg(positional[0], client));
+    } catch (error62) {
+      if (error62 instanceof UsageError) throw error62;
+      line({ event: "error", reason: error62 instanceof Error ? error62.message : String(error62) });
+      process.exit(1);
+    }
+  });
 }
 export {
-  runLogin
+  runSwitchOrg
 };

@@ -1,7 +1,7 @@
 ---
-description: Connect Claude Code to a Context graph workspace. TRIGGER when the user wants to sign in to Context graph, connect the plugin, check whether it is signed in, point it at another deployment, or sign out, or says 'context graph login', 'connect context graph', 'context graph status'. SKIP when the user wants to edit the context graph or ontology (use /context-graph:graph or /context-graph:ontology) or update the plugin (use /context-graph:update).
-argument-hint: "[login|status|logout|url <app-url>]"
-allowed-tools: ["Bash", "AskUserQuestion", "mcp__plugin_context-graph_ContextGraph__whoami", "mcp__plugin_context-graph_ContextGraph__list_context_models"]
+description: Connect Claude Code to a Context graph workspace, and move it between organizations. TRIGGER when the user wants to sign in to Context graph, connect the plugin, check whether it is signed in, switch organization or workspace, see which organizations they belong to, point the plugin at another deployment, or sign out, or says 'context graph login', 'connect context graph', 'context graph status', 'switch org', 'change organization', 'I am in the wrong workspace', 'where are my other views'. SKIP when the user wants to edit the context graph or ontology (use /context-graph:graph or /context-graph:ontology) or update the plugin (use /context-graph:update).
+argument-hint: "[login|status|logout|org [<name>]|url <app-url>]"
+allowed-tools: ["Bash", "AskUserQuestion", "mcp__plugin_context-graph_ContextGraph__whoami", "mcp__plugin_context-graph_ContextGraph__list_context_models", "mcp__plugin_context-graph_ContextGraph__list_organizations", "mcp__plugin_context-graph_ContextGraph__switch_organization", "mcp__plugin_context-graph_ContextGraph__list_views"]
 ---
 
 # Context graph Setup
@@ -15,6 +15,7 @@ Sign the plugin in to a Context graph workspace from the browser, check its stat
 | `login.js [--force] [--url <app-url>] [--label <name>]` | Open the browser sign-in and wait for approval; saves the token |
 | `status.js` | Service URL, version and update availability, sign-in state |
 | `logout.js` | Revoke this machine's token on the server and forget it |
+| `switchOrg.js [<organizationId>]` | List the organizations this person belongs to, or move the plugin to one of them |
 | `pageLink.js [--page graph\|document] [--context <id>]` | Print a link to the graph (step 3) or document (step 4) page |
 
 ## Output
@@ -32,9 +33,12 @@ Read `$ARGUMENTS` first. If its first token is one of the modes below, run that 
 | Mode | Trigger | What it does |
 |------|---------|--------------|
 | `login` | `login` (default) | Sign in through the browser, then open the graph page |
-| `status` | `status` | Report sign-in state, service URL and plugin version |
+| `status` | `status` | Report sign-in state, organization, service URL and plugin version |
+| `org` | `org [<name>]` | Show which organization the plugin works in, and move it to another |
 | `logout` | `logout` | Revoke the token and sign out |
 | `url` | `url <app-url>` | Point the plugin at another deployment (local dev server, preview) and sign in there |
+
+**Natural-language aliases:** "switch org", "change workspace", "I'm in the wrong organization", "where are my other views" → `org`.
 
 ## Login
 
@@ -65,7 +69,25 @@ Read `$ARGUMENTS` first. If its first token is one of the modes below, run that 
 
 ## Status
 
-1. Run `node "${CLAUDE_PLUGIN_ROOT}/dist/commands/status.js"` and relay every line. If signed in, also call `mcp__plugin_context-graph_ContextGraph__whoami` and report the workspace. Stop.
+1. Run `node "${CLAUDE_PLUGIN_ROOT}/dist/commands/status.js"` and relay every line. If signed in, also call `mcp__plugin_context-graph_ContextGraph__whoami` and report the workspace. When the person belongs to more than one organization, say which one the plugin is in and that `/context-graph:setup org` moves it. Stop.
+
+## Org
+
+Every organization is its own workspace: its own sources, discovery, ontology, context models and views. The plugin holds a token for exactly one of them — whichever was active in the browser when it signed in — so "my view has disappeared" and "the plugin cannot see our Salesforce data" are usually one organization away from being true.
+
+1. Call `mcp__plugin_context-graph_ContextGraph__list_organizations`. It marks the organization the plugin is in now and names the others with the person's role in each. If the tool cannot be called, run `node "${CLAUDE_PLUGIN_ROOT}/dist/commands/switchOrg.js"`, which prints one JSON line with the same list.
+
+   - **Only one organization**: say which one the plugin is in and that there is nowhere else to switch. Stop.
+   - **The person named one** (in their request): match it case-insensitively against the names. On exactly one match, use its id. On none or several, ask.
+   - **Otherwise**: use `AskUserQuestion` to choose, listing each organization by name and role and marking the current one.
+2. Switch with `mcp__plugin_context-graph_ContextGraph__switch_organization`, passing the chosen `organizationId` (or `null` for the shared workspace). The server checks the membership, issues a token for that workspace and retires the old one; the plugin saves the new token itself. Equivalent from Bash: `node "${CLAUDE_PLUGIN_ROOT}/dist/commands/switchOrg.js" <organizationId>`.
+
+   Never print, read or ask for a token, and never read files under `~/.config/context-graph`.
+3. Report the switch in two lines:
+   - which organization the plugin now reads and writes, and that everything after this (sources, ontology, context models, views) is that organization's;
+   - that the browser does not follow on its own: the person picks the same organization in the app's own switcher to watch the plugin work.
+
+   Then call `mcp__plugin_context-graph_ContextGraph__list_views` and say how many views this organization has, with the Views page link, so the person sees immediately whether what they were looking for is here. Stop.
 
 ## Logout
 

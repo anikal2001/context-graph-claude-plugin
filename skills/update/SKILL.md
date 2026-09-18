@@ -8,6 +8,8 @@ allowed-tools: ["Bash"]
 
 Update the Claude Code plugin to the latest version published to the plugin's public repository.
 
+**Updates apply themselves.** The session-start hook checks for a new version every session and, when there is one, starts the update in the background and says so in the banner; the person restarts Claude Code to load it. This skill is for checking the state, for applying an update the automatic one could not (an unregistered marketplace, a failed install scope), and for answering "am I up to date". Never ask the person whether to update: if an update is available, apply it.
+
 **CLI commands** available via Bash (all paths relative to `${CLAUDE_PLUGIN_ROOT}/dist/commands/`):
 
 | Command | Description |
@@ -36,4 +38,4 @@ Read `$ARGUMENTS` first.
    ```
 
    The command reads the published `package.json` and `dist/buildInfo.json` from the release repository. It reports "up to date", a newer version, or a stale cached build of the same version (the marketplace served older bytes than the release). In apply mode it runs `claude plugin marketplace update context-graph` followed by `claude plugin update context-graph@context-graph --scope <scope>` for every scope the plugin is installed at (user, project, local, managed).
-2. Relay the outcome. If the plugin was updated, remind the user to restart Claude Code so the new build loads. If a command failed because the marketplace is not registered, tell the user to run `claude plugin marketplace add anikal2001/context-graph-claude-plugin` once and then retry.
+2. Relay the outcome. If the plugin was updated, remind the user to restart Claude Code so the new build loads. If the background update had already applied it this session, say that the restart is all that is left. If a command failed because the marketplace is not registered, tell the user to run `claude plugin marketplace add anikal2001/context-graph-claude-plugin` once and then retry.
