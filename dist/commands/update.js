@@ -19692,7 +19692,7 @@ function date4(params) {
 }
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.13.0";
+var CONTRACT_VERSION = "1.14.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -19885,7 +19885,7 @@ var DefinitionVersionSchema = external_exports.strictObject({
   publishedAt: TimestampSchema.nullable()
 });
 var ExtractionBatchSchema = external_exports.strictObject({
-  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.10.0", "1.11.0", "1.12.0", CONTRACT_VERSION]),
+  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.10.0", "1.11.0", "1.12.0", "1.13.0", CONTRACT_VERSION]),
   connectionId: IdSchema,
   runId: IdSchema,
   batchId: IdSchema,
@@ -22435,6 +22435,21 @@ var PlumTraceSchema = external_exports.object({
   tier: external_exports.enum(["verified", "exploratory", "degraded"]).nullable(),
   outcome: external_exports.enum(["answered", "ambiguous", "unanswered", "failed"]),
   error: external_exports.string().nullable()
+});
+var PlumOntologyEntrySchema = external_exports.object({
+  path: external_exports.string(),
+  /** What the file is, from where it lives: metrics/, objects/, reports/, findings/, paths/, or a named top-level file. */
+  kind: external_exports.enum(["metric", "object", "report", "finding", "recipe", "glossary", "gotchas", "questions", "summary", "readme", "other"]),
+  title: external_exports.string()
+});
+var PlumOntologyFilesResponseSchema = external_exports.object({ ontologyVersion: external_exports.string(), files: external_exports.array(PlumOntologyEntrySchema), repositoryUrl: external_exports.string().nullable() });
+var PlumOntologyDocumentSchema = PlumOntologyEntrySchema.extend({
+  ontologyVersion: external_exports.string(),
+  /** The file as stored (Markdown, possibly with frontmatter). */
+  text: external_exports.string(),
+  history: external_exports.array(external_exports.object({ sha: external_exports.string(), date: external_exports.string(), message: external_exports.string(), author: external_exports.string().nullable() })),
+  viewUrl: external_exports.string().nullable(),
+  editUrl: external_exports.string().nullable()
 });
 
 // src/config.ts
