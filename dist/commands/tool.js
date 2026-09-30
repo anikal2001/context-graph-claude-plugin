@@ -19677,7 +19677,7 @@ function date4(params) {
 import os2 from "node:os";
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.9.0";
+var CONTRACT_VERSION = "1.13.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -19870,7 +19870,7 @@ var DefinitionVersionSchema = external_exports.strictObject({
   publishedAt: TimestampSchema.nullable()
 });
 var ExtractionBatchSchema = external_exports.strictObject({
-  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", CONTRACT_VERSION]),
+  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.10.0", "1.11.0", "1.12.0", CONTRACT_VERSION]),
   connectionId: IdSchema,
   runId: IdSchema,
   batchId: IdSchema,
@@ -22590,9 +22590,410 @@ var InterviewPlanResultSchema = external_exports.strictObject({
   planned: CountSchema
 });
 var InterviewAssignRequestSchema = external_exports.strictObject({ questionId: IdSchema, personIds: external_exports.array(IdSchema).min(1).max(20), note: external_exports.string().max(2e3).optional(), askedBy: external_exports.string().max(120).optional() });
+var InterviewAskRequestSchema = external_exports.strictObject({ idempotencyKey: IdSchema, question: external_exports.string().min(1).max(2e3), personIds: external_exports.array(IdSchema).min(1).max(20), note: external_exports.string().max(2e3).optional(), askedBy: external_exports.string().max(120).optional() });
 var InterviewApproveRequestSchema = external_exports.strictObject({ assignmentIds: external_exports.array(IdSchema).min(1).max(100) });
 var InterviewCancelRequestSchema = external_exports.strictObject({ assignmentId: IdSchema });
 var InterviewAssignmentsResultSchema = external_exports.strictObject({ assignments: external_exports.array(InterviewAssignmentSchema) });
+
+// ../shared/src/plum-answer.ts
+var PlumAnswerSegmentSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.object({ kind: external_exports.literal("text"), text: external_exports.string() }),
+  /** A number from the run, formatted by the client. */
+  external_exports.object({ kind: external_exports.literal("value"), slot: external_exports.string(), metric: external_exports.string(), key: external_exports.array(external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()])), value: external_exports.string().nullable(), undefinedReason: external_exports.string().nullable(), format: external_exports.enum(["number", "percent", "currency"]) }),
+  /** A label from the plan or the run (period, metric, dimension value). */
+  external_exports.object({ kind: external_exports.literal("label"), slot: external_exports.string(), text: external_exports.string() })
+]);
+var PlumAnswerSchema = external_exports.object({
+  template: external_exports.string(),
+  segments: external_exports.array(PlumAnswerSegmentSchema),
+  /** model: written by the model and validated; fallback: the fixed template after the model failed validation twice or was unavailable. */
+  author: external_exports.enum(["model", "fallback"]),
+  model: external_exports.string().nullable(),
+  attempts: external_exports.array(external_exports.object({ template: external_exports.string(), errors: external_exports.array(external_exports.string()) })),
+  tokens: external_exports.object({ input: external_exports.number().int(), output: external_exports.number().int() })
+});
+var DIGIT = new RegExp("\\p{N}", "u");
+
+// ../shared/src/plum.ts
+var Name = external_exports.string().regex(/^[a-z][a-z0-9_]*$/).max(64);
+var FieldPath = external_exports.string().regex(/^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)?$/, "Use Field or Relationship.Field");
+var ObjectName = external_exports.string().regex(/^[A-Za-z][A-Za-z0-9_]*$/);
+var Scalar = external_exports.union([external_exports.boolean(), external_exports.number(), external_exports.string()]);
+var PlumPredicateSchema = external_exports.strictObject({
+  field: FieldPath,
+  op: external_exports.enum(["=", "!=", "in", "not_in", "is_null", "is_not_null", "<", "<=", ">", ">="]),
+  value: external_exports.union([Scalar, external_exports.array(Scalar)]).optional()
+}).superRefine((rule, ctx) => {
+  if (rule.op === "is_null" || rule.op === "is_not_null") {
+    if (rule.value !== void 0) ctx.addIssue({ code: "custom", message: `${rule.op} takes no value` });
+  } else if (rule.op === "in" || rule.op === "not_in") {
+    if (!Array.isArray(rule.value) || !rule.value.length) ctx.addIssue({ code: "custom", message: `${rule.op} needs a non-empty list` });
+  } else if (rule.value === void 0 || Array.isArray(rule.value)) ctx.addIssue({ code: "custom", message: `${rule.op} needs a single value` });
+});
+var PlumDimensionSchema = external_exports.strictObject({ key: Name, column: FieldPath, label: external_exports.string().optional() });
+var PlumFilterSpecSchema = external_exports.strictObject({
+  key: Name,
+  column: FieldPath,
+  type: external_exports.enum(["string", "picklist", "boolean", "date", "number"]),
+  allowed_values: external_exports.array(Scalar).optional()
+});
+var PlumCoverageCheckSchema = external_exports.strictObject({ name: Name, sql_predicate: external_exports.string().min(1), description: external_exports.string().min(1) });
+var PlumReconcileSchema = external_exports.strictObject({
+  sf_report_id: external_exports.string().regex(/^00O[A-Za-z0-9]{12}([A-Za-z0-9]{3})?$/),
+  compare_column: external_exports.string().min(1),
+  tolerance: external_exports.number().min(0),
+  tolerance_kind: external_exports.enum(["absolute", "relative"]).default("relative")
+});
+var BASE_ONLY = ["grain", "source_table", "measure", "time_column", "time_semantics"];
+var PlumMetricSchema = external_exports.strictObject({
+  name: Name,
+  version: external_exports.number().int().min(1),
+  status: external_exports.enum(["proposed", "accepted", "degraded", "deprecated"]),
+  kind: external_exports.enum(["base", "derived"]),
+  owner: external_exports.string().min(1),
+  description: external_exports.string().min(1),
+  source: external_exports.strictObject({ type: external_exports.enum(["sf_report", "thread", "manual"]), ref: external_exports.string().min(1) }),
+  confidence: external_exports.enum(["high", "medium", "low"]),
+  last_verified: external_exports.iso.date(),
+  grain: Name.optional(),
+  source_table: ObjectName.optional(),
+  measure: external_exports.strictObject({ agg: external_exports.enum(["count", "sum", "avg", "count_distinct"]), column: FieldPath }).optional(),
+  base_filters: external_exports.array(PlumPredicateSchema).default([]),
+  time_column: FieldPath.optional(),
+  time_semantics: external_exports.enum(["fiscal", "calendar"]).optional(),
+  currency: external_exports.strictObject({ column: FieldPath, convert: external_exports.boolean() }).optional(),
+  formula: external_exports.string().optional(),
+  inputs: external_exports.array(Name).default([]),
+  dimensions: external_exports.array(PlumDimensionSchema).default([]),
+  filters: external_exports.array(PlumFilterSpecSchema).default([]),
+  coverage_checks: external_exports.array(PlumCoverageCheckSchema).default([]),
+  reconcile: PlumReconcileSchema.optional(),
+  /** Business area the metric answers for (revenue, pipeline, bd…); groups suggestions and sweep topics. */
+  topic: external_exports.string().min(1).max(40).optional(),
+  /** How values are shown. Values are always stored as exact decimals; this only formats them. */
+  format: external_exports.enum(["number", "percent", "currency"]).optional(),
+  /** Words people use for this metric ("revenue", "bookings"); the interpreter matches them like the name. */
+  aliases: external_exports.array(external_exports.string().min(2).max(60)).default([])
+}).superRefine((metric, ctx) => {
+  const issue2 = (message) => ctx.addIssue({ code: "custom", message });
+  if (metric.kind === "base") {
+    const missing = BASE_ONLY.filter((key) => metric[key] === void 0);
+    if (missing.length) issue2(`base metric needs ${missing.join(", ")}`);
+    if (metric.formula !== void 0 || metric.inputs.length) issue2("base metric cannot have formula or inputs");
+  } else {
+    if (metric.formula === void 0 || !metric.inputs.length) issue2("derived metric needs formula and inputs");
+    const stray = [...BASE_ONLY, "currency"].filter((key) => metric[key] !== void 0);
+    if (metric.base_filters.length) stray.push("base_filters");
+    if (stray.length) issue2(`derived metric cannot have ${stray.join(", ")}`);
+    if (metric.formula !== void 0) {
+      try {
+        const used = formulaNames(metric.formula);
+        if (metric.inputs.includes(metric.name)) issue2("derived metric cannot be its own input");
+        const inputs = new Set(metric.inputs);
+        if (used.size !== inputs.size || [...used].some((name) => !inputs.has(name))) {
+          issue2(`formula names [${[...used].sort().join(", ")}] must equal inputs [${[...inputs].sort().join(", ")}]`);
+        }
+      } catch (error62) {
+        issue2(error62 instanceof Error ? error62.message : "formula does not parse");
+      }
+    }
+  }
+  for (const [label2, keys] of [["dimension", metric.dimensions.map((d) => d.key)], ["filter", metric.filters.map((f) => f.key)], ["coverage check", metric.coverage_checks.map((c) => c.name)]]) {
+    const dupes = [...new Set(keys.filter((key, index) => keys.indexOf(key) !== index))].sort();
+    if (dupes.length) issue2(`duplicate ${label2} keys: ${dupes.join(", ")}`);
+  }
+});
+var FORMULA_TOKEN = /\s*(?:(\d+(?:\.\d+)?)|([a-z][a-z0-9_]*)|([-+*/()]))/y;
+function parseFormula(formula) {
+  const tokens = [];
+  FORMULA_TOKEN.lastIndex = 0;
+  while (formula.slice(FORMULA_TOKEN.lastIndex).trim()) {
+    const at = FORMULA_TOKEN.lastIndex;
+    const match = FORMULA_TOKEN.exec(formula);
+    if (!match) throw new Error(`formula has an unexpected character at ${at}: ${JSON.stringify(formula.slice(at))}`);
+    tokens.push(match[1] ? { kind: "num", text: match[1] } : match[2] ? { kind: "name", text: match[2] } : { kind: "op", text: match[3] });
+  }
+  if (!tokens.length) throw new Error("formula is empty");
+  let position = 0;
+  const peek = () => tokens[position];
+  const take = () => {
+    const token = tokens[position++];
+    if (!token) throw new Error("formula ends unexpectedly");
+    return token;
+  };
+  const isOp = (ops) => {
+    const token = peek();
+    return token?.kind === "op" && ops.includes(token.text) ? token.text : null;
+  };
+  const expression = () => {
+    let node2 = term();
+    for (let op = isOp("+-"); op; op = isOp("+-")) {
+      take();
+      node2 = { type: "bin", op, left: node2, right: term() };
+    }
+    return node2;
+  };
+  const term = () => {
+    let node2 = unary();
+    for (let op = isOp("*/"); op; op = isOp("*/")) {
+      take();
+      node2 = { type: "bin", op, left: node2, right: unary() };
+    }
+    return node2;
+  };
+  const unary = () => {
+    if (isOp("-")) {
+      take();
+      return { type: "neg", operand: unary() };
+    }
+    const token = take();
+    if (token.kind === "num") return { type: "num", value: token.text };
+    if (token.kind === "name") return { type: "ref", name: token.text };
+    if (token.text === "(") {
+      const node2 = expression();
+      if (take().text !== ")") throw new Error("formula is missing ')'");
+      return node2;
+    }
+    throw new Error(`formula has an unexpected '${token.text}'`);
+  };
+  const tree = expression();
+  const rest = peek();
+  if (rest) throw new Error(`formula has an unexpected '${rest.text}' after a complete expression`);
+  return tree;
+}
+function formulaNames(formula) {
+  const node2 = typeof formula === "string" ? parseFormula(formula) : formula;
+  switch (node2.type) {
+    case "ref":
+      return /* @__PURE__ */ new Set([node2.name]);
+    case "neg":
+      return formulaNames(node2.operand);
+    case "bin":
+      return /* @__PURE__ */ new Set([...formulaNames(node2.left), ...formulaNames(node2.right)]);
+    default:
+      return /* @__PURE__ */ new Set();
+  }
+}
+var PLUM_RELATIVE_PERIODS = ["this_fiscal_year", "last_fiscal_year", "this_fiscal_quarter", "last_fiscal_quarter", "fiscal_ytd", "this_month", "last_month"];
+var PlumPeriodSchema = external_exports.strictObject({
+  fiscal_year: external_exports.number().int().min(1900).max(2100).optional(),
+  fiscal_quarter: external_exports.tuple([external_exports.number().int().min(1900).max(2100), external_exports.number().int().min(1).max(4)]).optional(),
+  month: external_exports.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/).optional(),
+  range: external_exports.tuple([external_exports.iso.date(), external_exports.iso.date()]).optional(),
+  relative: external_exports.enum(PLUM_RELATIVE_PERIODS).optional()
+}).superRefine((period, ctx) => {
+  const given = ["fiscal_year", "fiscal_quarter", "month", "range", "relative"].filter((key) => period[key] !== void 0);
+  if (given.length !== 1) ctx.addIssue({ code: "custom", message: "period needs exactly one of fiscal_year, fiscal_quarter, month, range, relative" });
+  if (period.range && period.range[0] > period.range[1]) ctx.addIssue({ code: "custom", message: "range start is after its end" });
+});
+var PlumPlanSchema = external_exports.strictObject({
+  metric: external_exports.string().min(1),
+  period: PlumPeriodSchema,
+  dimensions: external_exports.array(external_exports.string()).default([]),
+  filters: external_exports.record(external_exports.string(), external_exports.union([Scalar, external_exports.array(Scalar)])).default({}),
+  as_of: external_exports.iso.datetime({ offset: true }).optional()
+});
+var PlumExecuteRequestSchema = external_exports.strictObject({
+  plan: external_exports.unknown(),
+  ontologyRef: external_exports.string().min(1).max(200).default("HEAD"),
+  question: external_exports.string().max(2e3).optional()
+});
+var PlumTierSchema = external_exports.enum(["verified", "exploratory", "degraded"]);
+var Key = external_exports.array(external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()]));
+var CoverageSchema2 = external_exports.object({
+  metric: external_exports.string(),
+  object: external_exports.string(),
+  count: external_exports.number().int(),
+  complete: external_exports.boolean(),
+  recordIds: external_exports.array(external_exports.string()).optional(),
+  checks: external_exports.array(external_exports.object({ checkName: external_exports.string(), reason: external_exports.string(), predicate: external_exports.string(), count: external_exports.number().int(), recordIds: external_exports.array(external_exports.string()).optional() }))
+});
+var PlumRunSchema = external_exports.object({
+  id: external_exports.string(),
+  createdAt: external_exports.string(),
+  status: external_exports.enum(["succeeded", "failed"]),
+  tier: PlumTierSchema.nullable(),
+  tierReason: external_exports.string().nullable(),
+  question: external_exports.string().nullable(),
+  plan: external_exports.unknown(),
+  metric: external_exports.string().nullable(),
+  metricVersion: external_exports.number().int().nullable(),
+  ontologyVersion: external_exports.string().nullable(),
+  snapshotRunId: external_exports.string().nullable(),
+  snapshotExtractedAt: external_exports.string().nullable(),
+  period: external_exports.object({ label: external_exports.string(), start: external_exports.iso.date(), end: external_exports.iso.date() }).nullable(),
+  dimensions: external_exports.array(external_exports.string()),
+  engine: external_exports.string(),
+  error: external_exports.string().nullable(),
+  durationMs: external_exports.number().int(),
+  /** Numbers are decimal strings, never floats. A null value carries the reason it is undefined. */
+  results: external_exports.array(external_exports.object({ metric: external_exports.string(), key: Key, value: external_exports.string().nullable(), undefinedReason: external_exports.string().nullable(), isRoot: external_exports.boolean() })),
+  coverage: external_exports.array(CoverageSchema2),
+  /** The answer text: a validated template filled from the results. Null for failed runs and older runs. */
+  answer: PlumAnswerSchema.nullable().default(null),
+  /** Exploratory runs only: the SQL the model wrote, as run, and the rows it returned (capped). */
+  exploratory: external_exports.object({ sql: external_exports.string(), columns: external_exports.array(external_exports.string()), rows: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown())), truncated: external_exports.boolean() }).nullable().default(null)
+});
+var PlumDerivationSchema = PlumRunSchema.pick({
+  id: true,
+  status: true,
+  tier: true,
+  tierReason: true,
+  metric: true,
+  metricVersion: true,
+  ontologyVersion: true,
+  snapshotRunId: true,
+  snapshotExtractedAt: true,
+  period: true,
+  plan: true,
+  coverage: true
+}).extend({
+  steps: external_exports.array(external_exports.object({
+    step: external_exports.number().int(),
+    metric: external_exports.string(),
+    key: Key,
+    formula: external_exports.string().nullable(),
+    inputs: external_exports.record(external_exports.string(), external_exports.object({ value: external_exports.string().nullable(), reason: external_exports.string().nullable() })),
+    value: external_exports.string().nullable(),
+    undefinedReason: external_exports.string().nullable()
+  })),
+  queries: external_exports.array(external_exports.object({
+    metric: external_exports.string(),
+    kind: external_exports.enum(["measure", "coverage", "exploratory"]),
+    sql: external_exports.string(),
+    params: external_exports.array(external_exports.unknown()),
+    notes: external_exports.array(external_exports.string()),
+    jobId: external_exports.string().nullable(),
+    bytesProcessed: external_exports.number().nullable(),
+    rowCount: external_exports.number().int(),
+    truncated: external_exports.boolean(),
+    durationMs: external_exports.number().int()
+  }))
+});
+var PlumMetricSummarySchema = external_exports.object({
+  name: external_exports.string(),
+  version: external_exports.number().int(),
+  /** The file's status, or the database's effective status when reconciliation degraded it. */
+  status: external_exports.enum(["proposed", "accepted", "degraded", "deprecated"]),
+  kind: external_exports.enum(["base", "derived"]),
+  description: external_exports.string(),
+  owner: external_exports.string(),
+  topic: external_exports.string().nullable(),
+  format: external_exports.enum(["number", "percent", "currency"]),
+  aliases: external_exports.array(external_exports.string()),
+  confidence: external_exports.enum(["high", "medium", "low"]),
+  timeSemantics: external_exports.enum(["fiscal", "calendar"]).nullable(),
+  sourceTable: external_exports.string().nullable(),
+  timeColumn: external_exports.string().nullable(),
+  /** Base metrics: what is aggregated, e.g. {agg: sum, column: Amount}; null for derived metrics. */
+  measure: external_exports.object({ agg: external_exports.enum(["count", "sum", "avg", "count_distinct"]), column: external_exports.string() }).nullable().default(null),
+  /** Base metrics: the currency conversion, if any. */
+  currencyConverted: external_exports.boolean().default(false),
+  /** Base filters rendered for reading, e.g. "IsWon = true". */
+  baseFilters: external_exports.array(external_exports.string()),
+  formula: external_exports.string().nullable(),
+  inputs: external_exports.array(external_exports.string()),
+  dimensions: external_exports.array(external_exports.object({ key: external_exports.string(), label: external_exports.string(), column: external_exports.string() })),
+  filters: external_exports.array(external_exports.object({ key: external_exports.string(), column: external_exports.string(), type: external_exports.enum(["string", "picklist", "boolean", "date", "number"]), allowedValues: external_exports.array(Scalar).nullable() })),
+  coverageChecks: external_exports.array(external_exports.object({ name: external_exports.string(), description: external_exports.string() })),
+  reconcileReportId: external_exports.string().nullable()
+});
+var PlumMetricsResponseSchema = external_exports.object({
+  ontologyVersion: external_exports.string(),
+  metrics: external_exports.array(PlumMetricSummarySchema),
+  /** Latest completed load of the mirror, or null when none is registered. */
+  snapshot: external_exports.object({ runId: external_exports.string(), extractedAt: external_exports.string() }).nullable(),
+  corporateCurrency: external_exports.string().nullable(),
+  /** Base URL for record links (https://<domain>.lightning.force.com), or null when not configured. */
+  salesforceUrl: external_exports.string().nullable(),
+  /** The ontology repository on GitHub (https://github.com/<owner>/<name>), or null for a local or sample ontology. */
+  repositoryUrl: external_exports.string().nullable().default(null)
+});
+var PlumMetricFileSchema = external_exports.object({
+  metric: PlumMetricSummarySchema,
+  path: external_exports.string(),
+  /** Commit the file was read at. */
+  ontologyVersion: external_exports.string(),
+  /** The whole file, frontmatter and prose, exactly as stored. */
+  text: external_exports.string(),
+  /** The prose after the frontmatter. */
+  body: external_exports.string(),
+  /** Commits that changed the file, newest first; empty when the source keeps no history. */
+  history: external_exports.array(external_exports.object({ sha: external_exports.string(), date: external_exports.string(), message: external_exports.string(), author: external_exports.string().nullable() })),
+  /** Links to the file and its edit page on GitHub (editing opens a pull request), or null. */
+  viewUrl: external_exports.string().nullable(),
+  editUrl: external_exports.string().nullable()
+});
+var PlumInterpretRequestSchema = external_exports.strictObject({ question: external_exports.string().trim().min(1).max(2e3) });
+var PlumInterpretationSchema = external_exports.object({
+  question: external_exports.string(),
+  /** matched: one metric; ambiguous: several tie and the first is used until someone picks; unmatched: none. */
+  status: external_exports.enum(["matched", "ambiguous", "unmatched"]),
+  /** The words that were read as the metric, shown in "Read as". */
+  phrase: external_exports.string().nullable(),
+  plan: PlumPlanSchema.nullable(),
+  candidates: external_exports.array(external_exports.object({ metric: external_exports.string(), score: external_exports.number(), matched: external_exports.string() }))
+});
+var PlumFeedbackRequestSchema = external_exports.strictObject({
+  kind: external_exports.enum(["number", "interpretation", "definition"]),
+  expectedValue: external_exports.string().trim().max(200).optional(),
+  source: external_exports.string().trim().max(500).optional(),
+  alternativeMetric: external_exports.string().trim().max(64).optional(),
+  note: external_exports.string().trim().max(4e3).optional()
+});
+var PlumFeedbackSchema = external_exports.object({
+  id: external_exports.string(),
+  runId: external_exports.string(),
+  kind: external_exports.enum(["number", "interpretation", "definition"]),
+  route: external_exports.enum(["reconciliation", "feedback_log", "review_queue"]),
+  createdAt: external_exports.string()
+});
+var PlumProposalSchema = external_exports.object({
+  id: external_exports.string(),
+  kind: external_exports.enum(["new_metric", "metric_change", "path", "metric_request", "definition_issue"]),
+  title: external_exports.string(),
+  path: external_exports.string().nullable(),
+  branch: external_exports.string().nullable(),
+  url: external_exports.string().nullable(),
+  /** open: a pull request exists; recorded: stored here only (no writable ontology remote). */
+  status: external_exports.enum(["open", "recorded"]),
+  runId: external_exports.string().nullable(),
+  createdAt: external_exports.string()
+});
+var PlumAskRequestSchema = external_exports.strictObject({ question: external_exports.string().trim().min(1).max(2e3), ontologyRef: external_exports.string().min(1).max(200).default("HEAD") });
+var PlumAskResultSchema = external_exports.object({
+  /** answered: a run with an answer; ambiguous: several accepted metrics fit and a person picks; unanswered: no answer could be made. */
+  status: external_exports.enum(["answered", "ambiguous", "unanswered"]),
+  run: PlumRunSchema.nullable(),
+  interpretation: PlumInterpretationSchema.nullable(),
+  candidates: external_exports.array(external_exports.object({ metric: external_exports.string(), reason: external_exports.string() })),
+  proposal: PlumProposalSchema.nullable(),
+  /** Why there is no answer, or what the agent wants the person to know; never contains numbers from data. */
+  message: external_exports.string().nullable(),
+  traceId: external_exports.string(),
+  /** agent: the model loop answered; deterministic: no model is configured and the fixed interpreter answered. */
+  mode: external_exports.enum(["agent", "deterministic"])
+});
+var PlumTraceSchema = external_exports.object({
+  id: external_exports.string(),
+  question: external_exports.string(),
+  createdAt: external_exports.string(),
+  mode: external_exports.enum(["agent", "deterministic"]),
+  model: external_exports.string().nullable(),
+  /** What answered: the agent's prompt-and-tools hash (or "interpreter"), and the ontology commit it read. Null on traces recorded before 1.13.0. */
+  agentVersion: external_exports.string().nullable().default(null),
+  ontologyVersion: external_exports.string().nullable().default(null),
+  tools: external_exports.array(external_exports.object({ name: external_exports.string(), input: external_exports.unknown(), ok: external_exports.boolean(), summary: external_exports.string(), durationMs: external_exports.number().int() })),
+  filesRead: external_exports.array(external_exports.string()),
+  plan: external_exports.unknown(),
+  sql: external_exports.array(external_exports.string()),
+  runIds: external_exports.array(external_exports.string()),
+  tokens: external_exports.object({ input: external_exports.number().int(), output: external_exports.number().int() }),
+  durationMs: external_exports.number().int(),
+  tier: external_exports.enum(["verified", "exploratory", "degraded"]).nullable(),
+  outcome: external_exports.enum(["answered", "ambiguous", "unanswered", "failed"]),
+  error: external_exports.string().nullable()
+});
 
 // src/config.ts
 import fs from "node:fs";
