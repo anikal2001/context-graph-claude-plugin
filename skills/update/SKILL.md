@@ -1,10 +1,10 @@
 ---
-description: Update the Context graph plugin to the latest published version. TRIGGER when the user wants to update or upgrade the Context graph plugin, get its latest version, or the session banner said an update is available. SKIP when the user wants to sign in (use /context-graph:setup) or edit the graph or ontology.
+description: Update the plum plugin to the latest published version. TRIGGER when the user wants to update or upgrade the plum plugin, get its latest version, or the session banner said an update is available. SKIP when the user wants to sign in (use /context-graph:setup) or edit the graph or ontology.
 argument-hint: "[check]"
 allowed-tools: ["Bash"]
 ---
 
-# Context graph Update
+# plum Update
 
 Update the Claude Code plugin to the latest version published to the plugin's public repository.
 

@@ -1,8 +1,8 @@
-# Context graph for Claude Code
+# plum for Claude Code
 
 Edit context graph revisions and ontology versions from Claude Code while the browser page follows along.
 
-The plugin talks to the Context graph app's API with a token bound to you, so every change it makes is a normal revision: it appears in the versions menu on the Context graph (step 3) and Document (step 4) pages, marked "Claude Code", and those pages refresh within seconds while the plugin is working.
+The plugin talks to the plum app's API with a token bound to you, so every change it makes is a normal revision: it appears in the versions menu on the Context graph (step 3) and Document (step 4) pages, marked "Claude Code", and those pages refresh within seconds while the plugin is working.
 
 The app's own setup guide is at `<your app>/plugin`.
 

@@ -22845,16 +22845,16 @@ async function checkOrganizations(timeoutMs = 4e3) {
 function describeConnection(connection, organizations = null) {
   switch (connection.state) {
     case "signed-out":
-      return `[Context graph] Not connected. Run ${platform.loginHint} to connect the plugin to your workspace.`;
+      return `[plum] Not connected. Run ${platform.loginHint} to connect the plugin to your workspace.`;
     case "connected": {
       const current = organizations?.find((item) => item.workspaceId === connection.workspaceId);
       const where = current ? `${current.name} (workspace ${connection.workspaceId})` : `workspace ${connection.workspaceId}`;
-      return `[Context graph] Connected to ${where}${formatEndpointSuffix(connection.serviceUrl)} as "${connection.label}" (${connection.role}). Skills: /context-graph:graph, /context-graph:ontology, /context-graph:views.`;
+      return `[plum] Connected to ${where}${formatEndpointSuffix(connection.serviceUrl)} as "${connection.label}" (${connection.role}). Skills: /context-graph:graph, /context-graph:ontology, /context-graph:views.`;
     }
     case "rejected":
-      return `[Context graph] The saved sign-in for ${connection.serviceUrl} was rejected. Run ${platform.loginHint} to connect again.`;
+      return `[plum] The saved sign-in for ${connection.serviceUrl} was rejected. Run ${platform.loginHint} to connect again.`;
     case "unreachable":
-      return `[Context graph] Could not reach ${connection.serviceUrl} to verify the connection; it may be down or you may be offline.`;
+      return `[plum] Could not reach ${connection.serviceUrl} to verify the connection; it may be down or you may be offline.`;
   }
 }
 function describeOrganizations(organizations) {
@@ -22862,7 +22862,7 @@ function describeOrganizations(organizations) {
   const others = organizations.filter((item) => !item.current);
   if (!others.length) return null;
   const named = others.slice(0, 3).map((item) => item.name).join(", ");
-  return `[Context graph] ${others.length} other organization${others.length === 1 ? "" : "s"} to work in: ${named}${others.length > 3 ? `, and ${others.length - 3} more` : ""}.
+  return `[plum] ${others.length} other organization${others.length === 1 ? "" : "s"} to work in: ${named}${others.length > 3 ? `, and ${others.length - 3} more` : ""}.
           Each has its own sources, ontology and views. Run ${platform.setupHint} org to switch.`;
 }
 function startBackgroundUpdate(spawnUpdate = defaultSpawnUpdate) {
@@ -22888,14 +22888,14 @@ async function sessionStartMessages(update = () => checkForUpdate(getVersion(), 
   if (available?.updateAvailable) {
     const what = available.staleSameVersion ? `the cached build of v${available.current}` : `v${available.current} \u2192 v${available.latest}`;
     if (available.autoUpdateEnabled) {
-      messages.push(`[Context graph] Update ready (${what}).
+      messages.push(`[plum] Update ready (${what}).
           Auto-update is enabled, so restart ${platform.displayName} to load it.`);
     } else if (shouldAutoUpdate(available, readAutoUpdate())) {
       startUpdate();
-      messages.push(`[Context graph] Updating ${what} in the background.
+      messages.push(`[plum] Updating ${what} in the background.
           Restart ${platform.displayName} to load it.`);
     } else {
-      messages.push(`[Context graph] Update ${what} could not be applied automatically.
+      messages.push(`[plum] Update ${what} could not be applied automatically.
           Run ${platform.updateHint} to see why, or ${platform.cliBinary} plugin marketplace add ${platform.repo} if the marketplace is not registered.`);
     }
   }

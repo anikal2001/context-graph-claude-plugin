@@ -39135,7 +39135,7 @@ function validateViewSpec(input2) {
 }
 function viewCatalogPrompt() {
   return viewCatalog.prompt({
-    system: "You compose views of business data for the Context graph app. A view is a flat tree of catalog components whose root is a Page.",
+    system: "You compose views of business data for the plum app. A view is a flat tree of catalog components whose root is a Page.",
     customRules: [
       "Every view: one Page as root, a Caption right after the heading naming the type, record count, where clause, definition applied, snapshot date, coverage and exactness, then the chart(s), then a DataTable of the same numbers.",
       'Charts take `data` as { columns, rows }: paste the JSON block aggregate_records returned; name columns by their headers (e.g. "sum:Amount").',
@@ -41084,7 +41084,7 @@ if (telemetry.enabled) {
   }, TELEMETRY_INTERVAL_MS).unref();
 }
 server.connect(new StdioServerTransport()).catch((error62) => {
-  console.error("Context graph MCP server failed to start:", error62 instanceof Error ? error62.message : error62);
+  console.error("plum MCP server failed to start:", error62 instanceof Error ? error62.message : error62);
   process.exit(1);
 });
 export {

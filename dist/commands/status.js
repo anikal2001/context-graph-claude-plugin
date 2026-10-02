@@ -22776,7 +22776,7 @@ async function runStatus() {
   const config2 = getConfig();
   const build = readBuildInfo(PLUGIN_ROOT);
   const update = await checkForUpdate(getVersion(), platform, build?.gitSha);
-  console.log("Plugin: Context graph for Claude Code");
+  console.log("Plugin: plum for Claude Code");
   console.log(`Service URL: ${config2.serviceUrl}`);
   const suffix = update.updateAvailable ? ` (${update.staleSameVersion ? formatStaleMessage(platform) : formatUpdateMessage(update.latest ?? "", platform)})` : "";
   console.log(`Version: v${update.current}${suffix}`);

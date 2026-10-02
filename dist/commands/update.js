@@ -22900,7 +22900,7 @@ async function runUpdate(options) {
   if (!status.updateAvailable) {
     telemetry.record({ name: "update.checked", ok: true, detail: { current: status.current, latest: status.latest, available: false, auto: options.auto === true } });
     await telemetry.flush();
-    if (!options.auto) console.log(`Context graph plugin v${status.current} is up to date${status.latest ? "" : " (could not reach the release repo to confirm)"}.`);
+    if (!options.auto) console.log(`plum plugin v${status.current} is up to date${status.latest ? "" : " (could not reach the release repo to confirm)"}.`);
     return;
   }
   if (!options.auto) console.log(status.staleSameVersion ? `Cached build of v${status.current} is behind the published release.` : `Plugin update available: v${status.current} \u2192 v${status.latest}`);
@@ -22923,11 +22923,11 @@ async function runUpdate(options) {
     process.exit(1);
   }
   if (!options.auto) console.log(`
-Context graph plugin updated to v${status.latest ?? status.current}. Restart ${platform.displayName} to apply it.`);
+plum plugin updated to v${status.latest ?? status.current}. Restart ${platform.displayName} to apply it.`);
 }
 if (process.env.VITEST === void 0) {
   void runCommand({
-    description: "Update the Context graph plugin to the latest published version through the Claude Code plugin CLI.",
+    description: "Update the plum plugin to the latest published version through the Claude Code plugin CLI.",
     flags: [
       { name: "check", boolean: true, description: "Only report whether an update is available." },
       { name: "auto", boolean: true, description: "Apply it silently and record the outcome. Used by the session-start hook; not meant to be run by hand." }

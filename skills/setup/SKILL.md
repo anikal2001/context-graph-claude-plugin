@@ -1,12 +1,12 @@
 ---
-description: Connect Claude Code to a Context graph workspace, and move it between organizations. TRIGGER when the user wants to sign in to Context graph, connect the plugin, check whether it is signed in, switch organization or workspace, see which organizations they belong to, point the plugin at another deployment, or sign out, or says 'context graph login', 'connect context graph', 'context graph status', 'switch org', 'change organization', 'I am in the wrong workspace', 'where are my other views'. SKIP when the user wants to edit the context graph or ontology (use /context-graph:graph or /context-graph:ontology) or update the plugin (use /context-graph:update).
+description: Connect Claude Code to a plum workspace, and move it between organizations. TRIGGER when the user wants to sign in to plum, connect the plugin, check whether it is signed in, switch organization or workspace, see which organizations they belong to, point the plugin at another deployment, or sign out, or says 'context graph login', 'connect context graph', 'context graph status', 'switch org', 'change organization', 'I am in the wrong workspace', 'where are my other views'. SKIP when the user wants to edit the context graph or ontology (use /context-graph:graph or /context-graph:ontology) or update the plugin (use /context-graph:update).
 argument-hint: "[login|status|logout|org [<name>]|url <app-url>]"
 allowed-tools: ["Bash", "AskUserQuestion", "mcp__plugin_context-graph_ContextGraph__whoami", "mcp__plugin_context-graph_ContextGraph__list_context_models", "mcp__plugin_context-graph_ContextGraph__list_organizations", "mcp__plugin_context-graph_ContextGraph__switch_organization", "mcp__plugin_context-graph_ContextGraph__list_views"]
 ---
 
-# Context graph Setup
+# plum Setup
 
-Sign the plugin in to a Context graph workspace from the browser, check its state, or sign out. Sign-in never pastes a secret into chat: the browser approves a one-time ticket and the token is saved under `~/.config/context-graph/`.
+Sign the plugin in to a plum workspace from the browser, check its state, or sign out. Sign-in never pastes a secret into chat: the browser approves a one-time ticket and the token is saved under `~/.config/context-graph/`.
 
 **CLI commands** available via Bash (all paths relative to `${CLAUDE_PLUGIN_ROOT}/dist/commands/`):
 

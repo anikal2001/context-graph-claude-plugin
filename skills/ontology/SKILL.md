@@ -4,7 +4,7 @@ argument-hint: "[edit|versions|save|draft|publish|compare|settings]"
 allowed-tools: ["Bash", "AskUserQuestion", "Read", "mcp__plugin_context-graph_ContextGraph__get_ontology", "mcp__plugin_context-graph_ContextGraph__get_ontology_version", "mcp__plugin_context-graph_ContextGraph__save_ontology_version", "mcp__plugin_context-graph_ContextGraph__edit_ontology_entry", "mcp__plugin_context-graph_ContextGraph__show_ontology_changes", "mcp__plugin_context-graph_ContextGraph__save_ontology_changes", "mcp__plugin_context-graph_ContextGraph__discard_ontology_changes", "mcp__plugin_context-graph_ContextGraph__configure_ontology", "mcp__plugin_context-graph_ContextGraph__request_ontology_draft", "mcp__plugin_context-graph_ContextGraph__preview_ontology_publication", "mcp__plugin_context-graph_ContextGraph__publish_ontology", "mcp__plugin_context-graph_ContextGraph__update_ontology_settings", "mcp__plugin_context-graph_ContextGraph__compare_ontology_versions", "mcp__plugin_context-graph_ContextGraph__get_context_document", "mcp__plugin_context-graph_ContextGraph__list_context_models", "mcp__plugin_context-graph_ContextGraph__list_sources", "mcp__plugin_context-graph_ContextGraph__get_imported_model"]
 ---
 
-# Context graph: Ontology versions
+# plum: Ontology versions
 
 The ontology is the reviewed model of the business: immutable numbered versions, one of them published. Publishing runs the exact definitions against the imported records, so the preview shows how many records enter or leave each definition before anything changes. The versions menu on the graph and document pages (steps 3 and 4) shows the same versions and marks the published one as live; it refreshes while this plugin works.
 

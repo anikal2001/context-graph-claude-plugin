@@ -22764,7 +22764,7 @@ async function runLogin(options) {
   const ticket = HandoffTicketCreatedSchema.parse(await anonymous.anonymous("POST", "/plugin/handoff-tickets", { kind: "auth.login", host: platform.authPath, pkceChallenge: challenge, pkceMethod: "S256", label: label2 }));
   const loginWindow = randomBytes(16).toString("hex");
   const signInUrl = `${config2.serviceUrl}/plugin/auth/${platform.authPath}?ticket=${encodeURIComponent(ticket.id)}&loginWindow=${loginWindow}`;
-  console.log(`Sign in to Context graph: ${signInUrl}`);
+  console.log(`Sign in to plum: ${signInUrl}`);
   if (!(options.open ?? openBrowser)(signInUrl)) console.log("Could not open a browser. Open the sign-in link above to continue.");
   const deadline = new Date(ticket.expiresAt).getTime();
   while (Date.now() < deadline) {
@@ -22787,7 +22787,7 @@ async function runLogin(options) {
 }
 if (process.env.VITEST === void 0) {
   void runCommand({
-    description: "Sign in to Context graph from the browser and save a plugin token for this machine.",
+    description: "Sign in to plum from the browser and save a plugin token for this machine.",
     flags: [
       { name: "force", boolean: true, description: "Sign in again even when a saved token still works." },
       { name: "url", description: "App URL to sign in to; saved as the service URL for later commands." },

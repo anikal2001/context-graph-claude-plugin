@@ -22731,7 +22731,7 @@ async function runLogout() {
     if (!(error62 instanceof ApiError) || error62.code !== "UNAUTHENTICATED") console.error(`Could not revoke the token on the server (${error62 instanceof Error ? error62.message : "unknown error"}); it is forgotten locally.`);
   }
   deleteToken();
-  console.log("Signed out of Context graph.");
+  console.log("Signed out of plum.");
 }
 if (process.env.VITEST === void 0) void runCommand({ description: "Revoke this machine's plugin token and remove it locally. Takes no arguments." }, runLogout);
 export {
