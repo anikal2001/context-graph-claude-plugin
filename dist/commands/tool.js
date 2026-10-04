@@ -19677,7 +19677,7 @@ function date4(params) {
 import os2 from "node:os";
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.14.0";
+var CONTRACT_VERSION = "1.15.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -19870,7 +19870,7 @@ var DefinitionVersionSchema = external_exports.strictObject({
   publishedAt: TimestampSchema.nullable()
 });
 var ExtractionBatchSchema = external_exports.strictObject({
-  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.10.0", "1.11.0", "1.12.0", "1.13.0", CONTRACT_VERSION]),
+  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.10.0", "1.11.0", "1.12.0", "1.13.0", "1.14.0", CONTRACT_VERSION]),
   connectionId: IdSchema,
   runId: IdSchema,
   batchId: IdSchema,
@@ -20335,6 +20335,20 @@ function parseDefinitionRule(text3, entityTypes) {
 // ../shared/src/ontology/markdown.ts
 var sections = /* @__PURE__ */ new Set(["entities", "definitions", "relationships", "metrics", "questions", "workflows", "processes", "automations"]);
 var labelPattern = /^\s*(?:[-*]\s+)?(?:\*\*)?([A-Za-z][A-Za-z ]*)(?:\*\*)?:(?:\*\*)?\s*(.*)$/;
+function parseLabeledLine(line) {
+  const match = labelPattern.exec(line);
+  return match ? { label: match[1].trim(), key: match[1].toLowerCase().trim(), value: match[2].trim() } : null;
+}
+function fencedLines(lines) {
+  let fence;
+  return lines.map((line) => {
+    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
+    if (!marker) return fence !== void 0;
+    if (!fence) fence = marker;
+    else if (marker[0] === fence[0] && marker.length >= fence.length) fence = void 0;
+    return true;
+  });
+}
 function scalar(value, line) {
   if (value.startsWith('"')) {
     try {
@@ -20377,7 +20391,7 @@ function parseOntologyMarkdown(markdown, entityTypes) {
   let group;
   let fence;
   const seenSections = /* @__PURE__ */ new Set();
-  const finish = () => {
+  const finish2 = () => {
     if (!entry || !section) return;
     const properties = {};
     const prose = [];
@@ -20390,15 +20404,15 @@ function parseOntologyMarkdown(markdown, entityTypes) {
         prose.push(line);
         continue;
       }
-      const label2 = entryFence ? null : labelPattern.exec(line);
+      const label2 = entryFence ? null : parseLabeledLine(line);
       if (label2) {
-        const key = label2[1].toLowerCase().trim();
+        const { key } = label2;
         if (Object.hasOwn(properties, key)) {
           if (key === "rule") throw new OntologyParseError(`Duplicate ${key} line`, entry.line + offset + 1);
           prose.push(line);
           continue;
         }
-        Object.defineProperty(properties, key, { value: label2[2].trim(), enumerable: true });
+        Object.defineProperty(properties, key, { value: label2.value, enumerable: true });
         if (key === "rule") continue;
       }
       prose.push(line);
@@ -20441,7 +20455,7 @@ function parseOntologyMarkdown(markdown, entityTypes) {
       if (document.title || section) throw new OntologyParseError("Unexpected document title", cursor + 1);
       document.title = heading[2];
     } else if (heading?.[1] === "##") {
-      finish();
+      finish2();
       const name = heading[2].toLowerCase();
       if (!sections.has(name)) throw new OntologyParseError(`Unknown section: ${heading[2]}`, cursor + 1);
       if (seenSections.has(name)) throw new OntologyParseError(`Duplicate section: ${heading[2]}`, cursor + 1);
@@ -20449,24 +20463,24 @@ function parseOntologyMarkdown(markdown, entityTypes) {
       seenSections.add(name);
     } else if (heading?.[1] === "###") {
       if (!section) throw new OntologyParseError("Entry must belong to a section", cursor + 1);
-      finish();
+      finish2();
       group = section === "processes" ? heading[2] : void 0;
       entry = { name: heading[2], line: cursor + 1, lines: [] };
     } else if (heading?.[1] === "####" && section === "processes" && group !== void 0) {
       if (entry?.name === group && entry.process === void 0) entry = void 0;
-      else finish();
+      else finish2();
       entry = { name: heading[2], line: cursor + 1, lines: [], process: group };
     } else {
-      const item = section === "questions" ? /^\d+[.)]\s+(.+)$/.exec(line) : section === "relationships" && !labelPattern.test(line) ? /^[-*]\s+(.+)$/.exec(line) : null;
+      const item = section === "questions" ? /^\d+[.)]\s+(.+)$/.exec(line) : section === "relationships" && !parseLabeledLine(line) ? /^[-*]\s+(.+)$/.exec(line) : null;
       if (item) {
-        finish();
+        finish2();
         entry = { name: item[1], line: cursor + 1, lines: [item[1]] };
       } else if (entry) entry.lines.push(line);
       else if (line.trim() && !section) throw new OntologyParseError("Content must belong to a section entry", cursor + 1);
     }
   }
   if (fence) throw new OntologyParseError("Unclosed code block", cursor);
-  finish();
+  finish2();
   if (!document.title) throw new OntologyParseError("Missing document title");
   const definitionNames = new Set(document.definitions.map((definition) => definition.name.toLowerCase()));
   for (const stage of document.processes) {
@@ -20483,6 +20497,271 @@ var AGGREGATE_BUCKETS = ["day", "week", "month", "quarter", "year"];
 var IDENT = "[A-Za-z_][A-Za-z0-9_]*";
 var GROUP_PATTERN = new RegExp(`^(${IDENT})(?:\\.(${IDENT}))?(?::(${AGGREGATE_BUCKETS.join("|")}))?$`);
 var METRIC_PATTERN = new RegExp(`^(?:(count)|(sum|avg|min|max|distinct):(${IDENT}))$`);
+
+// ../shared/src/ontology/edit.ts
+var ONTOLOGY_SECTIONS = ["entities", "definitions", "relationships", "workflows", "metrics", "processes", "automations", "questions"];
+var TITLES = { entities: "Entities", definitions: "Definitions", relationships: "Relationships", workflows: "Workflows", metrics: "Metrics", processes: "Processes", automations: "Automations", questions: "Questions" };
+var rows = (markdown) => markdown.replace(/\r\n?/g, "\n").split("\n");
+var headingOf = (line) => /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+var finish = (lines) => `${lines.join("\n").replace(/\s+$/, "")}
+`;
+var labelLine = (key, value) => `${key[0].toUpperCase()}${key.slice(1)}: ${value.trim()}`;
+function sectionRange(lines, fenced, section) {
+  const start = lines.findIndex((line, index) => !fenced[index] && headingOf(line)?.[1] === "##" && headingOf(line)[2].toLowerCase() === section);
+  if (start === -1) return null;
+  let end = lines.length;
+  for (let index = start + 1; index < lines.length; index++) if (!fenced[index] && headingOf(lines[index])?.[1] === "##") {
+    end = index;
+    break;
+  }
+  return { start, end };
+}
+function locate(lines) {
+  const fenced = fencedLines(lines);
+  const entries = [];
+  for (const section of ONTOLOGY_SECTIONS) {
+    const range = sectionRange(lines, fenced, section);
+    if (!range) continue;
+    for (let index = range.start + 1; index < range.end; index++) {
+      const heading = fenced[index] ? null : headingOf(lines[index]);
+      if (heading?.[1] !== "###") continue;
+      let end = range.end;
+      for (let cursor = index + 1; cursor < range.end; cursor++) if (!fenced[cursor] && /^#{1,3}\s+/.test(lines[cursor])) {
+        end = cursor;
+        break;
+      }
+      const labels2 = /* @__PURE__ */ new Map();
+      const properties = {};
+      const prose = [];
+      for (let cursor = index + 1; cursor < end; cursor++) {
+        const label2 = fenced[cursor] ? null : parseLabeledLine(lines[cursor]);
+        if (label2 && !labels2.has(label2.key)) {
+          labels2.set(label2.key, lines[cursor]);
+          properties[label2.key] = label2.value;
+        } else prose.push(lines[cursor]);
+      }
+      entries.push({ section, name: heading[2], prose: prose.join("\n").trim(), properties, start: index, end, labels: labels2 });
+    }
+  }
+  return entries;
+}
+function findEntry(lines, section, name) {
+  const entries = locate(lines).filter((entry) => entry.section === section);
+  const matches = entries.filter((entry) => entry.name.toLowerCase() === name.toLowerCase());
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) throw new Error(`${TITLES[section]} has ${matches.length} entries named "${name}".`);
+  const nearby = entries.filter((entry) => entry.name.toLowerCase().includes(name.toLowerCase())).map((entry) => entry.name).slice(0, 5);
+  throw new Error(`No ${section} entry named "${name}".${nearby.length ? ` Did you mean: ${nearby.join(", ")}?` : ""}`);
+}
+function splice(lines, start, count, next) {
+  lines.splice(start, count, ...next);
+  const seam = start + next.length;
+  while (seam > 0 && seam < lines.length && lines[seam].trim() === "" && lines[seam - 1].trim() === "") lines.splice(seam, 1);
+  return finish(lines);
+}
+function updateEntry(markdown, section, name, change) {
+  const lines = rows(markdown);
+  const entry = findEntry(lines, section, name);
+  const labels2 = new Map(entry.labels);
+  for (const [key, value] of Object.entries(change.properties ?? {})) {
+    if (value.trim() === "") labels2.delete(key.toLowerCase());
+    else labels2.set(key.toLowerCase(), labelLine(key, value));
+  }
+  const prose = (change.prose ?? entry.prose).trim();
+  const heading = (change.name ?? entry.name).replace(/[\r\n]+/g, " ").trim();
+  if (!heading) throw new Error("An entry name cannot be empty.");
+  if (heading.toLowerCase() !== entry.name.toLowerCase() && locate(lines).some((other) => other.section === section && other.name.toLowerCase() === heading.toLowerCase())) {
+    throw new Error(`${TITLES[section]} already has an entry named "${heading}".`);
+  }
+  return splice(lines, entry.start, entry.end - entry.start, [`### ${heading}`, ...prose ? [prose] : [], ...labels2.values(), ""]);
+}
+function addEntry(markdown, section, name, prose, properties = {}) {
+  const lines = rows(markdown);
+  const heading = name.replace(/[\r\n]+/g, " ").trim();
+  if (!heading) throw new Error("An entry name cannot be empty.");
+  if (locate(lines).some((entry2) => entry2.section === section && entry2.name.toLowerCase() === heading.toLowerCase())) throw new Error(`${TITLES[section]} already has an entry named "${heading}".`);
+  const entry = [`### ${heading}`, ...prose.trim() ? [prose.trim()] : [], ...Object.entries(properties).filter(([, value]) => value.trim()).map(([key, value]) => labelLine(key, value)), ""];
+  const fenced = fencedLines(lines);
+  const range = sectionRange(lines, fenced, section);
+  if (range) {
+    let at = range.end;
+    while (at > range.start + 2 && lines[at - 1].trim() === "" && lines[at - 2].trim() === "") {
+      lines.splice(at - 1, 1);
+      at--;
+    }
+    return splice(lines, at, 0, entry);
+  }
+  const later = ONTOLOGY_SECTIONS.slice(ONTOLOGY_SECTIONS.indexOf(section) + 1).map((item) => sectionRange(lines, fenced, item)).find(Boolean);
+  const block = [`## ${TITLES[section]}`, "", ...entry];
+  if (later) return splice(lines, later.start, 0, block);
+  while (lines.length && lines.at(-1).trim() === "") lines.pop();
+  return finish([...lines, "", ...block]);
+}
+function removeEntry(markdown, section, name) {
+  const lines = rows(markdown);
+  const entry = findEntry(lines, section, name);
+  return splice(lines, entry.start, entry.end - entry.start, []);
+}
+
+// ../shared/src/context-document.ts
+var PROTECTED_LABELS = /* @__PURE__ */ new Set(["context section", "evidence", "answers", "questions", "review"]);
+var contextHeading = (text3) => text3.replace(/[\r\n]+/g, " ").replace(/\s+#+\s*$/, "").trim();
+var rows2 = (markdown) => markdown.replace(/\r\n?/g, "\n").split("\n");
+function sectionRule(proposal, section) {
+  const mappings = proposal.mappings.filter((mapping) => mapping.conceptId === section.conceptId);
+  return mappings.length === 1 && mappings[0]?.execution === "executable" ? mappings[0].rule : null;
+}
+var headingOf2 = (line) => /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+function blocks(lines) {
+  const fenced = fencedLines(lines);
+  const found = [];
+  let group = "";
+  for (let index = 0; index < lines.length; index++) {
+    const heading = fenced[index] ? null : headingOf2(lines[index]);
+    if (heading?.[1] === "##") group = heading[2];
+    if (heading?.[1] !== "###") continue;
+    let end = lines.length;
+    for (let cursor = index + 1; cursor < lines.length; cursor++) if (!fenced[cursor] && /^#{1,3}\s+/.test(lines[cursor])) {
+      end = cursor;
+      break;
+    }
+    const body = [];
+    let rule;
+    let sectionId = null;
+    for (let cursor = index + 1; cursor < end; cursor++) {
+      const line = lines[cursor];
+      const label2 = fenced[cursor] ? null : parseLabeledLine(line);
+      if (label2?.key === "rule" && rule === void 0) {
+        rule = label2.value;
+        continue;
+      }
+      if (label2?.key === "context section" && sectionId === null) {
+        try {
+          sectionId = decodeURIComponent(label2.value);
+        } catch {
+          sectionId = label2.value;
+        }
+        continue;
+      }
+      if (label2 && PROTECTED_LABELS.has(label2.key)) continue;
+      body.push(line);
+    }
+    found.push({ index: found.length, group, heading: heading[2], sectionId, rule: rule ?? "undetermined", body: body.join("\n").trim(), start: index, end });
+  }
+  return found;
+}
+var publicSection = ({ index, group, heading, sectionId, rule, body }) => ({ index, group, heading, sectionId, rule, body });
+function listSections(markdown) {
+  return blocks(rows2(markdown)).map(publicSection);
+}
+function pick2(sections2, selector) {
+  const matches = sections2.filter((section) => (selector.sectionId ? section.sectionId === selector.sectionId : false) || (selector.heading ? section.heading.toLowerCase() === selector.heading.toLowerCase() : false));
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) throw new Error(`"${selector.heading ?? selector.sectionId}" matches ${matches.length} sections; pass its sectionId.`);
+  const wanted = selector.sectionId ?? selector.heading ?? "";
+  const nearby = sections2.filter((section) => section.heading.toLowerCase().includes(wanted.toLowerCase())).map((section) => section.heading).slice(0, 5);
+  throw new Error(`No section named "${wanted}".${nearby.length ? ` Did you mean: ${nearby.join(", ")}?` : ""}`);
+}
+function findSection(markdown, selector) {
+  return publicSection(pick2(blocks(rows2(markdown)), selector));
+}
+function assertBody(body) {
+  const lines = body.split("\n");
+  const fenced = fencedLines([...lines, ""]);
+  if (fenced.at(-1)) throw new Error("A section body cannot leave a code block open.");
+  lines.forEach((line, index) => {
+    if (fenced[index]) return;
+    if (/^#{1,3}\s+/.test(line)) throw new Error("A section body cannot contain #, ## or ### headings; each section keeps its one heading.");
+    const label2 = parseLabeledLine(line);
+    if (label2 && (label2.key === "rule" || PROTECTED_LABELS.has(label2.key))) throw new Error(`A section body cannot contain a "${label2.label}:" line; pass the rule separately and leave provenance lines as they are.`);
+  });
+}
+function editSection(markdown, selector, change) {
+  const lines = rows2(markdown);
+  const section = pick2(blocks(lines), selector);
+  const block = lines.slice(section.start + 1, section.end);
+  const fenced = fencedLines(block);
+  const keyOf = (line, index) => fenced[index] ? void 0 : parseLabeledLine(line)?.key;
+  const nextRule = (change.rule ?? section.rule).replace(/[\r\n]+/g, " ").trim() || "undetermined";
+  const labels2 = block.flatMap((line, index) => {
+    const key = keyOf(line, index);
+    return key === "rule" ? [`Rule: ${nextRule}`] : key !== void 0 && PROTECTED_LABELS.has(key) ? [line] : [];
+  });
+  if (!block.some((line, index) => keyOf(line, index) === "rule")) labels2.unshift(`Rule: ${nextRule}`);
+  const body = (change.body ?? section.body).trim();
+  assertBody(body);
+  const heading = contextHeading(change.heading ?? section.heading);
+  if (!heading) throw new Error("A section heading cannot be empty.");
+  lines.splice(section.start, section.end - section.start, `### ${heading}`, "", ...body ? [body, ""] : [], ...labels2, "");
+  const result = `${lines.join("\n").replace(/\s+$/, "")}
+`;
+  return { markdown: result, section: findSection(result, section.sectionId ? { sectionId: section.sectionId } : { heading }) };
+}
+function uniqueHeadings(headings) {
+  const used = /* @__PURE__ */ new Set();
+  return headings.map((original) => {
+    const base2 = original.replace(/\s\(\d+\)$/, "");
+    let heading = original;
+    for (let n = 2; used.has(heading.toLowerCase()); n++) heading = `${base2} (${n})`;
+    used.add(heading.toLowerCase());
+    return heading;
+  });
+}
+function dedupeHeadings(markdown) {
+  const lines = rows2(markdown);
+  const sections2 = blocks(lines);
+  const headings = uniqueHeadings(sections2.map((section) => section.heading));
+  const renamed = sections2.flatMap((section, index) => {
+    if (headings[index] === section.heading) return [];
+    lines[section.start] = `### ${headings[index]}`;
+    return [{ sectionId: section.sectionId, from: section.heading, to: headings[index] }];
+  });
+  return { markdown: lines.join("\n"), renamed };
+}
+function documentIdentity(markdown) {
+  const front = /^---\n([\s\S]*?)\n---/.exec(markdown.replace(/\r\n?/g, "\n"))?.[1] ?? "";
+  const model = /^context_model:\s*(.+)$/m.exec(front)?.[1]?.trim();
+  const revision2 = /^context_revision:\s*(\d+)$/m.exec(front)?.[1];
+  let contextModel = null;
+  if (model) {
+    try {
+      contextModel = JSON.parse(model);
+    } catch {
+      contextModel = model;
+    }
+  }
+  return { contextModel, contextRevision: revision2 ? Number(revision2) : null };
+}
+var ContextSummarySchema = external_exports.object({ id: external_exports.string(), label: external_exports.string(), revision: external_exports.number().int(), ontologyVersion: external_exports.number().int().nullable(), sources: external_exports.array(external_exports.string()), createdAt: external_exports.string() });
+var ContextListSchema = external_exports.object({ items: external_exports.array(ContextSummarySchema) });
+var ContextStateSchema = external_exports.object({ proposal: ContextProposalSchema, publication: ContextPublicationSchema.nullable(), answerRevision: external_exports.number().int(), discoveryRevision: external_exports.number().int() });
+var ContextDocumentSchema = external_exports.object({ proposalId: external_exports.string(), revision: external_exports.number().int(), markdown: external_exports.string(), sections: external_exports.array(DocumentSectionSchema), comments: external_exports.array(DocumentCommentSchema) });
+var ContextGraphNodeKindSchema = external_exports.enum(["concept", "workflow", "source", "object", "record", "claim", "evidence", "question", "answer"]);
+var ContextGraphSchema = external_exports.looseObject({
+  modelId: external_exports.string(),
+  revision: external_exports.number().int(),
+  focusId: external_exports.string().nullable(),
+  nodes: external_exports.array(external_exports.looseObject({ id: external_exports.string(), kind: ContextGraphNodeKindSchema, label: external_exports.string(), evidenceIds: external_exports.array(external_exports.string()), sectionId: external_exports.string().optional(), status: external_exports.string().optional(), depth: external_exports.number().int(), hiddenNeighborCount: external_exports.number().int(), expandable: external_exports.boolean() })),
+  edges: external_exports.array(external_exports.looseObject({ id: external_exports.string(), source: external_exports.string(), target: external_exports.string(), kind: external_exports.string(), layer: external_exports.enum(["semantic", "source"]), evidenceIds: external_exports.array(external_exports.string()) })),
+  truncated: external_exports.boolean(),
+  remainingRootIds: external_exports.array(external_exports.string()),
+  recordPage: external_exports.object({ nextCursor: external_exports.string().nullable(), hasMore: external_exports.boolean() }).nullable(),
+  evidence: external_exports.array(EvidenceRefSchema)
+});
+var ContextSaveResultSchema = external_exports.object({ proposal: ContextProposalSchema, markdown: external_exports.string() });
+var ContextCommentResultSchema = ContextSaveResultSchema.extend({ comment: DocumentCommentSchema });
+var ContextPreviewSchema = external_exports.looseObject({
+  proposalId: external_exports.string(),
+  revision: external_exports.number().int(),
+  snapshot: SnapshotVectorSchema,
+  changes: external_exports.array(external_exports.object({ conceptId: external_exports.string(), kind: external_exports.enum(["added", "changed", "removed"]), before: BusinessConceptSchema.nullable(), after: BusinessConceptSchema.nullable() })),
+  comparisons: external_exports.array(external_exports.looseObject({ leftId: external_exports.string(), rightId: external_exports.string(), disposition: external_exports.string(), differences: external_exports.array(external_exports.string()) })),
+  unresolvedRequirements: external_exports.array(external_exports.string()),
+  openQuestionIds: external_exports.array(external_exports.string()),
+  descriptiveMappingIds: external_exports.array(external_exports.string()),
+  markdown: external_exports.string(),
+  staleAnswers: external_exports.boolean()
+});
 
 // ../node_modules/.bun/@json-render+core@0.20.0/node_modules/@json-render/core/dist/chunk-7V7ZCHEJ.mjs
 var DynamicValueSchema = external_exports.union([
@@ -23378,110 +23657,6 @@ function pageUrl(serviceUrl, page, options = {}) {
   return `${serviceUrl.replace(/\/$/, "")}${buildPagePath(page, options)}`;
 }
 
-// src/contextDocument.ts
-var LABEL = /^\s*(?:[-*]\s+)?(?:\*\*)?([A-Za-z][A-Za-z ]*)(?:\*\*)?:(?:\*\*)?\s*(.*)$/;
-var PROTECTED = /* @__PURE__ */ new Set(["context section", "evidence", "answers", "questions", "review"]);
-var labelOf = (line) => LABEL.exec(line)?.[1]?.toLowerCase().trim();
-function listSections(markdown) {
-  const rows2 = markdown.replace(/\r\n?/g, "\n").split("\n");
-  const sections2 = [];
-  let group = "";
-  for (let index = 0; index < rows2.length; index++) {
-    const h2 = /^##\s+(.+?)\s*$/.exec(rows2[index]);
-    if (h2 && !/^###/.test(rows2[index])) {
-      group = h2[1];
-      continue;
-    }
-    const h3 = /^###\s+(.+?)\s*$/.exec(rows2[index]);
-    if (!h3) continue;
-    let end = rows2.length;
-    for (let cursor = index + 1; cursor < rows2.length; cursor++) if (/^#{2,3}\s+/.test(rows2[cursor])) {
-      end = cursor;
-      break;
-    }
-    const body = [];
-    let rule = "undetermined";
-    let sectionId = null;
-    for (const line of rows2.slice(index + 1, end)) {
-      const label2 = labelOf(line);
-      if (label2 === "rule") {
-        rule = LABEL.exec(line)[2].trim();
-        continue;
-      }
-      if (label2 === "context section") {
-        try {
-          sectionId = decodeURIComponent(LABEL.exec(line)[2].trim());
-        } catch {
-          sectionId = LABEL.exec(line)[2].trim();
-        }
-        continue;
-      }
-      if (label2 !== void 0 && PROTECTED.has(label2)) continue;
-      body.push(line);
-    }
-    sections2.push({ index: sections2.length, group, heading: h3[1], sectionId, rule, body: body.join("\n").trim(), start: index, end });
-  }
-  return sections2;
-}
-function findSection(markdown, selector) {
-  const sections2 = listSections(markdown);
-  const matches = sections2.filter((section) => (selector.sectionId ? section.sectionId === selector.sectionId : false) || (selector.heading ? section.heading.toLowerCase() === selector.heading.toLowerCase() : false));
-  if (matches.length === 1) return matches[0];
-  if (matches.length > 1) throw new Error(`"${selector.heading ?? selector.sectionId}" matches ${matches.length} sections; pass its sectionId.`);
-  const wanted = selector.sectionId ?? selector.heading ?? "";
-  const nearby = sections2.filter((section) => section.heading.toLowerCase().includes(wanted.toLowerCase())).map((section) => section.heading).slice(0, 5);
-  throw new Error(`No section named "${wanted}".${nearby.length ? ` Did you mean: ${nearby.join(", ")}?` : ""}`);
-}
-function editSection(markdown, selector, change) {
-  const section = findSection(markdown, selector);
-  const rows2 = markdown.replace(/\r\n?/g, "\n").split("\n");
-  const block = rows2.slice(section.start + 1, section.end);
-  const labelLines = block.filter((line) => {
-    const label2 = labelOf(line);
-    return label2 !== void 0 && (PROTECTED.has(label2) || label2 === "rule");
-  });
-  const nextRule = (change.rule ?? section.rule).trim() || "undetermined";
-  const labels2 = labelLines.map((line) => labelOf(line) === "rule" ? `Rule: ${nextRule}` : line);
-  if (!labels2.some((line) => labelOf(line) === "rule")) labels2.unshift(`Rule: ${nextRule}`);
-  const body = (change.body ?? section.body).trim();
-  const heading = (change.heading ?? section.heading).replace(/[\r\n]+/g, " ").trim();
-  if (!heading) throw new Error("A section heading cannot be empty.");
-  const next = [`### ${heading}`, "", ...body ? [body, ""] : [], ...labels2, ""];
-  rows2.splice(section.start, section.end - section.start, ...next);
-  const result = rows2.join("\n").replace(/\n{3,}/g, "\n\n").replace(/\s+$/, "\n");
-  return { markdown: result, section: findSection(result, section.sectionId ? { sectionId: section.sectionId } : { heading }) };
-}
-function documentIdentity(markdown) {
-  const match = /^---\n([\s\S]*?)\n---/.exec(markdown.replace(/\r\n?/g, "\n"));
-  const front = match?.[1] ?? "";
-  const model = /^context_model:\s*(.+)$/m.exec(front)?.[1]?.trim();
-  const revision2 = /^context_revision:\s*(\d+)$/m.exec(front)?.[1];
-  let contextModel = null;
-  if (model) {
-    try {
-      contextModel = JSON.parse(model);
-    } catch {
-      contextModel = model;
-    }
-  }
-  return { contextModel, contextRevision: revision2 ? Number(revision2) : null };
-}
-function dedupeHeadings(markdown) {
-  const used = /* @__PURE__ */ new Set();
-  const renamed = [];
-  let result = markdown;
-  for (const section of listSections(markdown)) {
-    const base2 = section.heading.replace(/\s\(\d+\)$/, "");
-    let heading = section.heading;
-    for (let n = 2; used.has(heading.toLowerCase()); n++) heading = `${base2} (${n})`;
-    used.add(heading.toLowerCase());
-    if (heading === section.heading) continue;
-    renamed.push({ sectionId: section.sectionId, from: section.heading, to: heading });
-    result = editSection(result, section.sectionId ? { sectionId: section.sectionId } : { heading: section.heading }, { heading }).markdown;
-  }
-  return { markdown: result, renamed };
-}
-
 // src/contract.ts
 function parseJson(value) {
   if (typeof value !== "string") return value;
@@ -23701,93 +23876,6 @@ function unifiedDiff(before, after, labels2, context = 2) {
 // src/pending.ts
 import fs3 from "node:fs";
 import path3 from "node:path";
-
-// src/ontologyDocument.ts
-var ONTOLOGY_SECTIONS = ["entities", "definitions", "relationships", "workflows", "metrics", "processes", "automations", "questions"];
-var TITLES = { entities: "Entities", definitions: "Definitions", relationships: "Relationships", workflows: "Workflows", metrics: "Metrics", processes: "Processes", automations: "Automations", questions: "Questions" };
-var LABEL2 = /^\s*(?:[-*]\s+)?(?:\*\*)?([A-Za-z][A-Za-z ]*)(?:\*\*)?:(?:\*\*)?\s*(.*)$/;
-var rows = (markdown) => markdown.replace(/\r\n?/g, "\n").split("\n");
-function sectionRange(lines, section) {
-  const start = lines.findIndex((line) => /^##\s+/.test(line) && !/^###/.test(line) && line.replace(/^##\s+/, "").trim().toLowerCase() === section);
-  if (start === -1) return null;
-  let end = lines.length;
-  for (let index = start + 1; index < lines.length; index++) if (/^##\s+[^#]/.test(lines[index])) {
-    end = index;
-    break;
-  }
-  return { start, end };
-}
-function listEntries(markdown) {
-  const lines = rows(markdown);
-  const entries = [];
-  for (const section of ONTOLOGY_SECTIONS) {
-    const range = sectionRange(lines, section);
-    if (!range) continue;
-    for (let index = range.start + 1; index < range.end; index++) {
-      const heading = /^###\s+(.+?)\s*$/.exec(lines[index]);
-      if (!heading) continue;
-      let end = range.end;
-      for (let cursor = index + 1; cursor < range.end; cursor++) if (/^###\s+/.test(lines[cursor])) {
-        end = cursor;
-        break;
-      }
-      const body = lines.slice(index + 1, end);
-      const properties = {};
-      for (const line of body) {
-        const label2 = LABEL2.exec(line);
-        if (label2) properties[label2[1].toLowerCase().trim()] = label2[2].trim();
-      }
-      entries.push({ section, name: heading[1], prose: body.filter((line) => !LABEL2.test(line)).join("\n").trim(), properties, start: index, end });
-    }
-  }
-  return entries;
-}
-function findEntry(markdown, section, name) {
-  const matches = listEntries(markdown).filter((entry) => entry.section === section && entry.name.toLowerCase() === name.toLowerCase());
-  if (matches.length === 1) return matches[0];
-  if (matches.length > 1) throw new Error(`${TITLES[section]} has ${matches.length} entries named "${name}".`);
-  const nearby = listEntries(markdown).filter((entry) => entry.section === section && entry.name.toLowerCase().includes(name.toLowerCase())).map((entry) => entry.name).slice(0, 5);
-  throw new Error(`No ${section} entry named "${name}".${nearby.length ? ` Did you mean: ${nearby.join(", ")}?` : ""}`);
-}
-var tidy = (lines) => lines.join("\n").replace(/\n{3,}/g, "\n\n").replace(/\s+$/, "\n");
-function updateEntry(markdown, section, name, change) {
-  const lines = rows(markdown);
-  const entry = findEntry(markdown, section, name);
-  const body = lines.slice(entry.start + 1, entry.end);
-  const kept = new Map(body.filter((line) => LABEL2.test(line)).map((line) => [LABEL2.exec(line)[1].toLowerCase().trim(), line]));
-  for (const [key, value] of Object.entries(change.properties ?? {})) {
-    if (value.trim() === "") kept.delete(key.toLowerCase());
-    else kept.set(key.toLowerCase(), `${key[0].toUpperCase()}${key.slice(1)}: ${value.trim()}`);
-  }
-  const prose = (change.prose ?? entry.prose).trim();
-  const heading = (change.name ?? entry.name).replace(/[\r\n]+/g, " ").trim();
-  if (!heading) throw new Error("An entry name cannot be empty.");
-  lines.splice(entry.start, entry.end - entry.start, `### ${heading}`, ...prose ? [prose] : [], ...kept.values(), "");
-  return tidy(lines);
-}
-function addEntry(markdown, section, name, prose, properties = {}) {
-  const lines = rows(markdown);
-  if (listEntries(markdown).some((entry2) => entry2.section === section && entry2.name.toLowerCase() === name.toLowerCase())) throw new Error(`${TITLES[section]} already has an entry named "${name}".`);
-  const entry = [`### ${name.trim()}`, ...prose.trim() ? [prose.trim()] : [], ...Object.entries(properties).filter(([, value]) => value.trim()).map(([key, value]) => `${key[0].toUpperCase()}${key.slice(1)}: ${value.trim()}`), ""];
-  const range = sectionRange(lines, section);
-  if (range) {
-    lines.splice(range.end, 0, ...entry);
-    return tidy(lines);
-  }
-  const later = ONTOLOGY_SECTIONS.slice(ONTOLOGY_SECTIONS.indexOf(section) + 1).map((item) => sectionRange(lines, item)).find(Boolean);
-  const block = [`## ${TITLES[section]}`, "", ...entry];
-  if (later) lines.splice(later.start, 0, ...block);
-  else lines.push("", ...block);
-  return tidy(lines);
-}
-function removeEntry(markdown, section, name) {
-  const lines = rows(markdown);
-  const entry = findEntry(markdown, section, name);
-  lines.splice(entry.start, entry.end - entry.start);
-  return tidy(lines);
-}
-
-// src/pending.ts
 var PENDING_DIR = path3.join(path3.dirname(CONFIG_FILE), "pending");
 var fileFor = (serviceUrl) => path3.join(PENDING_DIR, `ontology-${new URL(serviceUrl).host.replace(/[^a-z0-9.-]/gi, "_")}.json`);
 function readPending(serviceUrl) {
@@ -23838,16 +23926,6 @@ async function resolveType(client, requested, connectionId) {
   if (found.length > 1) throw new ApiError("INVALID_REQUEST", `Ambiguous entity type ${requested}: pass connectionId or the type id.`, 400);
   return found[0];
 }
-var ContextListSchema = external_exports.object({ items: external_exports.array(external_exports.object({ id: external_exports.string(), label: external_exports.string(), revision: external_exports.number().int(), ontologyVersion: external_exports.number().int().nullable(), sources: external_exports.array(external_exports.string()), createdAt: external_exports.string() })) });
-var ContextStateSchema = external_exports.object({ proposal: ContextProposalSchema, publication: ContextPublicationSchema.nullable(), answerRevision: external_exports.number().int(), discoveryRevision: external_exports.number().int() });
-var ContextDocumentSchema = external_exports.object({ proposalId: external_exports.string(), revision: external_exports.number().int(), markdown: external_exports.string(), sections: external_exports.array(DocumentSectionSchema), comments: external_exports.array(DocumentCommentSchema) });
-var ContextGraphSchema = external_exports.looseObject({
-  revision: external_exports.number().int(),
-  nodes: external_exports.array(external_exports.looseObject({ id: external_exports.string(), kind: external_exports.string(), label: external_exports.string(), status: external_exports.string().optional(), sectionId: external_exports.string().optional(), depth: external_exports.number().int(), hiddenNeighborCount: external_exports.number().int(), expandable: external_exports.boolean() })),
-  edges: external_exports.array(external_exports.looseObject({ id: external_exports.string(), source: external_exports.string(), target: external_exports.string(), kind: external_exports.string(), layer: external_exports.string() }))
-});
-var SaveResultSchema = external_exports.object({ proposal: ContextProposalSchema, markdown: external_exports.string() });
-var ContextPreviewSchema = external_exports.looseObject({ semanticChanges: external_exports.array(external_exports.object({ id: external_exports.string(), kind: external_exports.string(), description: external_exports.string() })), unresolved: external_exports.array(external_exports.string()), staleAnswers: external_exports.boolean().optional() });
 var shorten = (value, max = 160) => value.length > max ? `${value.slice(0, max - 1)}\u2026` : value;
 var when = (iso) => iso.replace("T", " ").replace(/\.\d+Z$/, "Z");
 function versionLine(version2, published) {
@@ -23910,9 +23988,7 @@ function createToolHandlers(client, telemetry = telemetryOff) {
         "Sections (id \xB7 heading \xB7 rule \xB7 review):"
       ];
       for (const section of p.sections) {
-        const mappings = p.mappings.filter((mapping) => mapping.conceptId === section.conceptId);
-        const rule = mappings.length === 1 && mappings[0]?.execution === "executable" ? mappings[0].rule : "undetermined";
-        lines.push(`- ${section.id} \xB7 "${section.heading}" \xB7 ${rule} \xB7 ${section.review}`);
+        lines.push(`- ${section.id} \xB7 "${section.heading}" \xB7 ${sectionRule(p, section) ?? "undetermined"} \xB7 ${section.review}`);
       }
       return text2(lines.join("\n"));
     },
@@ -23951,7 +24027,7 @@ function createToolHandlers(client, telemetry = telemetryOff) {
       const repaired = dedupeHeadings(edited.markdown);
       let saved;
       try {
-        saved = parse3(SaveResultSchema, await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown: repaired.markdown }));
+        saved = parse3(ContextSaveResultSchema, await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown: repaired.markdown }));
       } catch (error62) {
         if (error62 instanceof ApiError && error62.code === "INVALID_REQUEST") return failure2(`${error62.code}: ${error62.message} ${explainParseFailure(doc.markdown, edited.markdown)}`.trim());
         throw error62;
@@ -23963,12 +24039,12 @@ function createToolHandlers(client, telemetry = telemetryOff) {
       const { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown, note } = args;
       const identity = documentIdentity(markdown);
       if (identity.contextModel !== proposalId2 || identity.contextRevision !== expectedRevision2) return failure2(`The frontmatter must read context_model: "${proposalId2}" and context_revision: ${expectedRevision2}. Start from get_context_document and keep every section and its protected lines.`);
-      const saved = parse3(SaveResultSchema, await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown }));
+      const saved = parse3(ContextSaveResultSchema, await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown }));
       return text2(`Committed revision ${saved.proposal.revision} of ${proposalId2}${note ? ` (${note})` : ""} with ${listSections(markdown).length} sections.`);
     },
     async comment_context_section(args) {
       const { proposalId: proposalId2, expectedRevision: expectedRevision2, sectionId, body, decision } = args;
-      const result = parse3(external_exports.object({ proposal: ContextProposalSchema, comment: DocumentCommentSchema }), await client.post("/context-model/comment", { proposalId: proposalId2, expectedRevision: expectedRevision2, sectionId, body, ...decision ? { decision } : {} }));
+      const result = parse3(ContextCommentResultSchema, await client.post("/context-model/comment", { proposalId: proposalId2, expectedRevision: expectedRevision2, sectionId, body, ...decision ? { decision } : {} }));
       const section = result.proposal.sections.find((item) => item.id === sectionId);
       return text2(`Comment ${result.comment.id} added to "${section?.heading ?? sectionId}"${decision ? ` with decision ${decision}` : ""}; the model is now at revision ${result.proposal.revision}. Use "Ask agent to revise" in the app, or the discovery thread, to have the agent act on open comments.`);
     },
@@ -23980,8 +24056,11 @@ function createToolHandlers(client, telemetry = telemetryOff) {
     async preview_context_publication(args) {
       const { proposalId: proposalId2, expectedRevision: expectedRevision2 } = args;
       const preview = parse3(ContextPreviewSchema, await client.post("/context-model/preview", { proposalId: proposalId2, expectedRevision: expectedRevision2 }));
-      const lines = [`Publication preview for ${proposalId2} r${expectedRevision2}:`, `Semantic changes (${preview.semanticChanges.length}):`, ...preview.semanticChanges.map((change) => `- ${change.kind}: ${change.description}`)];
-      if (preview.unresolved.length) lines.push(`Unresolved (${preview.unresolved.length}):`, ...preview.unresolved.map((item) => `- ${item}`));
+      const lines = [`Publication preview for ${proposalId2} r${expectedRevision2}:`, `Semantic changes (${preview.changes.length}):`, ...preview.changes.map((change) => {
+        const concept = change.after ?? change.before;
+        return `- ${change.kind}: ${concept ? `${concept.name}: ${shorten(concept.description)}` : change.conceptId}`;
+      })];
+      if (preview.unresolvedRequirements.length) lines.push(`Unresolved (${preview.unresolvedRequirements.length}):`, ...preview.unresolvedRequirements.map((item) => `- ${item}`));
       if (preview.staleAnswers) lines.push("Warning: business-owner answers changed since this revision was synthesized.");
       lines.push("", "To publish: save this document as an ontology draft (save_ontology_version), then preview_ontology_publication and publish_ontology.");
       return text2(lines.join("\n"));
@@ -24184,16 +24263,16 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
       const type = await resolveType(client, requested, connectionId);
       const typeId = type.id;
       const max = limit ?? 5e3;
-      const rows2 = [];
+      const rows3 = [];
       let cursor;
       let hasMore = false;
       let metadata;
-      while (rows2.length < max) {
-        const page = parse3(EntityListResponseSchema, await client.get("/entities", { typeId, connectionId: type.connectionId, search, limit: Math.min(100, max - rows2.length), cursor }));
+      while (rows3.length < max) {
+        const page = parse3(EntityListResponseSchema, await client.get("/entities", { typeId, connectionId: type.connectionId, search, limit: Math.min(100, max - rows3.length), cursor }));
         metadata = page.metadata;
         for (const entity of page.items) {
           const attributes = fields ? Object.fromEntries(fields.map((field) => [field, entity.attributes[field] ?? null])) : entity.attributes;
-          rows2.push({ id: entity.id, label: entity.label, ...attributes });
+          rows3.push({ id: entity.id, label: entity.label, ...attributes });
         }
         hasMore = page.page.hasMore;
         if (!page.page.nextCursor || !hasMore) break;
@@ -24203,10 +24282,10 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
       fs4.mkdirSync(directory, { recursive: true });
       const file2 = path4.join(directory, `${type.nativeName.replace(/[^A-Za-z0-9_-]/g, "_")}-${Date.now()}.json`);
       const snapshot = metadata ? { coverage: metadata.coverage.status, lastSuccessfulSyncAt: metadata.freshness.lastSuccessfulSyncAt } : null;
-      fs4.writeFileSync(file2, JSON.stringify({ type: type.nativeName, typeId, fields: fields ?? null, snapshot, rows: rows2 }));
-      const columns = [...new Set(rows2.flatMap((row) => Object.keys(row)))];
+      fs4.writeFileSync(file2, JSON.stringify({ type: type.nativeName, typeId, fields: fields ?? null, snapshot, rows: rows3 }));
+      const columns = [...new Set(rows3.flatMap((row) => Object.keys(row)))];
       return text2([
-        `Wrote ${rows2.length} ${type.nativeName} record(s) to ${file2}${hasMore ? " (more records exist beyond the limit; the file is a partial export)" : ""}.`,
+        `Wrote ${rows3.length} ${type.nativeName} record(s) to ${file2}${hasMore ? " (more records exist beyond the limit; the file is a partial export)" : ""}.`,
         `Columns: ${columns.slice(0, 60).join(", ")}${columns.length > 60 ? ", \u2026" : ""}`,
         snapshot ? `Snapshot: coverage ${snapshot.coverage} \xB7 last sync ${snapshot.lastSuccessfulSyncAt ? when(snapshot.lastSuccessfulSyncAt) : "never"}` : "Snapshot: unknown",
         "Embed the rows into the page (read the file, or splice it in with a short node script); a browser cannot fetch a local file."

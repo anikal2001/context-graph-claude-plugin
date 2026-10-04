@@ -19692,7 +19692,7 @@ function date4(params) {
 }
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.14.0";
+var CONTRACT_VERSION = "1.15.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -19885,7 +19885,7 @@ var DefinitionVersionSchema = external_exports.strictObject({
   publishedAt: TimestampSchema.nullable()
 });
 var ExtractionBatchSchema = external_exports.strictObject({
-  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.10.0", "1.11.0", "1.12.0", "1.13.0", CONTRACT_VERSION]),
+  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.10.0", "1.11.0", "1.12.0", "1.13.0", "1.14.0", CONTRACT_VERSION]),
   connectionId: IdSchema,
   runId: IdSchema,
   batchId: IdSchema,
@@ -20276,6 +20276,38 @@ var AGGREGATE_BUCKETS = ["day", "week", "month", "quarter", "year"];
 var IDENT = "[A-Za-z_][A-Za-z0-9_]*";
 var GROUP_PATTERN = new RegExp(`^(${IDENT})(?:\\.(${IDENT}))?(?::(${AGGREGATE_BUCKETS.join("|")}))?$`);
 var METRIC_PATTERN = new RegExp(`^(?:(count)|(sum|avg|min|max|distinct):(${IDENT}))$`);
+
+// ../shared/src/context-document.ts
+var ContextSummarySchema = external_exports.object({ id: external_exports.string(), label: external_exports.string(), revision: external_exports.number().int(), ontologyVersion: external_exports.number().int().nullable(), sources: external_exports.array(external_exports.string()), createdAt: external_exports.string() });
+var ContextListSchema = external_exports.object({ items: external_exports.array(ContextSummarySchema) });
+var ContextStateSchema = external_exports.object({ proposal: ContextProposalSchema, publication: ContextPublicationSchema.nullable(), answerRevision: external_exports.number().int(), discoveryRevision: external_exports.number().int() });
+var ContextDocumentSchema = external_exports.object({ proposalId: external_exports.string(), revision: external_exports.number().int(), markdown: external_exports.string(), sections: external_exports.array(DocumentSectionSchema), comments: external_exports.array(DocumentCommentSchema) });
+var ContextGraphNodeKindSchema = external_exports.enum(["concept", "workflow", "source", "object", "record", "claim", "evidence", "question", "answer"]);
+var ContextGraphSchema = external_exports.looseObject({
+  modelId: external_exports.string(),
+  revision: external_exports.number().int(),
+  focusId: external_exports.string().nullable(),
+  nodes: external_exports.array(external_exports.looseObject({ id: external_exports.string(), kind: ContextGraphNodeKindSchema, label: external_exports.string(), evidenceIds: external_exports.array(external_exports.string()), sectionId: external_exports.string().optional(), status: external_exports.string().optional(), depth: external_exports.number().int(), hiddenNeighborCount: external_exports.number().int(), expandable: external_exports.boolean() })),
+  edges: external_exports.array(external_exports.looseObject({ id: external_exports.string(), source: external_exports.string(), target: external_exports.string(), kind: external_exports.string(), layer: external_exports.enum(["semantic", "source"]), evidenceIds: external_exports.array(external_exports.string()) })),
+  truncated: external_exports.boolean(),
+  remainingRootIds: external_exports.array(external_exports.string()),
+  recordPage: external_exports.object({ nextCursor: external_exports.string().nullable(), hasMore: external_exports.boolean() }).nullable(),
+  evidence: external_exports.array(EvidenceRefSchema)
+});
+var ContextSaveResultSchema = external_exports.object({ proposal: ContextProposalSchema, markdown: external_exports.string() });
+var ContextCommentResultSchema = ContextSaveResultSchema.extend({ comment: DocumentCommentSchema });
+var ContextPreviewSchema = external_exports.looseObject({
+  proposalId: external_exports.string(),
+  revision: external_exports.number().int(),
+  snapshot: SnapshotVectorSchema,
+  changes: external_exports.array(external_exports.object({ conceptId: external_exports.string(), kind: external_exports.enum(["added", "changed", "removed"]), before: BusinessConceptSchema.nullable(), after: BusinessConceptSchema.nullable() })),
+  comparisons: external_exports.array(external_exports.looseObject({ leftId: external_exports.string(), rightId: external_exports.string(), disposition: external_exports.string(), differences: external_exports.array(external_exports.string()) })),
+  unresolvedRequirements: external_exports.array(external_exports.string()),
+  openQuestionIds: external_exports.array(external_exports.string()),
+  descriptiveMappingIds: external_exports.array(external_exports.string()),
+  markdown: external_exports.string(),
+  staleAnswers: external_exports.boolean()
+});
 
 // ../node_modules/.bun/@json-render+core@0.20.0/node_modules/@json-render/core/dist/chunk-7V7ZCHEJ.mjs
 var DynamicValueSchema = external_exports.union([
