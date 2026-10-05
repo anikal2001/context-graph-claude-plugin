@@ -19677,7 +19677,7 @@ function date4(params) {
 }
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.16.0";
+var CONTRACT_VERSION = "1.17.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -19919,6 +19919,7 @@ var ExtractionBatchSchema = external_exports.strictObject({
     "1.13.0",
     "1.14.0",
     "1.15.0",
+    "1.16.0",
     CONTRACT_VERSION
   ]),
   connectionId: IdSchema,
@@ -23605,6 +23606,247 @@ var PlumOntologyDocumentSchema = PlumOntologyEntrySchema.extend({
   viewUrl: external_exports.string().nullable(),
   editUrl: external_exports.string().nullable()
 });
+
+// ../shared/src/automations.ts
+var AUTOMATION_ACTION_KINDS = [
+  "source_import",
+  "discovery_reconcile",
+  "ontology_draft",
+  "interview_plan",
+  "slack_message"
+];
+var AUTOMATION_RUN_STATUSES = ["waiting", "running", "completed", "skipped", "failed", "cancelled"];
+var Duration = external_exports.string().regex(/^(?=\d)(\d+w)?(\d+d)?(\d+h)?(\d+m)?(\d+s)?$/, 'Use a duration such as "30s", "5m", "2h" or "1d12h".').describe("A duration: a number followed by s (seconds), m (minutes), h (hours), d (days) or w (weeks).");
+function durationSeconds(value) {
+  const units = { w: 604800, d: 86400, h: 3600, m: 60, s: 1 };
+  let total = 0;
+  for (const [, amount, unit2] of value.matchAll(/(\d+)([wdhms])/g)) total += Number(amount) * units[unit2];
+  return total;
+}
+var between = (min, max, label2) => Duration.refine((value) => durationSeconds(value) >= min && durationSeconds(value) <= max, {
+  message: `${label2} must be between ${min} seconds and ${max >= 86400 ? `${max / 86400} days` : `${max} seconds`}.`
+});
+var Field = external_exports.string().regex(/^[A-Za-z_][A-Za-z0-9_]{0,63}(\.[A-Za-z_][A-Za-z0-9_]{0,63}){0,4}$/, 'Use a field name such as "accountId".').describe('A field of the event payload, e.g. "accountId" or "customer.id".');
+var AutomationEventNameSchema = external_exports.string().regex(/^[a-z0-9][a-z0-9._-]{0,99}$/, 'Use lower-case letters, digits, dots, dashes or underscores, e.g. "deal.won".').describe('An event name you choose, e.g. "deal.won". Send it with POST /api/v1/events.');
+var AutomationTriggerSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.strictObject({
+    kind: external_exports.literal("schedule"),
+    cron: external_exports.string().trim().regex(/^(\S+\s+){4}\S+$/, 'Use a five-part cron expression, e.g. "0 9 * * 1" for Mondays at 09:00.').describe("A five-part cron expression: minute hour day-of-month month day-of-week."),
+    timezone: external_exports.string().regex(/^[A-Za-z_]+(\/[A-Za-z_+-]+){0,2}$/).default("UTC").describe('An IANA time zone such as "America/Toronto". Defaults to UTC.')
+  }),
+  external_exports.strictObject({
+    kind: external_exports.literal("event"),
+    event: AutomationEventNameSchema,
+    /** Only events whose payload matches every entry start a run. */
+    where: external_exports.array(external_exports.strictObject({ field: Field, equals: external_exports.union([external_exports.string().max(200), external_exports.number(), external_exports.boolean()]) })).max(5).default([]).describe("Only start for events whose payload fields equal these values.")
+  }),
+  external_exports.strictObject({ kind: external_exports.literal("manual") }).describe("Runs only when you call POST /api/v1/automations/{id}/run.")
+]);
+var AutomationActionSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.strictObject({ kind: external_exports.literal("source_import"), connectionId: external_exports.string().min(1).max(200) }).describe("Refresh one connected source (Salesforce, Postgres, GitHub or Notion)."),
+  external_exports.strictObject({ kind: external_exports.literal("discovery_reconcile") }).describe("Let discovery process any evidence that has arrived since its last pass."),
+  external_exports.strictObject({ kind: external_exports.literal("ontology_draft") }).describe("Ask for a new ontology draft from the current imported data."),
+  external_exports.strictObject({ kind: external_exports.literal("interview_plan") }).describe("Route open clarification questions to the people who can answer them."),
+  external_exports.strictObject({
+    kind: external_exports.literal("slack_message"),
+    channelId: external_exports.string().regex(/^[CG][A-Z0-9]{8,12}$/).describe('The Slack channel id, e.g. "C0123456789". It must be listed in grants.'),
+    text: external_exports.string().trim().min(1).max(3e3)
+  }).describe("Post a message to a Slack channel the automation is granted.")
+]);
+var AutomationGrantSchema = external_exports.strictObject({
+  kind: external_exports.literal("slack_channel"),
+  channelId: external_exports.string().regex(/^[CG][A-Z0-9]{8,12}$/)
+});
+var FlowObject = external_exports.strictObject({
+  concurrency: external_exports.strictObject({
+    limit: external_exports.number().int().min(1).max(100),
+    perField: Field.optional()
+  }).optional().describe(
+    "At most `limit` runs work at the same time; the rest wait their turn. With perField, the limit applies separately to each value of that payload field."
+  ),
+  throttle: external_exports.strictObject({
+    limit: external_exports.number().int().min(1).max(1e3),
+    period: between(1, 604800, "A throttle period"),
+    burst: external_exports.number().int().min(1).max(100).optional(),
+    perField: Field.optional()
+  }).optional().describe("Start at most `limit` runs per period. Extra runs are queued, not dropped."),
+  rateLimit: external_exports.strictObject({
+    limit: external_exports.number().int().min(1).max(1e3),
+    period: between(1, 86400, "A rate limit period"),
+    perField: Field.optional()
+  }).optional().describe("Start at most `limit` runs per period. Extra triggers are skipped, not queued."),
+  debounce: external_exports.strictObject({
+    period: between(1, 604800, "A debounce period"),
+    timeout: between(1, 604800, "A debounce timeout").optional(),
+    perField: Field.optional()
+  }).optional().describe(
+    "Wait until triggers stop arriving for `period`, then run once with the latest one. `timeout` caps how long a run can be held back."
+  ),
+  batch: external_exports.strictObject({
+    maxSize: external_exports.number().int().min(2).max(100),
+    timeoutSeconds: external_exports.number().int().min(1).max(300),
+    perField: Field.optional()
+  }).optional().describe(
+    "Collect up to maxSize triggering events (or wait timeoutSeconds) and run once for the whole group. Cannot be combined with rateLimit, debounce, priority, cancelOn or idempotency."
+  ),
+  priority: external_exports.strictObject({ level: external_exports.number().int().min(-600).max(600) }).optional().describe(
+    "When runs are queued, a higher level starts sooner: the level is how many seconds ahead of (or behind, if negative) other queued runs it is placed. -600 to 600."
+  ),
+  retries: external_exports.number().int().min(0).max(20).default(3).describe("How many times a failed step is retried before the run fails. 0 to 20."),
+  cancelOn: external_exports.array(
+    external_exports.strictObject({
+      event: AutomationEventNameSchema,
+      sameField: Field.optional(),
+      timeout: between(1, 31536e3, "A cancellation window").optional()
+    })
+  ).max(5).default([]).describe(
+    "Cancel a run when one of these events arrives. With sameField, only when that payload field matches the run\u2019s own trigger."
+  ),
+  waitFor: external_exports.strictObject({
+    event: AutomationEventNameSchema,
+    sameField: Field.optional(),
+    timeout: between(1, 31536e3, "A wait"),
+    onTimeout: external_exports.enum(["skip", "continue"]).default("skip")
+  }).optional().describe(
+    "Before doing its work, wait for this event (for example an approval). If it does not arrive within timeout, skip the run or continue anyway."
+  ),
+  timeouts: external_exports.strictObject({
+    start: between(1, 604800, "A start timeout").optional(),
+    finish: between(1, 604800, "A finish timeout").optional()
+  }).optional().describe("Cancel a run that waits longer than `start` to begin, or takes longer than `finish` to complete."),
+  singleton: external_exports.strictObject({ mode: external_exports.enum(["skip", "cancel"]), perField: Field.optional() }).optional().describe("Allow only one run at a time: skip new triggers, or cancel the running one in favour of the new one."),
+  idempotency: external_exports.strictObject({ perField: Field }).optional().describe("Run at most once per value of this payload field in 24 hours.")
+});
+var AutomationFlowSchema = FlowObject.superRefine((flow, context) => {
+  if (flow.batch) {
+    for (const key of ["rateLimit", "debounce", "priority", "idempotency"])
+      if (flow[key])
+        context.addIssue({ code: "custom", path: [key], message: `batch cannot be combined with ${key}.` });
+  }
+  if (flow.batch && flow.cancelOn.length)
+    context.addIssue({ code: "custom", path: ["cancelOn"], message: "batch cannot be combined with cancelOn." });
+});
+var AutomationIdSchema = external_exports.string().regex(/^aut_[0-9a-f]{32}$/);
+var AutomationSchema = external_exports.strictObject({
+  id: AutomationIdSchema,
+  name: external_exports.string(),
+  description: external_exports.string(),
+  enabled: external_exports.boolean(),
+  trigger: AutomationTriggerSchema,
+  action: AutomationActionSchema,
+  grants: external_exports.array(AutomationGrantSchema),
+  flow: AutomationFlowSchema,
+  /** A person's subject id, or `service:<key id>` for an automation a workspace service key created. */
+  owner: external_exports.strictObject({ subjectId: external_exports.string() }),
+  /**
+   * Why plum paused the automation on its own: its owner left the workspace, lost the role it needs, or (for a service
+   * key) was revoked. Null while it runs normally. Enabling it again, or taking ownership, clears it.
+   */
+  pausedReason: external_exports.string().nullable().default(null),
+  /** Completed runs in the last 30 days. */
+  runs30d: external_exports.strictObject({ completed: external_exports.number().int(), failed: external_exports.number().int(), total: external_exports.number().int() }),
+  revision: external_exports.number().int().positive(),
+  createdAt: external_exports.string(),
+  updatedAt: external_exports.string()
+});
+var CreateAutomationRequestSchema = external_exports.strictObject({
+  name: external_exports.string().trim().min(1).max(120),
+  description: external_exports.string().trim().max(2e3).default(""),
+  enabled: external_exports.boolean().default(true),
+  trigger: AutomationTriggerSchema,
+  action: AutomationActionSchema,
+  grants: external_exports.array(AutomationGrantSchema).max(20).default([]),
+  flow: AutomationFlowSchema.default({ retries: 3, cancelOn: [] })
+});
+var UpdateAutomationRequestSchema = external_exports.strictObject({
+  name: external_exports.string().trim().min(1).max(120).optional(),
+  description: external_exports.string().trim().max(2e3).optional(),
+  enabled: external_exports.boolean().optional(),
+  trigger: AutomationTriggerSchema.optional(),
+  action: AutomationActionSchema.optional(),
+  grants: external_exports.array(AutomationGrantSchema).max(20).optional(),
+  flow: AutomationFlowSchema.optional()
+});
+var AutomationListQuerySchema = external_exports.strictObject({
+  enabled: external_exports.enum(["true", "false"]).optional(),
+  name: external_exports.string().trim().min(1).max(120).optional()
+});
+var AutomationListResponseSchema = external_exports.strictObject({ items: external_exports.array(AutomationSchema) });
+var RunAutomationRequestSchema = external_exports.strictObject({
+  payload: external_exports.record(external_exports.string(), external_exports.unknown()).default({}).describe("Passed to the run as its event payload.")
+});
+var AutomationRunSchema = external_exports.strictObject({
+  /** The Inngest run id. */
+  id: external_exports.string(),
+  automationId: AutomationIdSchema,
+  status: external_exports.enum(AUTOMATION_RUN_STATUSES),
+  trigger: external_exports.enum(["schedule", "event", "manual"]),
+  /** How many events started it: more than one for a batch. */
+  eventCount: external_exports.number().int().nonnegative(),
+  output: external_exports.record(external_exports.string(), external_exports.unknown()).nullable(),
+  error: external_exports.string().nullable(),
+  startedAt: external_exports.string(),
+  finishedAt: external_exports.string().nullable()
+});
+var AutomationRunListQuerySchema = external_exports.strictObject({
+  limit: external_exports.coerce.number().int().min(1).max(100).default(25)
+});
+var AutomationRunListResponseSchema = external_exports.strictObject({ items: external_exports.array(AutomationRunSchema) });
+var RunAutomationResponseSchema = external_exports.strictObject({
+  /** The Inngest event id; the run appears in the run list once it starts. */
+  eventId: external_exports.string()
+});
+var CancelRunsRequestSchema = external_exports.strictObject({
+  startedAfter: external_exports.iso.datetime().optional().describe("Only cancel runs that started after this time.")
+});
+var CancelRunsResponseSchema = external_exports.strictObject({ cancellationId: external_exports.string() });
+var SendEventRequestSchema = external_exports.strictObject({
+  name: AutomationEventNameSchema,
+  payload: external_exports.record(external_exports.string(), external_exports.unknown()).default({}),
+  id: external_exports.string().min(1).max(200).optional().describe("Optional. Events with the same id within 24 hours are delivered once.")
+});
+var SendEventResponseSchema = external_exports.strictObject({ eventId: external_exports.string(), name: external_exports.string() });
+var AutomationCatalogSchema = external_exports.strictObject({
+  actions: external_exports.array(external_exports.strictObject({ kind: external_exports.enum(AUTOMATION_ACTION_KINDS), description: external_exports.string() })),
+  grants: external_exports.array(external_exports.strictObject({ kind: external_exports.literal("slack_channel"), description: external_exports.string() })),
+  sources: external_exports.array(external_exports.strictObject({ connectionId: external_exports.string(), name: external_exports.string(), provider: external_exports.string() }))
+});
+
+// ../shared/src/api-keys.ts
+var ApiKeySchema = external_exports.strictObject({
+  id: external_exports.string(),
+  name: external_exports.string(),
+  createdAt: external_exports.string(),
+  lastUsedAt: external_exports.string().nullable()
+});
+var CreateApiKeyRequestSchema = external_exports.strictObject({ name: external_exports.string().trim().min(1).max(80) });
+var CreateApiKeyResponseSchema = external_exports.strictObject({
+  key: ApiKeySchema,
+  /** The key itself. It is shown only in this response. */
+  secret: external_exports.string()
+});
+var ApiKeyListResponseSchema = external_exports.strictObject({ items: external_exports.array(ApiKeySchema) });
+var SERVICE_KEY_SCOPES = ["read", "automations", "events"];
+var ServiceKeySchema = external_exports.strictObject({
+  id: external_exports.string(),
+  name: external_exports.string(),
+  role: external_exports.enum(["viewer", "operator"]),
+  scopes: external_exports.array(external_exports.enum(SERVICE_KEY_SCOPES)),
+  createdBy: external_exports.strictObject({ subjectId: external_exports.string().nullable() }),
+  createdAt: external_exports.string(),
+  lastUsedAt: external_exports.string().nullable()
+});
+var CreateServiceKeyRequestSchema = external_exports.strictObject({
+  name: external_exports.string().trim().min(1).max(80),
+  role: external_exports.enum(["viewer", "operator"]).default("operator").describe("What the key may do; it can never be an admin."),
+  scopes: external_exports.array(external_exports.enum(SERVICE_KEY_SCOPES)).min(1).max(SERVICE_KEY_SCOPES.length).describe("read: any GET. automations: change, run and cancel automations. events: send events.")
+});
+var CreateServiceKeyResponseSchema = external_exports.strictObject({
+  key: ServiceKeySchema,
+  /** The key itself. It is shown only in this response. */
+  secret: external_exports.string()
+});
+var ServiceKeyListResponseSchema = external_exports.strictObject({ items: external_exports.array(ServiceKeySchema) });
 
 // src/config.ts
 import fs from "node:fs";
