@@ -57,7 +57,7 @@ Read `$ARGUMENTS` first. If its first token is one of the modes below, run that 
    node "${CLAUDE_PLUGIN_ROOT}/dist/commands/login.js"
    ```
 
-   Relay the link as a clickable URL in case the browser did not open. The browser asks the person to sign in to the app (passphrase or their identity provider) and then shows "Connected". When the command prints `Signed in as …`, continue. If it prints `expired` or `timed out`, ask whether to try again and re-run with `--force`.
+   Relay the link as a clickable URL in case the browser did not open. The browser asks the person to sign in to the app and then shows "Connected". When the command prints `Signed in as …`, continue. If it prints `expired` or `timed out`, ask whether to try again and re-run with `--force`.
 3. Call `mcp__plugin_context-graph_ContextGraph__whoami` once to confirm the MCP server sees the token (the server reads the saved token per call, so no restart is needed). If it reports `UNAUTHENTICATED`, the token file was not written: re-run step 2.
 4. Call `mcp__plugin_context-graph_ContextGraph__list_context_models`. If there are none, tell the user to connect a source and run discovery in the app (steps 1 and 2) before editing anything. Otherwise print the link to the graph page:
 
