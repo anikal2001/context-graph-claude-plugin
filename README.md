@@ -83,7 +83,7 @@ Sign an installation out from the "Claude Code" panel on the graph or document p
 
 ## Development
 
-The plugin lives in `plugin/` of the [context-graph](https://github.com/yuengeoff/context-graph) repository and is bundled with esbuild into `dist/` (the shared contracts and the MCP SDK are inlined, so the published plugin has no dependencies).
+The plugin lives in `apps/plugin/` of the [context-graph](https://github.com/yuengeoff/context-graph) repository and is bundled with esbuild into `dist/` (the shared contracts and the MCP SDK are inlined, so the published plugin has no dependencies).
 
 ```sh
 cd plugin
