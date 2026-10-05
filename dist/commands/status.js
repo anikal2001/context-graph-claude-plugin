@@ -19674,17 +19674,14 @@ function date4(params) {
 }
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.15.0";
+var CONTRACT_VERSION = "1.16.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
-var AttributesSchema = external_exports.record(external_exports.string().min(1), external_exports.union([
-  external_exports.string(),
-  external_exports.number().finite(),
-  external_exports.boolean(),
-  external_exports.null(),
-  external_exports.array(external_exports.string())
-]));
+var AttributesSchema = external_exports.record(
+  external_exports.string().min(1),
+  external_exports.union([external_exports.string(), external_exports.number().finite(), external_exports.boolean(), external_exports.null(), external_exports.array(external_exports.string())])
+);
 var SourceIdentitySchema = external_exports.strictObject({
   connectionId: IdSchema,
   objectType: external_exports.string().min(1),
@@ -19699,9 +19696,19 @@ var EvidenceSchema = external_exports.strictObject({
   id: IdSchema,
   connectionId: IdSchema,
   location: external_exports.discriminatedUnion("kind", [
-    external_exports.strictObject({ kind: external_exports.literal("record"), objectType: external_exports.string().min(1), nativeId: external_exports.string().min(1), field: external_exports.string().min(1).nullable() }),
+    external_exports.strictObject({
+      kind: external_exports.literal("record"),
+      objectType: external_exports.string().min(1),
+      nativeId: external_exports.string().min(1),
+      field: external_exports.string().min(1).nullable()
+    }),
     external_exports.strictObject({ kind: external_exports.literal("schema"), objectType: external_exports.string().min(1), field: external_exports.string().min(1).nullable() }),
-    external_exports.strictObject({ kind: external_exports.literal("file"), path: external_exports.string().min(1), startLine: external_exports.number().int().positive().nullable(), endLine: external_exports.number().int().positive().nullable() })
+    external_exports.strictObject({
+      kind: external_exports.literal("file"),
+      path: external_exports.string().min(1),
+      startLine: external_exports.number().int().positive().nullable(),
+      endLine: external_exports.number().int().positive().nullable()
+    })
   ]),
   observedAt: TimestampSchema,
   sourceModifiedAt: TimestampSchema.nullable(),
@@ -19718,7 +19725,14 @@ var FieldSchema = external_exports.strictObject({
   helpText: external_exports.string().nullable().optional(),
   relationshipName: external_exports.string().nullable().optional(),
   description: external_exports.string().max(1e4).optional(),
-  picklistValues: external_exports.array(external_exports.strictObject({ value: external_exports.string(), label: external_exports.string(), active: external_exports.boolean(), defaultValue: external_exports.boolean().optional() })).max(5e3).optional()
+  picklistValues: external_exports.array(
+    external_exports.strictObject({
+      value: external_exports.string(),
+      label: external_exports.string(),
+      active: external_exports.boolean(),
+      defaultValue: external_exports.boolean().optional()
+    })
+  ).max(5e3).optional()
 });
 var EntityTypeSchema = external_exports.strictObject({
   id: IdSchema,
@@ -19728,7 +19742,12 @@ var EntityTypeSchema = external_exports.strictObject({
   fields: external_exports.array(FieldSchema),
   provenance: ProvenanceSchema,
   /** Exact identities of the same object in other providers, e.g. an ORM class naming its Postgres table (1.2.0). */
-  aliases: external_exports.array(external_exports.strictObject({ provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion"]), nativeName: external_exports.string().min(1) })).max(20).optional()
+  aliases: external_exports.array(
+    external_exports.strictObject({
+      provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion"]),
+      nativeName: external_exports.string().min(1)
+    })
+  ).max(20).optional()
 });
 var RelationshipTypeSchema = external_exports.strictObject({
   id: IdSchema,
@@ -19807,7 +19826,10 @@ var FreshnessSchema = external_exports.strictObject({
   lastSuccessfulSyncAt: TimestampSchema.nullable(),
   syncRunId: IdSchema.nullable()
 });
-var SourceMetadataSchema = external_exports.record(external_exports.string().min(1).max(100), external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean()]));
+var SourceMetadataSchema = external_exports.record(
+  external_exports.string().min(1).max(100),
+  external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean()])
+);
 var SourceConnectionSchema = external_exports.strictObject({
   id: IdSchema,
   provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion"]),
@@ -19820,8 +19842,16 @@ var SourceConnectionSchema = external_exports.strictObject({
   /** Subject id of the person who connected this source (1.4.0). Absent on connections made before attribution existed. */
   connectedBy: IdSchema.optional()
 });
-var SyncCountsSchema = external_exports.strictObject({ records: CountSchema, relationships: CountSchema, errors: CountSchema });
-var CheckpointSchema = external_exports.strictObject({ objectType: external_exports.string().min(1), cursor: external_exports.string().nullable(), batchSequence: CountSchema });
+var SyncCountsSchema = external_exports.strictObject({
+  records: CountSchema,
+  relationships: CountSchema,
+  errors: CountSchema
+});
+var CheckpointSchema = external_exports.strictObject({
+  objectType: external_exports.string().min(1),
+  cursor: external_exports.string().nullable(),
+  batchSequence: CountSchema
+});
 var SyncRunSchema = external_exports.strictObject({
   id: IdSchema,
   revision: external_exports.number().int().positive(),
@@ -19846,11 +19876,13 @@ var DefinitionRuleSchema = external_exports.discriminatedUnion("kind", [
   external_exports.strictObject({
     kind: external_exports.literal("filter"),
     typeId: IdSchema,
-    predicates: external_exports.array(external_exports.strictObject({
-      field: external_exports.string().min(1),
-      operator: external_exports.enum(["eq", "neq", "gt", "gte", "lt", "lte"]),
-      value: external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()])
-    })).min(1)
+    predicates: external_exports.array(
+      external_exports.strictObject({
+        field: external_exports.string().min(1),
+        operator: external_exports.enum(["eq", "neq", "gt", "gte", "lt", "lte"]),
+        value: external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()])
+      })
+    ).min(1)
   })
 ]);
 var DefinitionVersionSchema = external_exports.strictObject({
@@ -19867,7 +19899,25 @@ var DefinitionVersionSchema = external_exports.strictObject({
   publishedAt: TimestampSchema.nullable()
 });
 var ExtractionBatchSchema = external_exports.strictObject({
-  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.10.0", "1.11.0", "1.12.0", "1.13.0", "1.14.0", CONTRACT_VERSION]),
+  contractVersion: external_exports.enum([
+    "1.0.0",
+    "1.1.0",
+    "1.2.0",
+    "1.3.0",
+    "1.4.0",
+    "1.5.0",
+    "1.6.0",
+    "1.7.0",
+    "1.8.0",
+    "1.9.0",
+    "1.10.0",
+    "1.11.0",
+    "1.12.0",
+    "1.13.0",
+    "1.14.0",
+    "1.15.0",
+    CONTRACT_VERSION
+  ]),
   connectionId: IdSchema,
   runId: IdSchema,
   batchId: IdSchema,
@@ -19910,42 +19960,400 @@ var InterviewAudienceSchema = external_exports.strictObject({
 var text = external_exports.string().min(1).max(1e4);
 var ids = external_exports.array(IdSchema);
 var base = { id: IdSchema, revision: external_exports.number().int().positive() };
-var EvidenceRefSchema = external_exports.strictObject({ artifactId: IdSchema, version: IdSchema, path: external_exports.string().max(2e3) });
+var EvidenceRefSchema = external_exports.strictObject({
+  artifactId: IdSchema,
+  version: IdSchema,
+  path: external_exports.string().max(2e3)
+});
 var refs = external_exports.array(EvidenceRefSchema);
 var CoveragePhaseSchema = external_exports.enum(["discovery", "retrieval", "parsing", "inspection", "validation", "review"]);
-var CoverageStateSchema = external_exports.enum(["queued", "running", "complete", "failed", "unsupported", "excluded", "blocked_by_access"]);
-var SourceCapabilitySchema = external_exports.strictObject({ ...base, connectionId: IdSchema, kind: text, state: external_exports.enum(["available", "unsupported", "blocked_by_access", "unknown"]), reason: text.nullable(), apiVersion: IdSchema, accessVersion: IdSchema });
-var CatalogKindSchema = external_exports.enum(["object", "field", "report", "flow", "validation_rule", "formula", "record_type", "role", "profile", "permission_set", "path_assistant", "assignment_rule", "opportunity_stage", "lead_status", "organization", "user", "connected_application", "other"]);
-var ReaderKindSchema = external_exports.enum(["object", "report", "flow", "validation_rule", "role", "profile", "permission_set", "path_assistant", "assignment_rule", "record_type", "opportunity_stage", "lead_status", "organization", "user", "connected_application"]);
-var ReaderDescriptorSchema = external_exports.strictObject({ kind: CatalogKindSchema, nativeId: text, label: text, providerId: IdSchema, active: external_exports.boolean().nullable(), objectType: text.optional(), description: external_exports.string().max(3e4).optional(), artifactPath: external_exports.string().optional() });
-var ReaderGapSchema = external_exports.strictObject({ kind: CatalogKindSchema, state: external_exports.enum(["blocked_by_access", "unsupported", "failed"]), reason: text, retryable: external_exports.boolean() });
-var ReaderInventorySchema = external_exports.strictObject({ components: external_exports.array(ReaderDescriptorSchema), nextCursor: external_exports.string().nullable(), gaps: external_exports.array(ReaderGapSchema) });
-var ReaderArtifactSchema = external_exports.strictObject({ content: external_exports.record(external_exports.string(), external_exports.json()), sourceVersion: external_exports.string().nullable() });
-var ReaderRetrievalSchema = external_exports.strictObject({ artifacts: external_exports.array(ReaderArtifactSchema), children: external_exports.array(ReaderDescriptorSchema), nextCursor: external_exports.string().nullable(), complete: external_exports.boolean(), gaps: external_exports.array(ReaderGapSchema), active: external_exports.boolean().nullable().optional() });
-var CatalogComponentSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, kind: CatalogKindSchema, nativeId: text, label: text, description: external_exports.string().max(3e4), version: IdSchema, active: external_exports.boolean().nullable(), access: external_exports.enum(["allowed", "blocked_by_access", "excluded", "unknown"]), accessVersion: IdSchema, observedAt: TimestampSchema, parentId: IdSchema.nullable(), artifact: EvidenceRefSchema.nullable(), provider: ReaderDescriptorSchema.optional() });
-var ImportPlanSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, catalogRevision: CountSchema, selectedComponentIds: ids, selectedFields: external_exports.record(IdSchema, ids), excludedComponentIds: ids, state: external_exports.enum(["draft", "submitted", "superseded"]), createdAt: TimestampSchema });
-var ComponentCoverageSchema = external_exports.strictObject({ ...base, componentId: IdSchema, componentVersion: IdSchema, phase: CoveragePhaseSchema, state: CoverageStateSchema, cursor: external_exports.string().nullable(), continuation: external_exports.string().nullable().optional(), inspectedPaths: external_exports.array(external_exports.string()), reason: text.nullable(), updatedAt: TimestampSchema });
-var RetainedArtifactSchema = external_exports.strictObject({ id: IdSchema, version: IdSchema, connectionId: IdSchema, componentId: IdSchema, apiVersion: IdSchema, accessVersion: IdSchema, contentHash: IdSchema, content: external_exports.string().max(5e6), mediaType: text, observedAt: TimestampSchema, sourceModifiedAt: TimestampSchema.nullable() });
-var ComponentDependencySchema = external_exports.strictObject({ ...base, sourceComponentId: IdSchema, sourceVersion: IdSchema, targetComponentId: IdSchema.nullable(), targetNativeId: text, targetKind: CatalogComponentSchema.shape.kind.optional(), relation: external_exports.enum(["reads", "writes", "filters", "calls", "references"]), path: external_exports.string(), state: external_exports.enum(["resolved", "unsupported", "blocked_by_access", "unresolved"]), reason: text.nullable() });
-var DependencyCandidateSchema = external_exports.strictObject({ relation: ComponentDependencySchema.shape.relation, targetKind: CatalogComponentSchema.shape.kind, targetNativeId: text, path: external_exports.string(), resolution: external_exports.enum(["resolved", "unresolved"]), reason: text.optional() });
-var DependencyParseResultSchema = external_exports.strictObject({ references: external_exports.array(DependencyCandidateSchema), unsupported: external_exports.array(external_exports.strictObject({ path: external_exports.string(), reason: text })), coverage: external_exports.enum(["complete", "partial", "unsupported"]) });
-var SnapshotVectorSchema = external_exports.strictObject({ sources: external_exports.array(external_exports.strictObject({ connectionId: IdSchema, batchWatermark: IdSchema.nullable(), catalogVersion: IdSchema, accessVersion: IdSchema, coverageRevision: CountSchema })), answerRevision: CountSchema, skillVersion: IdSchema, promptVersion: IdSchema });
-var SourceProfileSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, componentId: IdSchema, snapshot: SnapshotVectorSchema, method: external_exports.enum(["exact", "sampled"]), population: text, denominator: CountSchema, sampleSize: CountSchema.nullable(), complete: external_exports.boolean(), statistics: external_exports.record(external_exports.string(), external_exports.json()), evidence: refs, gaps: external_exports.array(text) });
-var InvestigationCheckpointSchema = external_exports.strictObject({ queue: ids, visited: ids, cursors: external_exports.record(IdSchema, external_exports.string()), toolCalls: CountSchema, sampledRecords: CountSchema, inputTokens: CountSchema, outputTokens: CountSchema, elapsedMs: CountSchema, agentState: external_exports.json().optional() });
-var InvestigationRunSchema = external_exports.strictObject({ ...base, expectedRevision: CountSchema, snapshot: SnapshotVectorSchema, status: external_exports.enum(["queued", "running", "waiting_for_input", "completed", "failed", "superseded"]), model: IdSchema, checkpoint: InvestigationCheckpointSchema, leaseToken: IdSchema.nullable(), leaseExpiresAt: TimestampSchema.nullable(), failure: text.nullable(), createdAt: TimestampSchema, updatedAt: TimestampSchema });
-var DiscoveryEventSchema = external_exports.strictObject({ id: IdSchema, deduplicationKey: IdSchema, kind: external_exports.enum(["batch_accepted", "catalog_updated", "answer_submitted", "run_progress", "run_completed", "message", "proposal_updated", "interview_planned", "interview_sent"]), actor: external_exports.enum(["system", "assistant", "user"]), message: external_exports.string().max(3e4), runId: IdSchema.nullable(), recordIds: ids, evidence: refs, createdAt: TimestampSchema });
-var ClaimScopeSchema = external_exports.strictObject({ subject: text, purpose: text, population: text, timeWindow: text, grain: text.nullable().optional(), unit: text.nullable().optional(), currency: text.nullable().optional() });
-var WorkflowStepSchema = external_exports.strictObject({ id: IdSchema, label: text, conceptIds: ids, claimIds: ids, evidence: refs, kind: external_exports.enum(["action", "decision", "handoff", "terminal"]).optional(), roleIds: ids.optional(), systemIds: ids.optional(), inputIds: ids.optional(), outputIds: ids.optional() });
-var WorkflowTriggerSchema = external_exports.strictObject({ description: text, entryStepId: IdSchema, conceptIds: ids, evidence: refs });
-var WorkflowTransitionSchema = external_exports.strictObject({ id: IdSchema, sourceStepId: IdSchema, targetStepId: IdSchema, kind: external_exports.enum(["next", "conditional", "default", "fault"]), condition: text.nullable(), claimIds: ids, evidence: refs });
-var BusinessWorkflowSchema = external_exports.strictObject({ ...base, name: text, description: text, steps: external_exports.array(WorkflowStepSchema), trigger: WorkflowTriggerSchema.optional(), transitions: external_exports.array(WorkflowTransitionSchema).optional(), unresolvedRequirements: external_exports.array(text) });
-var EvidenceCheckSchema = external_exports.strictObject({ id: IdSchema, requirement: text, result: external_exports.enum(["passed", "failed", "unknown", "not_applicable"]), rationale: text, evidence: refs });
-var EvidenceAssessmentSchema = external_exports.strictObject({ status: external_exports.enum(["supported", "provisional", "disputed", "unresolved"]), checks: external_exports.array(EvidenceCheckSchema), gaps: external_exports.array(text), rationale: text, assessedAt: TimestampSchema });
-var InvestigationTaskSchema = external_exports.strictObject({ ...base, runId: IdSchema, question: text, scope: ClaimScopeSchema, queue: external_exports.enum(["coverage", "investigation"]), status: external_exports.enum(["queued", "running", "waiting_for_input", "supported", "provisional", "unresolved", "disputed", "unsupported", "superseded"]), domain: IdSchema.optional(), attempts: CountSchema.optional(), snapshot: SnapshotVectorSchema, componentIds: ids, claimIds: ids, dependencyTaskIds: ids, checks: external_exports.array(EvidenceCheckSchema), gaps: external_exports.array(text), nextAction: text.nullable(), stopReason: text.nullable(), createdAt: TimestampSchema, updatedAt: TimestampSchema });
-var BusinessConceptKindSchema = external_exports.enum(["company", "customer", "product", "process", "metric", "term", "other", "department", "team", "role", "person", "system", "business_object", "customer_segment", "journey_stage"]);
-var ContextRelationSchema = external_exports.enum(["supported_by", "contradicted_by", "maps_to", "depends_on", "clarifies", "buys", "renews", "delivered_through", "related_to", "owns", "performs", "uses", "reads", "produces", "updates", "hands_off_to", "measured_by", "contains"]);
-var BusinessFindingSchema = external_exports.strictObject({ key: IdSchema, name: text, kind: BusinessConceptKindSchema, relationships: external_exports.array(external_exports.strictObject({ relation: ContextRelationSchema, targetKey: IdSchema, evidence: refs })), workflow: BusinessWorkflowSchema.optional() });
-var BusinessClaimSchema = external_exports.strictObject({ ...base, scope: ClaimScopeSchema, predicate: text, value: external_exports.json(), business: BusinessFindingSchema.optional(), assessment: EvidenceAssessmentSchema.optional(), basis: external_exports.enum(["configured", "observed", "confirmed", "derived"]), status: external_exports.enum(["proposed", "supported", "confirmed_by_user", "disputed", "rejected", "superseded"]), supportingEvidence: refs, contradictingEvidence: refs, answerIds: ids, premiseClaimIds: ids, uncertainty: external_exports.array(text), rationale: text, runId: IdSchema });
+var CoverageStateSchema = external_exports.enum([
+  "queued",
+  "running",
+  "complete",
+  "failed",
+  "unsupported",
+  "excluded",
+  "blocked_by_access"
+]);
+var SourceCapabilitySchema = external_exports.strictObject({
+  ...base,
+  connectionId: IdSchema,
+  kind: text,
+  state: external_exports.enum(["available", "unsupported", "blocked_by_access", "unknown"]),
+  reason: text.nullable(),
+  apiVersion: IdSchema,
+  accessVersion: IdSchema
+});
+var CatalogKindSchema = external_exports.enum([
+  "object",
+  "field",
+  "report",
+  "flow",
+  "validation_rule",
+  "formula",
+  "record_type",
+  "role",
+  "profile",
+  "permission_set",
+  "path_assistant",
+  "assignment_rule",
+  "opportunity_stage",
+  "lead_status",
+  "organization",
+  "user",
+  "connected_application",
+  "other"
+]);
+var ReaderKindSchema = external_exports.enum([
+  "object",
+  "report",
+  "flow",
+  "validation_rule",
+  "role",
+  "profile",
+  "permission_set",
+  "path_assistant",
+  "assignment_rule",
+  "record_type",
+  "opportunity_stage",
+  "lead_status",
+  "organization",
+  "user",
+  "connected_application"
+]);
+var ReaderDescriptorSchema = external_exports.strictObject({
+  kind: CatalogKindSchema,
+  nativeId: text,
+  label: text,
+  providerId: IdSchema,
+  active: external_exports.boolean().nullable(),
+  objectType: text.optional(),
+  description: external_exports.string().max(3e4).optional(),
+  artifactPath: external_exports.string().optional()
+});
+var ReaderGapSchema = external_exports.strictObject({
+  kind: CatalogKindSchema,
+  state: external_exports.enum(["blocked_by_access", "unsupported", "failed"]),
+  reason: text,
+  retryable: external_exports.boolean()
+});
+var ReaderInventorySchema = external_exports.strictObject({
+  components: external_exports.array(ReaderDescriptorSchema),
+  nextCursor: external_exports.string().nullable(),
+  gaps: external_exports.array(ReaderGapSchema)
+});
+var ReaderArtifactSchema = external_exports.strictObject({
+  content: external_exports.record(external_exports.string(), external_exports.json()),
+  sourceVersion: external_exports.string().nullable()
+});
+var ReaderRetrievalSchema = external_exports.strictObject({
+  artifacts: external_exports.array(ReaderArtifactSchema),
+  children: external_exports.array(ReaderDescriptorSchema),
+  nextCursor: external_exports.string().nullable(),
+  complete: external_exports.boolean(),
+  gaps: external_exports.array(ReaderGapSchema),
+  active: external_exports.boolean().nullable().optional()
+});
+var CatalogComponentSchema = external_exports.strictObject({
+  ...base,
+  connectionId: IdSchema,
+  kind: CatalogKindSchema,
+  nativeId: text,
+  label: text,
+  description: external_exports.string().max(3e4),
+  version: IdSchema,
+  active: external_exports.boolean().nullable(),
+  access: external_exports.enum(["allowed", "blocked_by_access", "excluded", "unknown"]),
+  accessVersion: IdSchema,
+  observedAt: TimestampSchema,
+  parentId: IdSchema.nullable(),
+  artifact: EvidenceRefSchema.nullable(),
+  provider: ReaderDescriptorSchema.optional()
+});
+var ImportPlanSchema = external_exports.strictObject({
+  ...base,
+  connectionId: IdSchema,
+  catalogRevision: CountSchema,
+  selectedComponentIds: ids,
+  selectedFields: external_exports.record(IdSchema, ids),
+  excludedComponentIds: ids,
+  state: external_exports.enum(["draft", "submitted", "superseded"]),
+  createdAt: TimestampSchema
+});
+var ComponentCoverageSchema = external_exports.strictObject({
+  ...base,
+  componentId: IdSchema,
+  componentVersion: IdSchema,
+  phase: CoveragePhaseSchema,
+  state: CoverageStateSchema,
+  cursor: external_exports.string().nullable(),
+  continuation: external_exports.string().nullable().optional(),
+  inspectedPaths: external_exports.array(external_exports.string()),
+  reason: text.nullable(),
+  updatedAt: TimestampSchema
+});
+var RetainedArtifactSchema = external_exports.strictObject({
+  id: IdSchema,
+  version: IdSchema,
+  connectionId: IdSchema,
+  componentId: IdSchema,
+  apiVersion: IdSchema,
+  accessVersion: IdSchema,
+  contentHash: IdSchema,
+  content: external_exports.string().max(5e6),
+  mediaType: text,
+  observedAt: TimestampSchema,
+  sourceModifiedAt: TimestampSchema.nullable()
+});
+var ComponentDependencySchema = external_exports.strictObject({
+  ...base,
+  sourceComponentId: IdSchema,
+  sourceVersion: IdSchema,
+  targetComponentId: IdSchema.nullable(),
+  targetNativeId: text,
+  targetKind: CatalogComponentSchema.shape.kind.optional(),
+  relation: external_exports.enum(["reads", "writes", "filters", "calls", "references"]),
+  path: external_exports.string(),
+  state: external_exports.enum(["resolved", "unsupported", "blocked_by_access", "unresolved"]),
+  reason: text.nullable()
+});
+var DependencyCandidateSchema = external_exports.strictObject({
+  relation: ComponentDependencySchema.shape.relation,
+  targetKind: CatalogComponentSchema.shape.kind,
+  targetNativeId: text,
+  path: external_exports.string(),
+  resolution: external_exports.enum(["resolved", "unresolved"]),
+  reason: text.optional()
+});
+var DependencyParseResultSchema = external_exports.strictObject({
+  references: external_exports.array(DependencyCandidateSchema),
+  unsupported: external_exports.array(external_exports.strictObject({ path: external_exports.string(), reason: text })),
+  coverage: external_exports.enum(["complete", "partial", "unsupported"])
+});
+var SnapshotVectorSchema = external_exports.strictObject({
+  sources: external_exports.array(
+    external_exports.strictObject({
+      connectionId: IdSchema,
+      batchWatermark: IdSchema.nullable(),
+      catalogVersion: IdSchema,
+      accessVersion: IdSchema,
+      coverageRevision: CountSchema
+    })
+  ),
+  answerRevision: CountSchema,
+  skillVersion: IdSchema,
+  promptVersion: IdSchema
+});
+var SourceProfileSchema = external_exports.strictObject({
+  ...base,
+  connectionId: IdSchema,
+  componentId: IdSchema,
+  snapshot: SnapshotVectorSchema,
+  method: external_exports.enum(["exact", "sampled"]),
+  population: text,
+  denominator: CountSchema,
+  sampleSize: CountSchema.nullable(),
+  complete: external_exports.boolean(),
+  statistics: external_exports.record(external_exports.string(), external_exports.json()),
+  evidence: refs,
+  gaps: external_exports.array(text)
+});
+var InvestigationCheckpointSchema = external_exports.strictObject({
+  queue: ids,
+  visited: ids,
+  cursors: external_exports.record(IdSchema, external_exports.string()),
+  toolCalls: CountSchema,
+  sampledRecords: CountSchema,
+  inputTokens: CountSchema,
+  outputTokens: CountSchema,
+  elapsedMs: CountSchema,
+  agentState: external_exports.json().optional()
+});
+var InvestigationRunSchema = external_exports.strictObject({
+  ...base,
+  expectedRevision: CountSchema,
+  snapshot: SnapshotVectorSchema,
+  status: external_exports.enum(["queued", "running", "waiting_for_input", "completed", "failed", "superseded"]),
+  model: IdSchema,
+  checkpoint: InvestigationCheckpointSchema,
+  leaseToken: IdSchema.nullable(),
+  leaseExpiresAt: TimestampSchema.nullable(),
+  failure: text.nullable(),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema
+});
+var DiscoveryEventSchema = external_exports.strictObject({
+  id: IdSchema,
+  deduplicationKey: IdSchema,
+  kind: external_exports.enum([
+    "batch_accepted",
+    "catalog_updated",
+    "answer_submitted",
+    "run_progress",
+    "run_completed",
+    "message",
+    "proposal_updated",
+    "interview_planned",
+    "interview_sent"
+  ]),
+  actor: external_exports.enum(["system", "assistant", "user"]),
+  message: external_exports.string().max(3e4),
+  runId: IdSchema.nullable(),
+  recordIds: ids,
+  evidence: refs,
+  createdAt: TimestampSchema
+});
+var ClaimScopeSchema = external_exports.strictObject({
+  subject: text,
+  purpose: text,
+  population: text,
+  timeWindow: text,
+  grain: text.nullable().optional(),
+  unit: text.nullable().optional(),
+  currency: text.nullable().optional()
+});
+var WorkflowStepSchema = external_exports.strictObject({
+  id: IdSchema,
+  label: text,
+  conceptIds: ids,
+  claimIds: ids,
+  evidence: refs,
+  kind: external_exports.enum(["action", "decision", "handoff", "terminal"]).optional(),
+  roleIds: ids.optional(),
+  systemIds: ids.optional(),
+  inputIds: ids.optional(),
+  outputIds: ids.optional()
+});
+var WorkflowTriggerSchema = external_exports.strictObject({
+  description: text,
+  entryStepId: IdSchema,
+  conceptIds: ids,
+  evidence: refs
+});
+var WorkflowTransitionSchema = external_exports.strictObject({
+  id: IdSchema,
+  sourceStepId: IdSchema,
+  targetStepId: IdSchema,
+  kind: external_exports.enum(["next", "conditional", "default", "fault"]),
+  condition: text.nullable(),
+  claimIds: ids,
+  evidence: refs
+});
+var BusinessWorkflowSchema = external_exports.strictObject({
+  ...base,
+  name: text,
+  description: text,
+  steps: external_exports.array(WorkflowStepSchema),
+  trigger: WorkflowTriggerSchema.optional(),
+  transitions: external_exports.array(WorkflowTransitionSchema).optional(),
+  unresolvedRequirements: external_exports.array(text)
+});
+var EvidenceCheckSchema = external_exports.strictObject({
+  id: IdSchema,
+  requirement: text,
+  result: external_exports.enum(["passed", "failed", "unknown", "not_applicable"]),
+  rationale: text,
+  evidence: refs
+});
+var EvidenceAssessmentSchema = external_exports.strictObject({
+  status: external_exports.enum(["supported", "provisional", "disputed", "unresolved"]),
+  checks: external_exports.array(EvidenceCheckSchema),
+  gaps: external_exports.array(text),
+  rationale: text,
+  assessedAt: TimestampSchema
+});
+var InvestigationTaskSchema = external_exports.strictObject({
+  ...base,
+  runId: IdSchema,
+  question: text,
+  scope: ClaimScopeSchema,
+  queue: external_exports.enum(["coverage", "investigation"]),
+  status: external_exports.enum([
+    "queued",
+    "running",
+    "waiting_for_input",
+    "supported",
+    "provisional",
+    "unresolved",
+    "disputed",
+    "unsupported",
+    "superseded"
+  ]),
+  domain: IdSchema.optional(),
+  attempts: CountSchema.optional(),
+  snapshot: SnapshotVectorSchema,
+  componentIds: ids,
+  claimIds: ids,
+  dependencyTaskIds: ids,
+  checks: external_exports.array(EvidenceCheckSchema),
+  gaps: external_exports.array(text),
+  nextAction: text.nullable(),
+  stopReason: text.nullable(),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema
+});
+var BusinessConceptKindSchema = external_exports.enum([
+  "company",
+  "customer",
+  "product",
+  "process",
+  "metric",
+  "term",
+  "other",
+  "department",
+  "team",
+  "role",
+  "person",
+  "system",
+  "business_object",
+  "customer_segment",
+  "journey_stage"
+]);
+var ContextRelationSchema = external_exports.enum([
+  "supported_by",
+  "contradicted_by",
+  "maps_to",
+  "depends_on",
+  "clarifies",
+  "buys",
+  "renews",
+  "delivered_through",
+  "related_to",
+  "owns",
+  "performs",
+  "uses",
+  "reads",
+  "produces",
+  "updates",
+  "hands_off_to",
+  "measured_by",
+  "contains"
+]);
+var BusinessFindingSchema = external_exports.strictObject({
+  key: IdSchema,
+  name: text,
+  kind: BusinessConceptKindSchema,
+  relationships: external_exports.array(external_exports.strictObject({ relation: ContextRelationSchema, targetKey: IdSchema, evidence: refs })),
+  workflow: BusinessWorkflowSchema.optional()
+});
+var BusinessClaimSchema = external_exports.strictObject({
+  ...base,
+  scope: ClaimScopeSchema,
+  predicate: text,
+  value: external_exports.json(),
+  business: BusinessFindingSchema.optional(),
+  assessment: EvidenceAssessmentSchema.optional(),
+  basis: external_exports.enum(["configured", "observed", "confirmed", "derived"]),
+  status: external_exports.enum(["proposed", "supported", "confirmed_by_user", "disputed", "rejected", "superseded"]),
+  supportingEvidence: refs,
+  contradictingEvidence: refs,
+  answerIds: ids,
+  premiseClaimIds: ids,
+  uncertainty: external_exports.array(text),
+  rationale: text,
+  runId: IdSchema
+});
 var ClarificationQuestionSchema = external_exports.strictObject({
   ...base,
   deduplicationKey: IdSchema,
@@ -19959,25 +20367,153 @@ var ClarificationQuestionSchema = external_exports.strictObject({
   /** Roles the question should reach and why (1.7.0). Set by the interview planner; absent until a question is routed. */
   audience: InterviewAudienceSchema.optional()
 });
-var ClarificationAnswerSchema = external_exports.strictObject({ ...base, questionId: IdSchema, questionRevision: external_exports.number().int().positive(), subjectId: IdSchema, response: text, action: external_exports.enum(["confirm", "correct", "defer", "unknown"]), scope: ClaimScopeSchema, supersedesAnswerId: IdSchema.nullable(), createdAt: TimestampSchema });
-var SourceMappingSchema = external_exports.strictObject({ ...base, conceptId: IdSchema, connectionId: IdSchema, componentIds: ids, description: text, execution: external_exports.enum(["descriptive", "executable"]), rule: external_exports.string().nullable(), unresolvedRequirements: external_exports.array(text), evidence: refs });
-var BusinessConceptSchema = external_exports.strictObject({ ...base, businessKey: IdSchema.optional(), name: text, aliases: external_exports.array(text), description: text, scope: ClaimScopeSchema.optional(), metric: external_exports.strictObject({ population: text, measure: text, grain: text, timeWindow: text, unit: text, currency: text.nullable(), execution: external_exports.literal("descriptive"), unresolvedRequirements: external_exports.array(text) }).optional(), kind: BusinessConceptKindSchema, claimIds: ids, mappingIds: ids, questionIds: ids, evidence: refs });
-var ContextEdgeSchema = external_exports.strictObject({ ...base, sourceId: IdSchema, targetId: IdSchema, relation: ContextRelationSchema, layer: external_exports.literal("context"), claimIds: ids, evidence: refs });
-var GraphExpansionSchema = external_exports.strictObject({ rootId: IdSchema, depth: external_exports.number().int().min(0).max(5), concepts: external_exports.array(BusinessConceptSchema), edges: external_exports.array(ContextEdgeSchema), frontierIds: ids, truncated: external_exports.boolean(), nextCursor: external_exports.string().nullable() });
-var DocumentSectionSchema = external_exports.strictObject({ ...base, conceptId: IdSchema.nullable(), heading: text, markdown: external_exports.string().max(2e5), evidence: refs, answerIds: ids, questionIds: ids, review: external_exports.enum(["unreviewed", "approved", "changes_requested"]) });
-var DocumentCommentSchema = external_exports.strictObject({ ...base, sectionId: IdSchema, sectionRevision: external_exports.number().int().positive(), subjectId: IdSchema, body: text, createdAt: TimestampSchema, resolvedAt: TimestampSchema.nullable() });
-var ContextProposalSchema = external_exports.strictObject({ ...base, discoveryRevision: CountSchema.optional(), snapshot: SnapshotVectorSchema, ontologyVersion: external_exports.number().int().positive().nullable(), concepts: external_exports.array(BusinessConceptSchema), workflows: external_exports.array(BusinessWorkflowSchema), mappings: external_exports.array(SourceMappingSchema), claims: external_exports.array(BusinessClaimSchema), edges: external_exports.array(ContextEdgeSchema), sections: external_exports.array(DocumentSectionSchema), openQuestionIds: ids, createdAt: TimestampSchema });
-var ContextPublicationSchema = external_exports.strictObject({ ...base, ontologyVersion: external_exports.number().int().positive(), proposalId: IdSchema, proposalRevision: external_exports.number().int().positive(), snapshot: SnapshotVectorSchema, publishedBy: IdSchema, publishedAt: TimestampSchema });
+var ClarificationAnswerSchema = external_exports.strictObject({
+  ...base,
+  questionId: IdSchema,
+  questionRevision: external_exports.number().int().positive(),
+  subjectId: IdSchema,
+  response: text,
+  action: external_exports.enum(["confirm", "correct", "defer", "unknown"]),
+  scope: ClaimScopeSchema,
+  supersedesAnswerId: IdSchema.nullable(),
+  createdAt: TimestampSchema
+});
+var SourceMappingSchema = external_exports.strictObject({
+  ...base,
+  conceptId: IdSchema,
+  connectionId: IdSchema,
+  componentIds: ids,
+  description: text,
+  execution: external_exports.enum(["descriptive", "executable"]),
+  rule: external_exports.string().nullable(),
+  unresolvedRequirements: external_exports.array(text),
+  evidence: refs
+});
+var BusinessConceptSchema = external_exports.strictObject({
+  ...base,
+  businessKey: IdSchema.optional(),
+  name: text,
+  aliases: external_exports.array(text),
+  description: text,
+  scope: ClaimScopeSchema.optional(),
+  metric: external_exports.strictObject({
+    population: text,
+    measure: text,
+    grain: text,
+    timeWindow: text,
+    unit: text,
+    currency: text.nullable(),
+    execution: external_exports.literal("descriptive"),
+    unresolvedRequirements: external_exports.array(text)
+  }).optional(),
+  kind: BusinessConceptKindSchema,
+  claimIds: ids,
+  mappingIds: ids,
+  questionIds: ids,
+  evidence: refs
+});
+var ContextEdgeSchema = external_exports.strictObject({
+  ...base,
+  sourceId: IdSchema,
+  targetId: IdSchema,
+  relation: ContextRelationSchema,
+  layer: external_exports.literal("context"),
+  claimIds: ids,
+  evidence: refs
+});
+var GraphExpansionSchema = external_exports.strictObject({
+  rootId: IdSchema,
+  depth: external_exports.number().int().min(0).max(5),
+  concepts: external_exports.array(BusinessConceptSchema),
+  edges: external_exports.array(ContextEdgeSchema),
+  frontierIds: ids,
+  truncated: external_exports.boolean(),
+  nextCursor: external_exports.string().nullable()
+});
+var DocumentSectionSchema = external_exports.strictObject({
+  ...base,
+  conceptId: IdSchema.nullable(),
+  heading: text,
+  markdown: external_exports.string().max(2e5),
+  evidence: refs,
+  answerIds: ids,
+  questionIds: ids,
+  review: external_exports.enum(["unreviewed", "approved", "changes_requested"])
+});
+var DocumentCommentSchema = external_exports.strictObject({
+  ...base,
+  sectionId: IdSchema,
+  sectionRevision: external_exports.number().int().positive(),
+  subjectId: IdSchema,
+  body: text,
+  createdAt: TimestampSchema,
+  resolvedAt: TimestampSchema.nullable()
+});
+var ContextProposalSchema = external_exports.strictObject({
+  ...base,
+  discoveryRevision: CountSchema.optional(),
+  snapshot: SnapshotVectorSchema,
+  ontologyVersion: external_exports.number().int().positive().nullable(),
+  concepts: external_exports.array(BusinessConceptSchema),
+  workflows: external_exports.array(BusinessWorkflowSchema),
+  mappings: external_exports.array(SourceMappingSchema),
+  claims: external_exports.array(BusinessClaimSchema),
+  edges: external_exports.array(ContextEdgeSchema),
+  sections: external_exports.array(DocumentSectionSchema),
+  openQuestionIds: ids,
+  createdAt: TimestampSchema
+});
+var ContextPublicationSchema = external_exports.strictObject({
+  ...base,
+  ontologyVersion: external_exports.number().int().positive(),
+  proposalId: IdSchema,
+  proposalRevision: external_exports.number().int().positive(),
+  snapshot: SnapshotVectorSchema,
+  publishedBy: IdSchema,
+  publishedAt: TimestampSchema
+});
 var DiscoverySnapshotSchema = external_exports.strictObject({ ...base, vector: SnapshotVectorSchema });
-var ModelRevisionRefSchema = external_exports.strictObject({ proposalId: IdSchema, proposalRevision: external_exports.number().int().positive() });
+var ModelRevisionRefSchema = external_exports.strictObject({
+  proposalId: IdSchema,
+  proposalRevision: external_exports.number().int().positive()
+});
 var GraphPerspectiveSchema = external_exports.enum(["company", "department", "journey"]);
 var GraphDetailLevelSchema = external_exports.enum(["company", "department", "workflow", "step", "evidence"]);
-var GraphProjectionRequestSchema = external_exports.strictObject({ model: ModelRevisionRefSchema, perspective: GraphPerspectiveSchema, detail: GraphDetailLevelSchema, focusId: IdSchema.nullable(), cursor: external_exports.string().nullable().optional() });
-var GraphProjectionSchema = external_exports.strictObject({ request: GraphProjectionRequestSchema, concepts: external_exports.array(BusinessConceptSchema), workflows: external_exports.array(BusinessWorkflowSchema), edges: external_exports.array(ContextEdgeSchema), groups: external_exports.array(external_exports.strictObject({ id: IdSchema, label: text, lane: external_exports.enum(["people", "process", "technology", "unclassified"]), memberIds: ids })), frontierIds: ids, truncated: external_exports.boolean(), nextCursor: external_exports.string().nullable() });
-var ConversationScopeSchema = external_exports.strictObject({ model: ModelRevisionRefSchema, conceptIds: ids, workflowIds: ids });
+var GraphProjectionRequestSchema = external_exports.strictObject({
+  model: ModelRevisionRefSchema,
+  perspective: GraphPerspectiveSchema,
+  detail: GraphDetailLevelSchema,
+  focusId: IdSchema.nullable(),
+  cursor: external_exports.string().nullable().optional()
+});
+var GraphProjectionSchema = external_exports.strictObject({
+  request: GraphProjectionRequestSchema,
+  concepts: external_exports.array(BusinessConceptSchema),
+  workflows: external_exports.array(BusinessWorkflowSchema),
+  edges: external_exports.array(ContextEdgeSchema),
+  groups: external_exports.array(
+    external_exports.strictObject({
+      id: IdSchema,
+      label: text,
+      lane: external_exports.enum(["people", "process", "technology", "unclassified"]),
+      memberIds: ids
+    })
+  ),
+  frontierIds: ids,
+  truncated: external_exports.boolean(),
+  nextCursor: external_exports.string().nullable()
+});
+var ConversationScopeSchema = external_exports.strictObject({
+  model: ModelRevisionRefSchema,
+  conceptIds: ids,
+  workflowIds: ids
+});
 
 // ../shared/src/ontology/workflow.ts
-var OntologySourceSelectionSchema = external_exports.strictObject({ connectionId: IdSchema, objects: external_exports.array(external_exports.string().min(1)).min(1).max(500) });
+var OntologySourceSelectionSchema = external_exports.strictObject({
+  connectionId: IdSchema,
+  objects: external_exports.array(external_exports.string().min(1)).min(1).max(500)
+});
 var OntologySelectionSchema = external_exports.strictObject({
   connectionId: IdSchema,
   objects: external_exports.array(external_exports.string().min(1)).min(1).max(500),
@@ -19997,14 +20533,21 @@ var OntologySettingsSchema = external_exports.strictObject({
   /** Set when sources changed but the newest version is human-authored, so automation deferred to a person. */
   pendingSourceChange: external_exports.boolean()
 });
-var OntologySettingsUpdateSchema = external_exports.strictObject({ autoDraft: external_exports.boolean().optional(), questions: external_exports.string().max(1e4).optional() });
+var OntologySettingsUpdateSchema = external_exports.strictObject({
+  autoDraft: external_exports.boolean().optional(),
+  questions: external_exports.string().max(1e4).optional()
+});
 var OntologyStoredDefinitionSchema = external_exports.strictObject({
   name: external_exports.string(),
   description: external_exports.string(),
   rule: DefinitionRuleSchema,
   sourceMappings: external_exports.array(external_exports.strictObject({ connectionId: IdSchema, typeId: IdSchema, field: external_exports.string().nullable() }))
 });
-var OntologySourceSnapshotSchema = external_exports.strictObject({ connectionId: IdSchema, syncRunId: IdSchema.nullable(), dataVersion: external_exports.string() });
+var OntologySourceSnapshotSchema = external_exports.strictObject({
+  connectionId: IdSchema,
+  syncRunId: IdSchema.nullable(),
+  dataVersion: external_exports.string()
+});
 var OntologySnapshotSchema = external_exports.strictObject({
   connectionId: IdSchema,
   syncRunId: IdSchema.nullable(),
@@ -20055,7 +20598,9 @@ var ContextPublicationPreviewSchema = external_exports.strictObject({
   snapshot: SnapshotVectorSchema,
   answerRevision: external_exports.number().int().nonnegative(),
   discoveryRevision: external_exports.number().int().nonnegative(),
-  semanticChanges: external_exports.array(external_exports.strictObject({ id: IdSchema, kind: external_exports.enum(["added", "changed", "removed"]), description: external_exports.string() })),
+  semanticChanges: external_exports.array(
+    external_exports.strictObject({ id: IdSchema, kind: external_exports.enum(["added", "changed", "removed"]), description: external_exports.string() })
+  ),
   unresolved: external_exports.array(external_exports.string())
 });
 var OntologyPreviewSchema = external_exports.strictObject({
@@ -20063,17 +20608,19 @@ var OntologyPreviewSchema = external_exports.strictObject({
   revision: external_exports.number().int().nonnegative(),
   previewToken: external_exports.string(),
   sourceSnapshot: OntologySnapshotSchema,
-  changes: external_exports.array(external_exports.strictObject({
-    name: external_exports.string(),
-    kind: external_exports.enum(["filter", "description", "removed"]),
-    beforeCount: external_exports.number().int().nonnegative().nullable(),
-    afterCount: external_exports.number().int().nonnegative().nullable(),
-    enteredCount: external_exports.number().int().nonnegative(),
-    leftCount: external_exports.number().int().nonnegative(),
-    entered: external_exports.array(IdSchema),
-    left: external_exports.array(IdSchema),
-    idsTruncated: external_exports.boolean()
-  }))
+  changes: external_exports.array(
+    external_exports.strictObject({
+      name: external_exports.string(),
+      kind: external_exports.enum(["filter", "description", "removed"]),
+      beforeCount: external_exports.number().int().nonnegative().nullable(),
+      afterCount: external_exports.number().int().nonnegative().nullable(),
+      enteredCount: external_exports.number().int().nonnegative(),
+      leftCount: external_exports.number().int().nonnegative(),
+      entered: external_exports.array(IdSchema),
+      left: external_exports.array(IdSchema),
+      idsTruncated: external_exports.boolean()
+    })
+  )
 });
 
 // ../shared/src/schemas/api.ts
@@ -20082,7 +20629,10 @@ var PageQuerySchema = external_exports.strictObject({
   limit: external_exports.coerce.number().int().min(1).max(100).default(25)
 });
 var ModelQuerySchema = PageQuerySchema.extend({ connectionId: IdSchema.optional() });
-var EntityQuerySchema = ModelQuerySchema.extend({ typeId: IdSchema.optional(), search: external_exports.string().max(200).optional() });
+var EntityQuerySchema = ModelQuerySchema.extend({
+  typeId: IdSchema.optional(),
+  search: external_exports.string().max(200).optional()
+});
 var NeighborQuerySchema = external_exports.strictObject({
   connectionId: IdSchema.optional(),
   maxNodes: external_exports.coerce.number().int().min(1).max(100).default(50),
@@ -20146,7 +20696,10 @@ var AggregateQuerySchema = external_exports.strictObject({
   limit: external_exports.coerce.number().int().min(1).max(500).default(50)
 });
 var AggregateValueSchema = external_exports.union([external_exports.number(), external_exports.string(), external_exports.null()]);
-var ViewFactsSchema = external_exports.record(external_exports.string().min(1).max(40), external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean(), external_exports.null()]));
+var ViewFactsSchema = external_exports.record(
+  external_exports.string().min(1).max(40),
+  external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean(), external_exports.null()])
+);
 var ViewSchema = external_exports.strictObject({
   id: IdSchema,
   title: external_exports.string().min(1).max(120),
@@ -20181,13 +20734,28 @@ var AggregateResponseSchema = external_exports.strictObject({
   type: external_exports.strictObject({ id: IdSchema, connectionId: IdSchema, nativeName: external_exports.string(), label: external_exports.string() }),
   query: external_exports.strictObject({
     where: DefinitionRuleSchema.nullable(),
-    groupBy: external_exports.array(external_exports.strictObject({ spec: external_exports.string(), field: external_exports.string(), attribute: external_exports.string().optional(), bucket: external_exports.enum(["day", "week", "month", "quarter", "year"]).optional() })),
-    metrics: external_exports.array(external_exports.strictObject({ spec: external_exports.string(), fn: external_exports.enum(["count", "sum", "avg", "min", "max", "distinct"]), field: external_exports.string().optional() })),
+    groupBy: external_exports.array(
+      external_exports.strictObject({
+        spec: external_exports.string(),
+        field: external_exports.string(),
+        attribute: external_exports.string().optional(),
+        bucket: external_exports.enum(["day", "week", "month", "quarter", "year"]).optional()
+      })
+    ),
+    metrics: external_exports.array(
+      external_exports.strictObject({
+        spec: external_exports.string(),
+        fn: external_exports.enum(["count", "sum", "avg", "min", "max", "distinct"]),
+        field: external_exports.string().optional()
+      })
+    ),
     orderBy: external_exports.string(),
     limit: CountSchema
   }),
   /** One row per group, in the requested order; `keys` align with `query.groupBy`, `values` with `query.metrics`. */
-  rows: external_exports.array(external_exports.strictObject({ keys: external_exports.array(external_exports.string().nullable()), values: external_exports.array(AggregateValueSchema), count: CountSchema })),
+  rows: external_exports.array(
+    external_exports.strictObject({ keys: external_exports.array(external_exports.string().nullable()), values: external_exports.array(AggregateValueSchema), count: CountSchema })
+  ),
   /** The same metrics over every matching record, so a chart can reconcile its parts to the whole. */
   totals: external_exports.strictObject({ count: CountSchema, values: external_exports.array(AggregateValueSchema) }),
   groups: external_exports.strictObject({ total: CountSchema, returned: CountSchema, truncated: external_exports.boolean() }),
@@ -20206,34 +20774,85 @@ var ApiErrorCodeSchema = external_exports.enum([
   "RATE_LIMITED",
   "SERVICE_UNAVAILABLE"
 ]);
-var ApiErrorSchema = external_exports.strictObject({ error: external_exports.strictObject({
-  code: ApiErrorCodeSchema,
-  message: external_exports.string(),
-  requestId: IdSchema
-}) });
+var ApiErrorSchema = external_exports.strictObject({
+  error: external_exports.strictObject({
+    code: ApiErrorCodeSchema,
+    message: external_exports.string(),
+    requestId: IdSchema
+  })
+});
 var ConnectRequestSchema = external_exports.strictObject({
   displayName: external_exports.string().min(1).max(100),
   environment: external_exports.enum(["production", "sandbox"]),
-  allowedObjects: external_exports.array(external_exports.string().regex(/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)?$/).max(255)).min(1).max(500)
+  allowedObjects: external_exports.array(
+    external_exports.string().regex(/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)?$/).max(255)
+  ).min(1).max(500)
 });
-var ConnectResponseSchema = external_exports.strictObject({ authorizationUrl: external_exports.url(), expiresAt: external_exports.iso.datetime({ offset: true }) });
+var ConnectResponseSchema = external_exports.strictObject({
+  authorizationUrl: external_exports.url(),
+  expiresAt: external_exports.iso.datetime({ offset: true })
+});
 var SyncRequestSchema = external_exports.strictObject({ mode: external_exports.enum(["initial", "refresh"]) });
-var SourceConnectRequestSchema = external_exports.strictObject({ displayName: external_exports.string().min(1).max(100), credentials: external_exports.unknown() });
-var SourceConnectResponseSchema = external_exports.strictObject({ connectionId: IdSchema, runId: IdSchema, status: external_exports.literal("pending"), dispatched: external_exports.boolean() });
+var SourceConnectRequestSchema = external_exports.strictObject({
+  displayName: external_exports.string().min(1).max(100),
+  credentials: external_exports.unknown()
+});
+var SourceConnectResponseSchema = external_exports.strictObject({
+  connectionId: IdSchema,
+  runId: IdSchema,
+  status: external_exports.literal("pending"),
+  dispatched: external_exports.boolean()
+});
 var ChangeRefRequestSchema = external_exports.strictObject({ ref: external_exports.string().min(1).max(200) });
-var GithubLinkStatusSchema = external_exports.strictObject({ configured: external_exports.boolean(), linked: external_exports.boolean(), login: external_exports.string().nullable(), installUrl: external_exports.string().url().nullable() });
-var GithubInstallationsResponseSchema = external_exports.strictObject({ installations: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), account: external_exports.string(), targetType: external_exports.string(), repositorySelection: external_exports.enum(["all", "selected"]), settingsUrl: external_exports.string().url().nullable() })) });
-var GithubRepositoriesResponseSchema = external_exports.strictObject({ repositories: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), fullName: external_exports.string(), defaultBranch: external_exports.string(), private: external_exports.boolean() })), truncated: external_exports.boolean() });
+var GithubLinkStatusSchema = external_exports.strictObject({
+  configured: external_exports.boolean(),
+  linked: external_exports.boolean(),
+  login: external_exports.string().nullable(),
+  installUrl: external_exports.string().url().nullable()
+});
+var GithubInstallationsResponseSchema = external_exports.strictObject({
+  installations: external_exports.array(
+    external_exports.strictObject({
+      id: external_exports.number().int().positive(),
+      account: external_exports.string(),
+      targetType: external_exports.string(),
+      repositorySelection: external_exports.enum(["all", "selected"]),
+      settingsUrl: external_exports.string().url().nullable()
+    })
+  )
+});
+var GithubRepositoriesResponseSchema = external_exports.strictObject({
+  repositories: external_exports.array(
+    external_exports.strictObject({
+      id: external_exports.number().int().positive(),
+      fullName: external_exports.string(),
+      defaultBranch: external_exports.string(),
+      private: external_exports.boolean()
+    })
+  ),
+  truncated: external_exports.boolean()
+});
 var GithubBranchesResponseSchema = external_exports.strictObject({ branches: external_exports.array(external_exports.string()) });
-var NotionLinkStatusSchema = external_exports.strictObject({ configured: external_exports.boolean(), linked: external_exports.boolean(), workspaceName: external_exports.string().nullable() });
-var NotionSearchQuerySchema = external_exports.strictObject({ query: external_exports.string().max(200).optional(), kind: external_exports.enum(["data_source", "page"]).default("data_source") });
-var NotionSearchResponseSchema = external_exports.strictObject({ results: external_exports.array(external_exports.strictObject({
-  id: IdSchema,
-  kind: external_exports.enum(["data_source", "page"]),
-  title: external_exports.string(),
-  url: external_exports.string().nullable(),
-  lastEditedAt: external_exports.string().nullable()
-})) });
+var NotionLinkStatusSchema = external_exports.strictObject({
+  configured: external_exports.boolean(),
+  linked: external_exports.boolean(),
+  workspaceName: external_exports.string().nullable()
+});
+var NotionSearchQuerySchema = external_exports.strictObject({
+  query: external_exports.string().max(200).optional(),
+  kind: external_exports.enum(["data_source", "page"]).default("data_source")
+});
+var NotionSearchResponseSchema = external_exports.strictObject({
+  results: external_exports.array(
+    external_exports.strictObject({
+      id: IdSchema,
+      kind: external_exports.enum(["data_source", "page"]),
+      title: external_exports.string(),
+      url: external_exports.string().nullable(),
+      lastEditedAt: external_exports.string().nullable()
+    })
+  )
+});
 var SyncAcceptedSchema = external_exports.strictObject({ runId: IdSchema, status: external_exports.literal("queued") });
 var DefinitionInputSchema = external_exports.strictObject({
   name: external_exports.string().min(1).max(200),
@@ -20241,7 +20860,9 @@ var DefinitionInputSchema = external_exports.strictObject({
   sourceMappings: DefinitionVersionSchema.shape.sourceMappings,
   rule: DefinitionRuleSchema
 });
-var DefinitionDraftRequestSchema = DefinitionInputSchema.extend({ expectedRevision: external_exports.number().int().positive() });
+var DefinitionDraftRequestSchema = DefinitionInputSchema.extend({
+  expectedRevision: external_exports.number().int().positive()
+});
 var DefinitionPublishRequestSchema = external_exports.strictObject({ expectedRevision: external_exports.number().int().positive() });
 
 // ../shared/src/services.ts
@@ -20260,17 +20881,66 @@ var GROUP_PATTERN = new RegExp(`^(${IDENT})(?:\\.(${IDENT}))?(?::(${AGGREGATE_BU
 var METRIC_PATTERN = new RegExp(`^(?:(count)|(sum|avg|min|max|distinct):(${IDENT}))$`);
 
 // ../shared/src/context-document.ts
-var ContextSummarySchema = external_exports.object({ id: external_exports.string(), label: external_exports.string(), revision: external_exports.number().int(), ontologyVersion: external_exports.number().int().nullable(), sources: external_exports.array(external_exports.string()), createdAt: external_exports.string() });
+var ContextSummarySchema = external_exports.object({
+  id: external_exports.string(),
+  label: external_exports.string(),
+  revision: external_exports.number().int(),
+  ontologyVersion: external_exports.number().int().nullable(),
+  sources: external_exports.array(external_exports.string()),
+  createdAt: external_exports.string()
+});
 var ContextListSchema = external_exports.object({ items: external_exports.array(ContextSummarySchema) });
-var ContextStateSchema = external_exports.object({ proposal: ContextProposalSchema, publication: ContextPublicationSchema.nullable(), answerRevision: external_exports.number().int(), discoveryRevision: external_exports.number().int() });
-var ContextDocumentSchema = external_exports.object({ proposalId: external_exports.string(), revision: external_exports.number().int(), markdown: external_exports.string(), sections: external_exports.array(DocumentSectionSchema), comments: external_exports.array(DocumentCommentSchema) });
-var ContextGraphNodeKindSchema = external_exports.enum(["concept", "workflow", "source", "object", "record", "claim", "evidence", "question", "answer"]);
+var ContextStateSchema = external_exports.object({
+  proposal: ContextProposalSchema,
+  publication: ContextPublicationSchema.nullable(),
+  answerRevision: external_exports.number().int(),
+  discoveryRevision: external_exports.number().int()
+});
+var ContextDocumentSchema = external_exports.object({
+  proposalId: external_exports.string(),
+  revision: external_exports.number().int(),
+  markdown: external_exports.string(),
+  sections: external_exports.array(DocumentSectionSchema),
+  comments: external_exports.array(DocumentCommentSchema)
+});
+var ContextGraphNodeKindSchema = external_exports.enum([
+  "concept",
+  "workflow",
+  "source",
+  "object",
+  "record",
+  "claim",
+  "evidence",
+  "question",
+  "answer"
+]);
 var ContextGraphSchema = external_exports.looseObject({
   modelId: external_exports.string(),
   revision: external_exports.number().int(),
   focusId: external_exports.string().nullable(),
-  nodes: external_exports.array(external_exports.looseObject({ id: external_exports.string(), kind: ContextGraphNodeKindSchema, label: external_exports.string(), evidenceIds: external_exports.array(external_exports.string()), sectionId: external_exports.string().optional(), status: external_exports.string().optional(), depth: external_exports.number().int(), hiddenNeighborCount: external_exports.number().int(), expandable: external_exports.boolean() })),
-  edges: external_exports.array(external_exports.looseObject({ id: external_exports.string(), source: external_exports.string(), target: external_exports.string(), kind: external_exports.string(), layer: external_exports.enum(["semantic", "source"]), evidenceIds: external_exports.array(external_exports.string()) })),
+  nodes: external_exports.array(
+    external_exports.looseObject({
+      id: external_exports.string(),
+      kind: ContextGraphNodeKindSchema,
+      label: external_exports.string(),
+      evidenceIds: external_exports.array(external_exports.string()),
+      sectionId: external_exports.string().optional(),
+      status: external_exports.string().optional(),
+      depth: external_exports.number().int(),
+      hiddenNeighborCount: external_exports.number().int(),
+      expandable: external_exports.boolean()
+    })
+  ),
+  edges: external_exports.array(
+    external_exports.looseObject({
+      id: external_exports.string(),
+      source: external_exports.string(),
+      target: external_exports.string(),
+      kind: external_exports.string(),
+      layer: external_exports.enum(["semantic", "source"]),
+      evidenceIds: external_exports.array(external_exports.string())
+    })
+  ),
   truncated: external_exports.boolean(),
   remainingRootIds: external_exports.array(external_exports.string()),
   recordPage: external_exports.object({ nextCursor: external_exports.string().nullable(), hasMore: external_exports.boolean() }).nullable(),
@@ -20282,8 +20952,22 @@ var ContextPreviewSchema = external_exports.looseObject({
   proposalId: external_exports.string(),
   revision: external_exports.number().int(),
   snapshot: SnapshotVectorSchema,
-  changes: external_exports.array(external_exports.object({ conceptId: external_exports.string(), kind: external_exports.enum(["added", "changed", "removed"]), before: BusinessConceptSchema.nullable(), after: BusinessConceptSchema.nullable() })),
-  comparisons: external_exports.array(external_exports.looseObject({ leftId: external_exports.string(), rightId: external_exports.string(), disposition: external_exports.string(), differences: external_exports.array(external_exports.string()) })),
+  changes: external_exports.array(
+    external_exports.object({
+      conceptId: external_exports.string(),
+      kind: external_exports.enum(["added", "changed", "removed"]),
+      before: BusinessConceptSchema.nullable(),
+      after: BusinessConceptSchema.nullable()
+    })
+  ),
+  comparisons: external_exports.array(
+    external_exports.looseObject({
+      leftId: external_exports.string(),
+      rightId: external_exports.string(),
+      disposition: external_exports.string(),
+      differences: external_exports.array(external_exports.string())
+    })
+  ),
   unresolvedRequirements: external_exports.array(external_exports.string()),
   openQuestionIds: external_exports.array(external_exports.string()),
   descriptiveMappingIds: external_exports.array(external_exports.string()),
@@ -21505,24 +22189,49 @@ var ViewTableSchema = external_exports.object({
 var column = (what) => external_exports.string().min(1).describe(`Header in data.columns of ${what}.`);
 var optionalColumn = (what) => external_exports.string().nullable().describe(`Header in data.columns of ${what}, or null.`);
 var title = external_exports.string().nullable().describe("Short title above the chart, or null.");
-var unit = external_exports.string().nullable().describe('Unit written after values, such as "USD", "opportunities" or "%", or null when the source states none. Never invent a currency.');
-var sampleTable = { columns: ["StageName", "count", "sum:Amount"], rows: [["Closed Won", 90, 11783485], ["Closed Lost", 217, 33440754], ["Prospecting", 41, 4430914]] };
-var palette = (fallback) => external_exports.enum(["single", "category", "signed", "sequential"]).nullish().describe(`How colour is assigned: single (one hue for every mark), category (a hue per category, folding past eight into "Other"), signed (one hue for what adds, red for what takes away), sequential (light to dark by value). Omit for ${fallback}.`);
-var emphasis = external_exports.array(external_exports.string().min(1).max(200)).max(12).nullish().describe("Category values drawn at full strength while the rest fade back, so the chart carries the point the caption makes. Omit to draw every mark equally.");
-var size = external_exports.enum(["small", "medium", "full"]).nullish().describe("How much width the chart asks for when it shares a Row: small (a third), medium (a half), full. Omit for full.");
-var annotations = external_exports.array(external_exports.object({
-  value: external_exports.number().describe("Where the line sits on the value axis."),
-  label: external_exports.string().min(1).max(60).describe('What the line means, e.g. "Target" or "Average deal".')
-})).max(4).nullish().describe("Reference lines across the value axis, each labelled: a target, an average, a threshold. Omit for none.");
-var labels = external_exports.enum(["none", "value", "share", "both"]).nullish().describe("What is written on the marks themselves: value (the number), share (its percentage of the whole, or of the step before it in a funnel), both, or none to leave the marks bare and let the table carry the numbers. Omit for value, which is what a chart read without hovering needs.");
-var tooltip = external_exports.enum(["auto", "detailed", "off"]).nullish().describe("What hovering a mark reveals: auto (its category and value), detailed (every measure the data holds for that row, not only the one drawn), or off. Omit for auto.");
-var overlay = external_exports.string().nullish().describe("A second column from the same data drawn behind the marks for comparison: an amount behind a count, last year behind this year, a target behind actuals. Null for none. It is drawn in a muted tone and always named in the legend, so the drawn measure stays the one the caption argues about.");
+var unit = external_exports.string().nullable().describe(
+  'Unit written after values, such as "USD", "opportunities" or "%", or null when the source states none. Never invent a currency.'
+);
+var sampleTable = {
+  columns: ["StageName", "count", "sum:Amount"],
+  rows: [
+    ["Closed Won", 90, 11783485],
+    ["Closed Lost", 217, 33440754],
+    ["Prospecting", 41, 4430914]
+  ]
+};
+var palette = (fallback) => external_exports.enum(["single", "category", "signed", "sequential"]).nullish().describe(
+  `How colour is assigned: single (one hue for every mark), category (a hue per category, folding past eight into "Other"), signed (one hue for what adds, red for what takes away), sequential (light to dark by value). Omit for ${fallback}.`
+);
+var emphasis = external_exports.array(external_exports.string().min(1).max(200)).max(12).nullish().describe(
+  "Category values drawn at full strength while the rest fade back, so the chart carries the point the caption makes. Omit to draw every mark equally."
+);
+var size = external_exports.enum(["small", "medium", "full"]).nullish().describe(
+  "How much width the chart asks for when it shares a Row: small (a third), medium (a half), full. Omit for full."
+);
+var annotations = external_exports.array(
+  external_exports.object({
+    value: external_exports.number().describe("Where the line sits on the value axis."),
+    label: external_exports.string().min(1).max(60).describe('What the line means, e.g. "Target" or "Average deal".')
+  })
+).max(4).nullish().describe("Reference lines across the value axis, each labelled: a target, an average, a threshold. Omit for none.");
+var labels = external_exports.enum(["none", "value", "share", "both"]).nullish().describe(
+  "What is written on the marks themselves: value (the number), share (its percentage of the whole, or of the step before it in a funnel), both, or none to leave the marks bare and let the table carry the numbers. Omit for value, which is what a chart read without hovering needs."
+);
+var tooltip = external_exports.enum(["auto", "detailed", "off"]).nullish().describe(
+  "What hovering a mark reveals: auto (its category and value), detailed (every measure the data holds for that row, not only the one drawn), or off. Omit for auto."
+);
+var overlay = external_exports.string().nullish().describe(
+  "A second column from the same data drawn behind the marks for comparison: an amount behind a count, last year behind this year, a target behind actuals. Null for none. It is drawn in a muted tone and always named in the legend, so the drawn measure stays the one the caption argues about."
+);
 var VIEW_COMPONENTS = {
   Page: {
     props: external_exports.object({
       title: external_exports.string().min(1).max(120).describe("The question answered, in words."),
       subtitle: external_exports.string().nullable().describe("One line under the title, or null."),
-      density: external_exports.enum(["comfortable", "compact"]).nullish().describe("How much air between the parts: comfortable for one chart, compact when the page stacks several. Omit for comfortable.")
+      density: external_exports.enum(["comfortable", "compact"]).nullish().describe(
+        "How much air between the parts: comfortable for one chart, compact when the page stacks several. Omit for comfortable."
+      )
     }),
     slots: ["default"],
     description: "The root of every view: a heading, then its children stacked top to bottom. Use exactly one, as the root.",
@@ -21532,10 +22241,15 @@ var VIEW_COMPONENTS = {
     props: external_exports.object({ text: external_exports.string().min(1).max(2e3) }),
     slots: [],
     description: "Provenance under the heading: type and record count, the where clause in words, the definition applied, snapshot date, coverage, and whether counts are exact. Every view has one.",
-    example: { text: 'Opportunity records where StageName = "Closed Won" (90 of 520). Snapshot of 2026-09-15, coverage complete, counts exact.' }
+    example: {
+      text: 'Opportunity records where StageName = "Closed Won" (90 of 520). Snapshot of 2026-09-15, coverage complete, counts exact.'
+    }
   },
   Note: {
-    props: external_exports.object({ text: external_exports.string().min(1).max(2e3), tone: external_exports.enum(["muted", "warning"]).nullable().describe("warning for assumptions or inexact counts, else null.") }),
+    props: external_exports.object({
+      text: external_exports.string().min(1).max(2e3),
+      tone: external_exports.enum(["muted", "warning"]).nullable().describe("warning for assumptions or inexact counts, else null.")
+    }),
     slots: [],
     description: "A short paragraph: an assumption that was made, a caveat, or how to read the chart.",
     example: { text: "Opportunities whose account has no industry are shown on their own row.", tone: null }
@@ -21543,21 +22257,32 @@ var VIEW_COMPONENTS = {
   Callout: {
     props: external_exports.object({
       text: external_exports.string().min(1).max(2e3),
-      tone: external_exports.enum(["info", "success", "warning", "danger"]).describe("What kind of thing this is: info for context, success for a target met, warning for an assumption or a caveat, danger for something wrong with the data."),
+      tone: external_exports.enum(["info", "success", "warning", "danger"]).describe(
+        "What kind of thing this is: info for context, success for a target met, warning for an assumption or a caveat, danger for something wrong with the data."
+      ),
       title: external_exports.string().max(120).nullable().describe("A few words of heading, or null.")
     }),
     slots: [],
     description: "The one thing the reader should take away, set apart from the prose so it is not skipped. At most one or two per page: a page of callouts is a page of nothing.",
-    example: { text: "Conversion out of Negotiation fell by half this quarter, on 14 opportunities.", tone: "warning", title: "Worth looking at" }
+    example: {
+      text: "Conversion out of Negotiation fell by half this quarter, on 14 opportunities.",
+      tone: "warning",
+      title: "Worth looking at"
+    }
   },
   Quote: {
     props: external_exports.object({
       text: external_exports.string().min(1).max(2e3).describe("The words themselves, as they were written."),
-      attribution: external_exports.string().max(200).nullable().describe('Who said or wrote it, or where it came from, e.g. "Customer definition, ontology v7". Null when it would add nothing.')
+      attribution: external_exports.string().max(200).nullable().describe(
+        'Who said or wrote it, or where it came from, e.g. "Customer definition, ontology v7". Null when it would add nothing.'
+      )
     }),
     slots: [],
     description: "Words from somewhere else quoted verbatim: a definition from the ontology, a line of the context document, an answer someone gave. Never paraphrase inside one.",
-    example: { text: "An account with at least one closed-won opportunity in the last 12 months.", attribution: "Customer, ontology v7" }
+    example: {
+      text: "An account with at least one closed-won opportunity in the last 12 months.",
+      attribution: "Customer, ontology v7"
+    }
   },
   Toggle: {
     props: external_exports.object({
@@ -21570,31 +22295,50 @@ var VIEW_COMPONENTS = {
   },
   Checklist: {
     props: external_exports.object({
-      items: external_exports.array(external_exports.object({
-        label: external_exports.string().min(1).max(200),
-        done: external_exports.boolean().describe("Whether this one holds today."),
-        note: external_exports.string().max(200).nullable().describe('What decided it, e.g. "3 of 40 accounts", or null.')
-      })).min(1).max(20)
+      items: external_exports.array(
+        external_exports.object({
+          label: external_exports.string().min(1).max(200),
+          done: external_exports.boolean().describe("Whether this one holds today."),
+          note: external_exports.string().max(200).nullable().describe('What decided it, e.g. "3 of 40 accounts", or null.')
+        })
+      ).min(1).max(20)
     }),
     slots: [],
     description: "A list of conditions with whether each one holds: data quality checks, the parts of a definition, what a workflow still needs. Not a to-do list for the reader.",
-    example: { items: [{ label: "Every opportunity has a close date", done: true, note: "520 of 520" }, { label: "Every account has an industry", done: false, note: "88 of 140 missing" }] }
+    example: {
+      items: [
+        { label: "Every opportunity has a close date", done: true, note: "520 of 520" },
+        { label: "Every account has an industry", done: false, note: "88 of 140 missing" }
+      ]
+    }
   },
   Badges: {
     props: external_exports.object({
-      items: external_exports.array(external_exports.object({
-        label: external_exports.string().min(1).max(60),
-        tone: external_exports.enum(["neutral", "info", "success", "warning", "danger"]).nullable().describe("What the badge says about the thing, or null for neutral.")
-      })).min(1).max(12)
+      items: external_exports.array(
+        external_exports.object({
+          label: external_exports.string().min(1).max(60),
+          tone: external_exports.enum(["neutral", "info", "success", "warning", "danger"]).nullable().describe("What the badge says about the thing, or null for neutral.")
+        })
+      ).min(1).max(12)
     }),
     slots: [],
     description: "A row of short labels: which sources a number came from, which filters are on, which stages are counted. Use for facts that fit in two words each.",
-    example: { items: [{ label: "Salesforce", tone: "neutral" }, { label: "Snapshot 2026-09-15", tone: "neutral" }, { label: "Counts exact", tone: "success" }] }
+    example: {
+      items: [
+        { label: "Salesforce", tone: "neutral" },
+        { label: "Snapshot 2026-09-15", tone: "neutral" },
+        { label: "Counts exact", tone: "success" }
+      ]
+    }
   },
   Row: {
     props: external_exports.object({
-      weights: external_exports.array(external_exports.number().positive().max(12)).max(6).nullish().describe("Relative widths of the children, one number each, e.g. [2,1] for a chart twice the width of the table beside it. Omit for equal widths."),
-      align: external_exports.enum(["stretch", "top"]).nullish().describe("How children of different heights line up: stretch (equal height, the default) or top, for a tile beside a tall chart.")
+      weights: external_exports.array(external_exports.number().positive().max(12)).max(6).nullish().describe(
+        "Relative widths of the children, one number each, e.g. [2,1] for a chart twice the width of the table beside it. Omit for equal widths."
+      ),
+      align: external_exports.enum(["stretch", "top"]).nullish().describe(
+        "How children of different heights line up: stretch (equal height, the default) or top, for a tile beside a tall chart."
+      )
     }),
     slots: ["default"],
     description: "Lays its children side by side, wrapping on narrow screens. Use for a row of Kpi tiles or two charts that belong together.",
@@ -21611,13 +22355,20 @@ var VIEW_COMPONENTS = {
     example: { title: "Where the pipeline leaks", subtitle: "Stage by stage, this quarter", collapsed: null }
   },
   Divider: {
-    props: external_exports.object({ label: external_exports.string().max(80).nullable().describe("A few words naming what follows, or null for a plain rule.") }),
+    props: external_exports.object({
+      label: external_exports.string().max(80).nullable().describe("A few words naming what follows, or null for a plain rule.")
+    }),
     slots: [],
     description: "A horizontal rule between parts of a page. Prefer a Section when the parts have names; use this for a single clean break.",
     example: { label: null }
   },
   Kpi: {
-    props: external_exports.object({ label: external_exports.string().min(1).max(80), value: external_exports.union([external_exports.string(), external_exports.number()]), unit, note: external_exports.string().nullable().describe('What is behind the number, e.g. "90 opportunities", or null.') }),
+    props: external_exports.object({
+      label: external_exports.string().min(1).max(80),
+      value: external_exports.union([external_exports.string(), external_exports.number()]),
+      unit,
+      note: external_exports.string().nullable().describe('What is behind the number, e.g. "90 opportunities", or null.')
+    }),
     slots: [],
     description: "One headline number with its label. Put several in a Row for a KPI strip. Not a chart with one bar.",
     example: { label: "Closed-won amount", value: 11783485, unit: null, note: "90 opportunities" }
@@ -21634,7 +22385,15 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: 'One number with the change from the period before it, drawn as an arrow and a percentage. Use instead of Kpi whenever the reader would ask "compared with what?".',
-    example: { label: "Closed-won amount", value: 11783485, previous: 9240110, unit: null, periodLabel: "last quarter", goodDirection: "up", size: null }
+    example: {
+      label: "Closed-won amount",
+      value: 11783485,
+      previous: 9240110,
+      unit: null,
+      periodLabel: "last quarter",
+      goodDirection: "up",
+      size: null
+    }
   },
   Progress: {
     props: external_exports.object({
@@ -21647,7 +22406,14 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: "How far a number has come toward a target, as a filled bar with the share written on it. For quota, coverage, completeness; not for a value with no target.",
-    example: { label: "Bookings against quota", value: 11783485, target: 15e6, unit: null, note: "Q3, 90 opportunities", size: null }
+    example: {
+      label: "Bookings against quota",
+      value: 11783485,
+      target: 15e6,
+      unit: null,
+      note: "Q3, 90 opportunities",
+      size: null
+    }
   },
   Gauge: {
     props: external_exports.object({
@@ -21655,17 +22421,31 @@ var VIEW_COMPONENTS = {
       value: external_exports.number(),
       min: external_exports.number(),
       max: external_exports.number(),
-      bands: external_exports.array(external_exports.object({
-        upTo: external_exports.number().describe("Upper edge of this band on the scale."),
-        label: external_exports.string().min(1).max(40),
-        tone: external_exports.enum(["good", "fair", "poor"])
-      })).max(4).nullish().describe('Named ranges the value falls into, e.g. under 30 days "good". Omit for a plain scale.'),
+      bands: external_exports.array(
+        external_exports.object({
+          upTo: external_exports.number().describe("Upper edge of this band on the scale."),
+          label: external_exports.string().min(1).max(40),
+          tone: external_exports.enum(["good", "fair", "poor"])
+        })
+      ).max(4).nullish().describe('Named ranges the value falls into, e.g. under 30 days "good". Omit for a plain scale.'),
       unit,
       size
     }),
     slots: [],
     description: "One value on a named scale, for a measure a reader judges rather than compares: days to close, health, utilisation. Never for money or counts, which belong on a bar.",
-    example: { label: "Median days to close", value: 34, min: 0, max: 90, bands: [{ upTo: 30, label: "Fast", tone: "good" }, { upTo: 60, label: "Typical", tone: "fair" }, { upTo: 90, label: "Slow", tone: "poor" }], unit: "days", size: null }
+    example: {
+      label: "Median days to close",
+      value: 34,
+      min: 0,
+      max: 90,
+      bands: [
+        { upTo: 30, label: "Fast", tone: "good" },
+        { upTo: 60, label: "Typical", tone: "fair" },
+        { upTo: 90, label: "Slow", tone: "poor" }
+      ],
+      unit: "days",
+      size: null
+    }
   },
   Sparkline: {
     props: external_exports.object({
@@ -21679,7 +22459,22 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: "The shape of one series, small and unlabelled, beside a number rather than in place of a chart. Use in a Row of tiles where a full LineChart would not fit.",
-    example: { label: "Bookings", data: { columns: ["CloseDate:month", "sum:Amount"], rows: [["2026-05-01", 820431], ["2026-06-01", 1390239], ["2026-07-01", 2104880]] }, x: "CloseDate:month", value: "sum:Amount", unit: null, note: "Last 3 months", size: "small" }
+    example: {
+      label: "Bookings",
+      data: {
+        columns: ["CloseDate:month", "sum:Amount"],
+        rows: [
+          ["2026-05-01", 820431],
+          ["2026-06-01", 1390239],
+          ["2026-07-01", 2104880]
+        ]
+      },
+      x: "CloseDate:month",
+      value: "sum:Amount",
+      unit: null,
+      note: "Last 3 months",
+      size: "small"
+    }
   },
   Cards: {
     props: external_exports.object({
@@ -21694,7 +22489,19 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: "One small card per row: a gallery of accounts, deals or people, each with a name, a number and a label. Use when the reader is looking for particular records rather than reading a distribution; a DataTable is better once there are more than about a dozen.",
-    example: { title: "Largest open opportunities", data: { columns: ["Name", "StageName", "Amount", "AccountId.Name"], rows: [["Acme renewal", "Negotiation", 24e4, "Acme"]] }, heading: "Name", body: "AccountId.Name", badge: "StageName", value: "Amount", unit: null, size: null }
+    example: {
+      title: "Largest open opportunities",
+      data: {
+        columns: ["Name", "StageName", "Amount", "AccountId.Name"],
+        rows: [["Acme renewal", "Negotiation", 24e4, "Acme"]]
+      },
+      heading: "Name",
+      body: "AccountId.Name",
+      badge: "StageName",
+      value: "Amount",
+      unit: null,
+      size: null
+    }
   },
   BarChart: {
     props: external_exports.object({
@@ -21705,7 +22512,9 @@ var VIEW_COMPONENTS = {
       series: optionalColumn("a second category that splits each bar into stacked segments"),
       sort: external_exports.enum(["value", "category", "none"]).nullable().describe("Order of the bars: by value (largest first), by category, or as the rows come. Null means value."),
       unit,
-      orientation: external_exports.enum(["horizontal", "vertical"]).nullish().describe("Which way the bars run: horizontal reads long category names and many bars; vertical (columns) suits short labels, a time order, or a shape the reader expects to stand up. Omit for horizontal."),
+      orientation: external_exports.enum(["horizontal", "vertical"]).nullish().describe(
+        "Which way the bars run: horizontal reads long category names and many bars; vertical (columns) suits short labels, a time order, or a shape the reader expects to stand up. Omit for horizontal."
+      ),
       palette: palette("single, or a hue per series when series is set"),
       emphasis,
       size,
@@ -21716,49 +22525,218 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: 'Bars, sorted and direct-labelled: compare categories, or share of a whole when series stacks them. Horizontal by default; orientation "vertical" draws columns. More than about 8 bars: fold the tail into "Other" first.',
-    example: { title: "Opportunities by stage", data: sampleTable, category: "StageName", value: "count", series: null, sort: "value", unit: "opportunities", orientation: "vertical", palette: "category", emphasis: ["Closed Won"], size: null, annotations: [{ value: 100, label: "Quarterly target" }], labels: "value", tooltip: "detailed", overlay: "sum:Amount" }
+    example: {
+      title: "Opportunities by stage",
+      data: sampleTable,
+      category: "StageName",
+      value: "count",
+      series: null,
+      sort: "value",
+      unit: "opportunities",
+      orientation: "vertical",
+      palette: "category",
+      emphasis: ["Closed Won"],
+      size: null,
+      annotations: [{ value: 100, label: "Quarterly target" }],
+      labels: "value",
+      tooltip: "detailed",
+      overlay: "sum:Amount"
+    }
   },
   LineChart: {
-    props: external_exports.object({ title, data: ViewTableSchema, x: column("the ordered x axis, usually a date bucket such as CloseDate:month"), y: column("the numeric value"), series: optionalColumn("a category that gives one line per value (at most four)"), unit, emphasis, size, annotations, labels, tooltip, overlay }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      x: column("the ordered x axis, usually a date bucket such as CloseDate:month"),
+      y: column("the numeric value"),
+      series: optionalColumn("a category that gives one line per value (at most four)"),
+      unit,
+      emphasis,
+      size,
+      annotations,
+      labels,
+      tooltip,
+      overlay
+    }),
     slots: [],
     description: "A trend over an ordered axis; one line per series with a legend. Never two y axes: use two charts.",
-    example: { title: "Bookings per quarter", data: { columns: ["CloseDate:quarter", "sum:Amount"], rows: [["2026-01-01", 1390239], ["2026-04-01", 4608898], ["2026-07-01", 12955576]] }, x: "CloseDate:quarter", y: "sum:Amount", series: null, unit: null }
+    example: {
+      title: "Bookings per quarter",
+      data: {
+        columns: ["CloseDate:quarter", "sum:Amount"],
+        rows: [
+          ["2026-01-01", 1390239],
+          ["2026-04-01", 4608898],
+          ["2026-07-01", 12955576]
+        ]
+      },
+      x: "CloseDate:quarter",
+      y: "sum:Amount",
+      series: null,
+      unit: null
+    }
   },
   Waterfall: {
-    props: external_exports.object({ title, data: ViewTableSchema, category: column("each contributor"), value: column("its signed contribution"), totalLabel: external_exports.string().nullable().describe('Label of the closing total bar, or null for "Total".'), unit, palette: palette("signed, which is what a bridge usually wants"), emphasis, size, labels, tooltip }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      category: column("each contributor"),
+      value: column("its signed contribution"),
+      totalLabel: external_exports.string().nullable().describe('Label of the closing total bar, or null for "Total".'),
+      unit,
+      palette: palette("signed, which is what a bridge usually wants"),
+      emphasis,
+      size,
+      labels,
+      tooltip
+    }),
     slots: [],
     description: "How a total is built up or bridged: one floating bar per contributor from the running total before it to the running total after it, then a total bar. Attribution, revenue bridges, what added and what took away.",
-    example: { title: "Closed-won amount by industry", data: { columns: ["AccountId.Industry", "sum:Amount"], rows: [["Finance", 2312731], ["Banking", 1911207], ["Technology", 1758867]] }, category: "AccountId.Industry", value: "sum:Amount", totalLabel: "Total closed-won", unit: null }
+    example: {
+      title: "Closed-won amount by industry",
+      data: {
+        columns: ["AccountId.Industry", "sum:Amount"],
+        rows: [
+          ["Finance", 2312731],
+          ["Banking", 1911207],
+          ["Technology", 1758867]
+        ]
+      },
+      category: "AccountId.Industry",
+      value: "sum:Amount",
+      totalLabel: "Total closed-won",
+      unit: null
+    }
   },
   Funnel: {
-    props: external_exports.object({ title, data: ViewTableSchema, stage: column("the stage"), value: column("the count or amount at that stage"), order: external_exports.array(external_exports.string()).nullable().describe("Stage names in process order (from the picklist), or null to keep the row order."), unit, palette: palette("single, so the eye follows the drop and not the colour"), emphasis, size, labels, tooltip, overlay }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      stage: column("the stage"),
+      value: column("the count or amount at that stage"),
+      order: external_exports.array(external_exports.string()).nullable().describe("Stage names in process order (from the picklist), or null to keep the row order."),
+      unit,
+      palette: palette("single, so the eye follows the drop and not the colour"),
+      emphasis,
+      size,
+      labels,
+      tooltip,
+      overlay
+    }),
     slots: [],
     description: 'Progression through ordered stages, each step carrying its own value and the conversion from the step before it. Order by the process, never by size. `labels` decides what is written on the steps themselves and `overlay` draws a second measure behind them, so one funnel can show both the count and the amount at each stage. Only for cohorts that pass through the stages, where each step counts records that also reached the one before it: a snapshot of how many records sit in each stage today is not one, and drawing it here produces conversions above 100% that mean nothing. Use a BarChart with sort "none" and the stages in process order for a snapshot.',
-    example: { title: "Pipeline by stage", data: sampleTable, stage: "StageName", value: "count", order: ["Prospecting", "Closed Won", "Closed Lost"], unit: "opportunities", labels: "both", overlay: "sum:Amount", tooltip: "detailed" }
+    example: {
+      title: "Pipeline by stage",
+      data: sampleTable,
+      stage: "StageName",
+      value: "count",
+      order: ["Prospecting", "Closed Won", "Closed Lost"],
+      unit: "opportunities",
+      labels: "both",
+      overlay: "sum:Amount",
+      tooltip: "detailed"
+    }
   },
   Heatmap: {
-    props: external_exports.object({ title, data: ViewTableSchema, row: column("the row dimension"), col: column("the column dimension"), value: column("the numeric cell value"), unit, size }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      row: column("the row dimension"),
+      col: column("the column dimension"),
+      value: column("the numeric cell value"),
+      unit,
+      size
+    }),
     slots: [],
     description: "A grid of two dimensions, one hue light to dark by value: for example month by stage from a two-way grouping.",
-    example: { title: "Closed deals by quarter and stage", data: { columns: ["CloseDate:quarter", "StageName", "count"], rows: [["2026-01-01", "Closed Won", 8], ["2026-01-01", "Closed Lost", 12]] }, row: "StageName", col: "CloseDate:quarter", value: "count", unit: null }
+    example: {
+      title: "Closed deals by quarter and stage",
+      data: {
+        columns: ["CloseDate:quarter", "StageName", "count"],
+        rows: [
+          ["2026-01-01", "Closed Won", 8],
+          ["2026-01-01", "Closed Lost", 12]
+        ]
+      },
+      row: "StageName",
+      col: "CloseDate:quarter",
+      value: "count",
+      unit: null
+    }
   },
   Scatter: {
-    props: external_exports.object({ title, data: ViewTableSchema, x: column("the numeric x value"), y: column("the numeric y value"), label: optionalColumn("the point label shown on hover"), series: optionalColumn("a category colouring the points (at most three values)"), xUnit: unit, yUnit: unit, size, annotations }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      x: column("the numeric x value"),
+      y: column("the numeric y value"),
+      label: optionalColumn("the point label shown on hover"),
+      series: optionalColumn("a category colouring the points (at most three values)"),
+      xUnit: unit,
+      yUnit: unit,
+      size,
+      annotations
+    }),
     slots: [],
     description: "Relates two measures per record, from exported rows. Fewer than about 2,000 points.",
-    example: { title: "Amount against days open", data: { columns: ["label", "Amount", "daysOpen"], rows: [["Acme renewal", 12e4, 45]] }, x: "daysOpen", y: "Amount", label: "label", series: null, xUnit: "days", yUnit: null }
+    example: {
+      title: "Amount against days open",
+      data: { columns: ["label", "Amount", "daysOpen"], rows: [["Acme renewal", 12e4, 45]] },
+      x: "daysOpen",
+      y: "Amount",
+      label: "label",
+      series: null,
+      xUnit: "days",
+      yUnit: null
+    }
   },
   Histogram: {
-    props: external_exports.object({ title, data: ViewTableSchema, value: column("the numeric value to bin"), bins: external_exports.number().int().min(2).max(60).nullable().describe("Number of equal-width bins, or null for about 12."), unit, palette: palette("single"), size, annotations }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      value: column("the numeric value to bin"),
+      bins: external_exports.number().int().min(2).max(60).nullable().describe("Number of equal-width bins, or null for about 12."),
+      unit,
+      palette: palette("single"),
+      size,
+      annotations
+    }),
     slots: [],
     description: "The distribution of one numeric column from exported rows, binned in the app.",
-    example: { title: "Deal sizes", data: { columns: ["Amount"], rows: [[12e4], [15e3], [43e3]] }, value: "Amount", bins: null, unit: null }
+    example: {
+      title: "Deal sizes",
+      data: { columns: ["Amount"], rows: [[12e4], [15e3], [43e3]] },
+      value: "Amount",
+      bins: null,
+      unit: null
+    }
   },
   Flow: {
-    props: external_exports.object({ title, data: ViewTableSchema, source: column("the left-hand category"), target: column("the right-hand category"), value: column("the numeric weight of the link"), unit, size }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      source: column("the left-hand category"),
+      target: column("the right-hand category"),
+      value: column("the numeric weight of the link"),
+      unit,
+      size
+    }),
     slots: [],
     description: "A flow between two dimensions (sankey): each row is a link from a source category to a target category with a weight, from a two-way grouping.",
-    example: { title: "Lead source to stage", data: { columns: ["LeadSource", "StageName", "count"], rows: [["Web", "Closed Won", 12], ["Web", "Closed Lost", 30]] }, source: "LeadSource", target: "StageName", value: "count", unit: "opportunities" }
+    example: {
+      title: "Lead source to stage",
+      data: {
+        columns: ["LeadSource", "StageName", "count"],
+        rows: [
+          ["Web", "Closed Won", 12],
+          ["Web", "Closed Lost", 30]
+        ]
+      },
+      source: "LeadSource",
+      target: "StageName",
+      value: "count",
+      unit: "opportunities"
+    }
   },
   PieChart: {
     props: external_exports.object({
@@ -21775,10 +22753,35 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: 'Parts of one whole as slices of a circle. Only when the parts really do sum to a meaningful total, the reader wants the shares rather than the values, and there are at most about six slices: fold the rest into "Other" first. A circle is harder to compare across than a bar, so every slice is direct-labelled and a DataTable goes underneath. For ranking categories, or for anything that does not add up to a whole, use a BarChart instead.',
-    example: { title: "Share of closed-won amount by lead source", data: { columns: ["LeadSource", "sum:Amount"], rows: [["Web", 4210331], ["Partner", 3120887], ["Outbound", 2402110], ["Other", 2050157]] }, category: "LeadSource", value: "sum:Amount", donut: true, unit: null, labels: "both", tooltip: "auto", emphasis: null, size: null }
+    example: {
+      title: "Share of closed-won amount by lead source",
+      data: {
+        columns: ["LeadSource", "sum:Amount"],
+        rows: [
+          ["Web", 4210331],
+          ["Partner", 3120887],
+          ["Outbound", 2402110],
+          ["Other", 2050157]
+        ]
+      },
+      category: "LeadSource",
+      value: "sum:Amount",
+      donut: true,
+      unit: null,
+      labels: "both",
+      tooltip: "auto",
+      emphasis: null,
+      size: null
+    }
   },
   DataTable: {
-    props: external_exports.object({ title, data: ViewTableSchema, totals: external_exports.array(ViewValueSchema).nullable().describe("A totals row aligned with the columns (null for grouping columns), or null."), unit, size }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      totals: external_exports.array(ViewValueSchema).nullable().describe("A totals row aligned with the columns (null for grouping columns), or null."),
+      unit,
+      size
+    }),
     slots: [],
     description: "The numbers themselves, sortable by any column, with an optional totals row. Put one under every chart so every value can be read.",
     example: { title: null, data: sampleTable, totals: [null, 348, 49655153], unit: null }
@@ -21787,14 +22790,16 @@ var VIEW_COMPONENTS = {
 var viewSchema = defineSchema((s) => ({
   spec: s.object({
     root: s.string(),
-    elements: s.record(s.object({
-      type: s.ref("catalog.components"),
-      props: s.propsOf("catalog.components"),
-      children: s.array(s.string()),
-      slots: { ...s.record(s.array(s.string())), ...s.optional() },
-      visible: { ...s.any(), ...s.optional() },
-      repeat: { ...s.any(), ...s.optional() }
-    }))
+    elements: s.record(
+      s.object({
+        type: s.ref("catalog.components"),
+        props: s.propsOf("catalog.components"),
+        children: s.array(s.string()),
+        slots: { ...s.record(s.array(s.string())), ...s.optional() },
+        visible: { ...s.any(), ...s.optional() },
+        repeat: { ...s.any(), ...s.optional() }
+      })
+    )
   }),
   catalog: s.object({
     components: s.map({ props: s.zod(), slots: s.array(s.string()), description: s.string(), example: s.any() }),
@@ -21813,7 +22818,9 @@ var BusinessConversationRequestSchema = external_exports.strictObject({
 var BusinessConversationReplySchema = external_exports.strictObject({
   scope: ConversationScopeSchema,
   answer: external_exports.string().max(3e4),
-  citations: external_exports.array(external_exports.strictObject({ claimId: external_exports.string(), evidence: external_exports.array(EvidenceRefSchema), conceptIds: external_exports.array(external_exports.string()) })).max(20),
+  citations: external_exports.array(
+    external_exports.strictObject({ claimId: external_exports.string(), evidence: external_exports.array(EvidenceRefSchema), conceptIds: external_exports.array(external_exports.string()) })
+  ).max(20),
   limitations: external_exports.array(external_exports.string().max(2e3)).max(100),
   model: external_exports.string(),
   usage: external_exports.strictObject({ inputTokens: external_exports.number().int().nonnegative(), outputTokens: external_exports.number().int().nonnegative() })
@@ -21847,7 +22854,10 @@ var HandoffTicketPollSchema = external_exports.discriminatedUnion("status", [
   external_exports.strictObject({ status: external_exports.literal("completed"), data: external_exports.strictObject({ token: external_exports.string().min(1) }) }),
   external_exports.strictObject({ status: external_exports.literal("expired") })
 ]);
-var HandoffTicketCompleteSchema = external_exports.strictObject({ id: IdSchema, status: external_exports.enum(["completed", "already_completed"]) });
+var HandoffTicketCompleteSchema = external_exports.strictObject({
+  id: IdSchema,
+  status: external_exports.enum(["completed", "already_completed"])
+});
 var PluginTokenSummarySchema = external_exports.strictObject({
   id: IdSchema,
   label: external_exports.string(),
@@ -21952,7 +22962,11 @@ var WorkspaceClearedSchema = external_exports.strictObject({
 var positive = external_exports.number().int().positive();
 var short = external_exports.string().min(1).max(200);
 var PERSON_SOURCE_PROVIDERS = ["salesforce", "rippling", "slack", "manual"];
-var PersonSourceSchema = external_exports.strictObject({ provider: external_exports.enum(PERSON_SOURCE_PROVIDERS), nativeId: short, connectionId: IdSchema.nullable() });
+var PersonSourceSchema = external_exports.strictObject({
+  provider: external_exports.enum(PERSON_SOURCE_PROVIDERS),
+  nativeId: short,
+  connectionId: IdSchema.nullable()
+});
 var PersonSchema = external_exports.strictObject({
   id: IdSchema,
   revision: positive,
@@ -21986,8 +23000,18 @@ var PeopleQuerySchema = external_exports.strictObject({
 });
 var PeopleListSchema = external_exports.strictObject({ items: external_exports.array(PersonSchema), nextCursor: external_exports.string().nullable() });
 var PeopleSyncRequestSchema = external_exports.strictObject({ source: external_exports.enum(["slack", "sources"]) });
-var PeopleSyncResultSchema = external_exports.strictObject({ source: external_exports.enum(["slack", "sources"]), upserted: CountSchema, skipped: CountSchema, reason: external_exports.string().max(500).nullable() });
-var RoleSummarySchema = external_exports.strictObject({ role: RoleKeySchema, count: CountSchema, reachable: CountSchema, titles: external_exports.array(external_exports.string().max(200)).max(10) });
+var PeopleSyncResultSchema = external_exports.strictObject({
+  source: external_exports.enum(["slack", "sources"]),
+  upserted: CountSchema,
+  skipped: CountSchema,
+  reason: external_exports.string().max(500).nullable()
+});
+var RoleSummarySchema = external_exports.strictObject({
+  role: RoleKeySchema,
+  count: CountSchema,
+  reachable: CountSchema,
+  titles: external_exports.array(external_exports.string().max(200)).max(10)
+});
 var AssignmentStateSchema = external_exports.enum(["proposed", "queued", "sent", "answered", "cancelled", "failed"]);
 var DeliveryAttemptSchema = external_exports.strictObject({
   attempt: positive,
@@ -22023,7 +23047,13 @@ var InterviewSettingsSchema = external_exports.strictObject({
   maxPeoplePerQuestion: external_exports.number().int().min(1).max(10)
 });
 var InterviewSettingsUpdateSchema = InterviewSettingsSchema.partial();
-var SlackInstallSchema = external_exports.strictObject({ teamId: short, teamName: short, installedBy: IdSchema, scopes: external_exports.array(external_exports.string().max(100)).max(50), installedAt: TimestampSchema });
+var SlackInstallSchema = external_exports.strictObject({
+  teamId: short,
+  teamName: short,
+  installedBy: IdSchema,
+  scopes: external_exports.array(external_exports.string().max(100)).max(50),
+  installedAt: TimestampSchema
+});
 var SlackInstallStatusSchema = external_exports.strictObject({
   configured: external_exports.boolean(),
   installed: external_exports.boolean(),
@@ -22045,8 +23075,19 @@ var InterviewPlanResultSchema = external_exports.strictObject({
   routed: CountSchema,
   planned: CountSchema
 });
-var InterviewAssignRequestSchema = external_exports.strictObject({ questionId: IdSchema, personIds: external_exports.array(IdSchema).min(1).max(20), note: external_exports.string().max(2e3).optional(), askedBy: external_exports.string().max(120).optional() });
-var InterviewAskRequestSchema = external_exports.strictObject({ idempotencyKey: IdSchema, question: external_exports.string().min(1).max(2e3), personIds: external_exports.array(IdSchema).min(1).max(20), note: external_exports.string().max(2e3).optional(), askedBy: external_exports.string().max(120).optional() });
+var InterviewAssignRequestSchema = external_exports.strictObject({
+  questionId: IdSchema,
+  personIds: external_exports.array(IdSchema).min(1).max(20),
+  note: external_exports.string().max(2e3).optional(),
+  askedBy: external_exports.string().max(120).optional()
+});
+var InterviewAskRequestSchema = external_exports.strictObject({
+  idempotencyKey: IdSchema,
+  question: external_exports.string().min(1).max(2e3),
+  personIds: external_exports.array(IdSchema).min(1).max(20),
+  note: external_exports.string().max(2e3).optional(),
+  askedBy: external_exports.string().max(120).optional()
+});
 var InterviewApproveRequestSchema = external_exports.strictObject({ assignmentIds: external_exports.array(IdSchema).min(1).max(100) });
 var InterviewCancelRequestSchema = external_exports.strictObject({ assignmentId: IdSchema });
 var InterviewAssignmentsResultSchema = external_exports.strictObject({ assignments: external_exports.array(InterviewAssignmentSchema) });
@@ -22055,7 +23096,15 @@ var InterviewAssignmentsResultSchema = external_exports.strictObject({ assignmen
 var PlumAnswerSegmentSchema = external_exports.discriminatedUnion("kind", [
   external_exports.object({ kind: external_exports.literal("text"), text: external_exports.string() }),
   /** A number from the run, formatted by the client. */
-  external_exports.object({ kind: external_exports.literal("value"), slot: external_exports.string(), metric: external_exports.string(), key: external_exports.array(external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()])), value: external_exports.string().nullable(), undefinedReason: external_exports.string().nullable(), format: external_exports.enum(["number", "percent", "currency"]) }),
+  external_exports.object({
+    kind: external_exports.literal("value"),
+    slot: external_exports.string(),
+    metric: external_exports.string(),
+    key: external_exports.array(external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()])),
+    value: external_exports.string().nullable(),
+    undefinedReason: external_exports.string().nullable(),
+    format: external_exports.enum(["number", "percent", "currency"])
+  }),
   /** A label from the plan or the run (period, metric, dimension value). */
   external_exports.object({ kind: external_exports.literal("label"), slot: external_exports.string(), text: external_exports.string() })
 ]);
@@ -22083,8 +23132,10 @@ var PlumPredicateSchema = external_exports.strictObject({
   if (rule.op === "is_null" || rule.op === "is_not_null") {
     if (rule.value !== void 0) ctx.addIssue({ code: "custom", message: `${rule.op} takes no value` });
   } else if (rule.op === "in" || rule.op === "not_in") {
-    if (!Array.isArray(rule.value) || !rule.value.length) ctx.addIssue({ code: "custom", message: `${rule.op} needs a non-empty list` });
-  } else if (rule.value === void 0 || Array.isArray(rule.value)) ctx.addIssue({ code: "custom", message: `${rule.op} needs a single value` });
+    if (!Array.isArray(rule.value) || !rule.value.length)
+      ctx.addIssue({ code: "custom", message: `${rule.op} needs a non-empty list` });
+  } else if (rule.value === void 0 || Array.isArray(rule.value))
+    ctx.addIssue({ code: "custom", message: `${rule.op} needs a single value` });
 });
 var PlumDimensionSchema = external_exports.strictObject({ key: Name, column: FieldPath, label: external_exports.string().optional() });
 var PlumFilterSpecSchema = external_exports.strictObject({
@@ -22093,7 +23144,11 @@ var PlumFilterSpecSchema = external_exports.strictObject({
   type: external_exports.enum(["string", "picklist", "boolean", "date", "number"]),
   allowed_values: external_exports.array(Scalar).optional()
 });
-var PlumCoverageCheckSchema = external_exports.strictObject({ name: Name, sql_predicate: external_exports.string().min(1), description: external_exports.string().min(1) });
+var PlumCoverageCheckSchema = external_exports.strictObject({
+  name: Name,
+  sql_predicate: external_exports.string().min(1),
+  description: external_exports.string().min(1)
+});
 var PlumReconcileSchema = external_exports.strictObject({
   sf_report_id: external_exports.string().regex(/^00O[A-Za-z0-9]{12}([A-Za-z0-9]{3})?$/),
   compare_column: external_exports.string().min(1),
@@ -22147,14 +23202,20 @@ var PlumMetricSchema = external_exports.strictObject({
         if (metric.inputs.includes(metric.name)) issue2("derived metric cannot be its own input");
         const inputs = new Set(metric.inputs);
         if (used.size !== inputs.size || [...used].some((name) => !inputs.has(name))) {
-          issue2(`formula names [${[...used].sort().join(", ")}] must equal inputs [${[...inputs].sort().join(", ")}]`);
+          issue2(
+            `formula names [${[...used].sort().join(", ")}] must equal inputs [${[...inputs].sort().join(", ")}]`
+          );
         }
       } catch (error62) {
         issue2(error62 instanceof Error ? error62.message : "formula does not parse");
       }
     }
   }
-  for (const [label2, keys] of [["dimension", metric.dimensions.map((d) => d.key)], ["filter", metric.filters.map((f) => f.key)], ["coverage check", metric.coverage_checks.map((c) => c.name)]]) {
+  for (const [label2, keys] of [
+    ["dimension", metric.dimensions.map((d) => d.key)],
+    ["filter", metric.filters.map((f) => f.key)],
+    ["coverage check", metric.coverage_checks.map((c) => c.name)]
+  ]) {
     const dupes = [...new Set(keys.filter((key, index) => keys.indexOf(key) !== index))].sort();
     if (dupes.length) issue2(`duplicate ${label2} keys: ${dupes.join(", ")}`);
   }
@@ -22167,7 +23228,9 @@ function parseFormula(formula) {
     const at = FORMULA_TOKEN.lastIndex;
     const match = FORMULA_TOKEN.exec(formula);
     if (!match) throw new Error(`formula has an unexpected character at ${at}: ${JSON.stringify(formula.slice(at))}`);
-    tokens.push(match[1] ? { kind: "num", text: match[1] } : match[2] ? { kind: "name", text: match[2] } : { kind: "op", text: match[3] });
+    tokens.push(
+      match[1] ? { kind: "num", text: match[1] } : match[2] ? { kind: "name", text: match[2] } : { kind: "op", text: match[3] }
+    );
   }
   if (!tokens.length) throw new Error("formula is empty");
   let position = 0;
@@ -22230,7 +23293,15 @@ function formulaNames(formula) {
       return /* @__PURE__ */ new Set();
   }
 }
-var PLUM_RELATIVE_PERIODS = ["this_fiscal_year", "last_fiscal_year", "this_fiscal_quarter", "last_fiscal_quarter", "fiscal_ytd", "this_month", "last_month"];
+var PLUM_RELATIVE_PERIODS = [
+  "this_fiscal_year",
+  "last_fiscal_year",
+  "this_fiscal_quarter",
+  "last_fiscal_quarter",
+  "fiscal_ytd",
+  "this_month",
+  "last_month"
+];
 var PlumPeriodSchema = external_exports.strictObject({
   fiscal_year: external_exports.number().int().min(1900).max(2100).optional(),
   fiscal_quarter: external_exports.tuple([external_exports.number().int().min(1900).max(2100), external_exports.number().int().min(1).max(4)]).optional(),
@@ -22238,9 +23309,16 @@ var PlumPeriodSchema = external_exports.strictObject({
   range: external_exports.tuple([external_exports.iso.date(), external_exports.iso.date()]).optional(),
   relative: external_exports.enum(PLUM_RELATIVE_PERIODS).optional()
 }).superRefine((period, ctx) => {
-  const given = ["fiscal_year", "fiscal_quarter", "month", "range", "relative"].filter((key) => period[key] !== void 0);
-  if (given.length !== 1) ctx.addIssue({ code: "custom", message: "period needs exactly one of fiscal_year, fiscal_quarter, month, range, relative" });
-  if (period.range && period.range[0] > period.range[1]) ctx.addIssue({ code: "custom", message: "range start is after its end" });
+  const given = ["fiscal_year", "fiscal_quarter", "month", "range", "relative"].filter(
+    (key) => period[key] !== void 0
+  );
+  if (given.length !== 1)
+    ctx.addIssue({
+      code: "custom",
+      message: "period needs exactly one of fiscal_year, fiscal_quarter, month, range, relative"
+    });
+  if (period.range && period.range[0] > period.range[1])
+    ctx.addIssue({ code: "custom", message: "range start is after its end" });
 });
 var PlumPlanSchema = external_exports.strictObject({
   metric: external_exports.string().min(1),
@@ -22262,7 +23340,15 @@ var CoverageSchema2 = external_exports.object({
   count: external_exports.number().int(),
   complete: external_exports.boolean(),
   recordIds: external_exports.array(external_exports.string()).optional(),
-  checks: external_exports.array(external_exports.object({ checkName: external_exports.string(), reason: external_exports.string(), predicate: external_exports.string(), count: external_exports.number().int(), recordIds: external_exports.array(external_exports.string()).optional() }))
+  checks: external_exports.array(
+    external_exports.object({
+      checkName: external_exports.string(),
+      reason: external_exports.string(),
+      predicate: external_exports.string(),
+      count: external_exports.number().int(),
+      recordIds: external_exports.array(external_exports.string()).optional()
+    })
+  )
 });
 var PlumRunSchema = external_exports.object({
   id: external_exports.string(),
@@ -22283,12 +23369,25 @@ var PlumRunSchema = external_exports.object({
   error: external_exports.string().nullable(),
   durationMs: external_exports.number().int(),
   /** Numbers are decimal strings, never floats. A null value carries the reason it is undefined. */
-  results: external_exports.array(external_exports.object({ metric: external_exports.string(), key: Key, value: external_exports.string().nullable(), undefinedReason: external_exports.string().nullable(), isRoot: external_exports.boolean() })),
+  results: external_exports.array(
+    external_exports.object({
+      metric: external_exports.string(),
+      key: Key,
+      value: external_exports.string().nullable(),
+      undefinedReason: external_exports.string().nullable(),
+      isRoot: external_exports.boolean()
+    })
+  ),
   coverage: external_exports.array(CoverageSchema2),
   /** The answer text: a validated template filled from the results. Null for failed runs and older runs. */
   answer: PlumAnswerSchema.nullable().default(null),
   /** Exploratory runs only: the SQL the model wrote, as run, and the rows it returned (capped). */
-  exploratory: external_exports.object({ sql: external_exports.string(), columns: external_exports.array(external_exports.string()), rows: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown())), truncated: external_exports.boolean() }).nullable().default(null)
+  exploratory: external_exports.object({
+    sql: external_exports.string(),
+    columns: external_exports.array(external_exports.string()),
+    rows: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown())),
+    truncated: external_exports.boolean()
+  }).nullable().default(null)
 });
 var PlumDerivationSchema = PlumRunSchema.pick({
   id: true,
@@ -22304,27 +23403,31 @@ var PlumDerivationSchema = PlumRunSchema.pick({
   plan: true,
   coverage: true
 }).extend({
-  steps: external_exports.array(external_exports.object({
-    step: external_exports.number().int(),
-    metric: external_exports.string(),
-    key: Key,
-    formula: external_exports.string().nullable(),
-    inputs: external_exports.record(external_exports.string(), external_exports.object({ value: external_exports.string().nullable(), reason: external_exports.string().nullable() })),
-    value: external_exports.string().nullable(),
-    undefinedReason: external_exports.string().nullable()
-  })),
-  queries: external_exports.array(external_exports.object({
-    metric: external_exports.string(),
-    kind: external_exports.enum(["measure", "coverage", "exploratory"]),
-    sql: external_exports.string(),
-    params: external_exports.array(external_exports.unknown()),
-    notes: external_exports.array(external_exports.string()),
-    jobId: external_exports.string().nullable(),
-    bytesProcessed: external_exports.number().nullable(),
-    rowCount: external_exports.number().int(),
-    truncated: external_exports.boolean(),
-    durationMs: external_exports.number().int()
-  }))
+  steps: external_exports.array(
+    external_exports.object({
+      step: external_exports.number().int(),
+      metric: external_exports.string(),
+      key: Key,
+      formula: external_exports.string().nullable(),
+      inputs: external_exports.record(external_exports.string(), external_exports.object({ value: external_exports.string().nullable(), reason: external_exports.string().nullable() })),
+      value: external_exports.string().nullable(),
+      undefinedReason: external_exports.string().nullable()
+    })
+  ),
+  queries: external_exports.array(
+    external_exports.object({
+      metric: external_exports.string(),
+      kind: external_exports.enum(["measure", "coverage", "exploratory"]),
+      sql: external_exports.string(),
+      params: external_exports.array(external_exports.unknown()),
+      notes: external_exports.array(external_exports.string()),
+      jobId: external_exports.string().nullable(),
+      bytesProcessed: external_exports.number().nullable(),
+      rowCount: external_exports.number().int(),
+      truncated: external_exports.boolean(),
+      durationMs: external_exports.number().int()
+    })
+  )
 });
 var PlumMetricSummarySchema = external_exports.object({
   name: external_exports.string(),
@@ -22350,7 +23453,14 @@ var PlumMetricSummarySchema = external_exports.object({
   formula: external_exports.string().nullable(),
   inputs: external_exports.array(external_exports.string()),
   dimensions: external_exports.array(external_exports.object({ key: external_exports.string(), label: external_exports.string(), column: external_exports.string() })),
-  filters: external_exports.array(external_exports.object({ key: external_exports.string(), column: external_exports.string(), type: external_exports.enum(["string", "picklist", "boolean", "date", "number"]), allowedValues: external_exports.array(Scalar).nullable() })),
+  filters: external_exports.array(
+    external_exports.object({
+      key: external_exports.string(),
+      column: external_exports.string(),
+      type: external_exports.enum(["string", "picklist", "boolean", "date", "number"]),
+      allowedValues: external_exports.array(Scalar).nullable()
+    })
+  ),
   coverageChecks: external_exports.array(external_exports.object({ name: external_exports.string(), description: external_exports.string() })),
   reconcileReportId: external_exports.string().nullable()
 });
@@ -22416,7 +23526,10 @@ var PlumProposalSchema = external_exports.object({
   runId: external_exports.string().nullable(),
   createdAt: external_exports.string()
 });
-var PlumAskRequestSchema = external_exports.strictObject({ question: external_exports.string().trim().min(1).max(2e3), ontologyRef: external_exports.string().min(1).max(200).default("HEAD") });
+var PlumAskRequestSchema = external_exports.strictObject({
+  question: external_exports.string().trim().min(1).max(2e3),
+  ontologyRef: external_exports.string().min(1).max(200).default("HEAD")
+});
 var PlumAskResultSchema = external_exports.object({
   /** answered: a run with an answer; ambiguous: several accepted metrics fit and a person picks; unanswered: no answer could be made. */
   status: external_exports.enum(["answered", "ambiguous", "unanswered"]),
@@ -22439,7 +23552,15 @@ var PlumTraceSchema = external_exports.object({
   /** What answered: the agent's prompt-and-tools hash (or "interpreter"), and the ontology commit it read. Null on traces recorded before 1.13.0. */
   agentVersion: external_exports.string().nullable().default(null),
   ontologyVersion: external_exports.string().nullable().default(null),
-  tools: external_exports.array(external_exports.object({ name: external_exports.string(), input: external_exports.unknown(), ok: external_exports.boolean(), summary: external_exports.string(), durationMs: external_exports.number().int() })),
+  tools: external_exports.array(
+    external_exports.object({
+      name: external_exports.string(),
+      input: external_exports.unknown(),
+      ok: external_exports.boolean(),
+      summary: external_exports.string(),
+      durationMs: external_exports.number().int()
+    })
+  ),
   filesRead: external_exports.array(external_exports.string()),
   plan: external_exports.unknown(),
   sql: external_exports.array(external_exports.string()),
@@ -22453,10 +23574,26 @@ var PlumTraceSchema = external_exports.object({
 var PlumOntologyEntrySchema = external_exports.object({
   path: external_exports.string(),
   /** What the file is, from where it lives: metrics/, objects/, reports/, findings/, paths/, or a named top-level file. */
-  kind: external_exports.enum(["metric", "object", "report", "finding", "recipe", "glossary", "gotchas", "questions", "summary", "readme", "other"]),
+  kind: external_exports.enum([
+    "metric",
+    "object",
+    "report",
+    "finding",
+    "recipe",
+    "glossary",
+    "gotchas",
+    "questions",
+    "summary",
+    "readme",
+    "other"
+  ]),
   title: external_exports.string()
 });
-var PlumOntologyFilesResponseSchema = external_exports.object({ ontologyVersion: external_exports.string(), files: external_exports.array(PlumOntologyEntrySchema), repositoryUrl: external_exports.string().nullable() });
+var PlumOntologyFilesResponseSchema = external_exports.object({
+  ontologyVersion: external_exports.string(),
+  files: external_exports.array(PlumOntologyEntrySchema),
+  repositoryUrl: external_exports.string().nullable()
+});
 var PlumOntologyDocumentSchema = PlumOntologyEntrySchema.extend({
   ontologyVersion: external_exports.string(),
   /** The file as stored (Markdown, possibly with frontmatter). */
@@ -22471,7 +23608,9 @@ import fs from "node:fs";
 import path from "node:path";
 function readBuildInfo(pluginRoot) {
   try {
-    const parsed = JSON.parse(fs.readFileSync(path.join(pluginRoot, "dist", "buildInfo.json"), "utf8"));
+    const parsed = JSON.parse(
+      fs.readFileSync(path.join(pluginRoot, "dist", "buildInfo.json"), "utf8")
+    );
     return typeof parsed.gitSha === "string" && typeof parsed.builtAt === "string" && typeof parsed.version === "string" ? { gitSha: parsed.gitSha, builtAt: parsed.builtAt, version: parsed.version } : null;
   } catch {
     return null;
@@ -22515,7 +23654,8 @@ function findProjectConfig(start = process.cwd()) {
 }
 function normalizeServiceUrl(value) {
   const url2 = new URL(value.trim());
-  if (!["http:", "https:"].includes(url2.protocol) || url2.username || url2.password || url2.search || url2.hash) throw new Error("Use an http(s) URL without credentials, query, or fragment.");
+  if (!["http:", "https:"].includes(url2.protocol) || url2.username || url2.password || url2.search || url2.hash)
+    throw new Error("Use an http(s) URL without credentials, query, or fragment.");
   return url2.href.replace(/\/$/, "");
 }
 function getConfig(env = process.env) {
@@ -22526,7 +23666,12 @@ function getConfig(env = process.env) {
   const serviceUrl = fromEnv ?? (typeof project?.serviceUrl === "string" ? project.serviceUrl : typeof global.serviceUrl === "string" ? global.serviceUrl : DEFAULT_SERVICE_URL);
   const token = env.CONTEXT_GRAPH_TOKEN ?? (typeof credentials.token === "string" ? credentials.token : null);
   const telemetry = env.CONTEXT_GRAPH_TELEMETRY === "0" || env.CONTEXT_GRAPH_TELEMETRY === "false" ? false : global.telemetry !== false;
-  return { serviceUrl: normalizeServiceUrl(serviceUrl), token, verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true, telemetry };
+  return {
+    serviceUrl: normalizeServiceUrl(serviceUrl),
+    token,
+    verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true,
+    telemetry
+  };
 }
 function getOrCreateInstallId() {
   const existing = readJson(CONFIG_FILE) ?? {};
@@ -22566,7 +23711,8 @@ function createApiClient(platform2, pluginVersion, options = {}) {
   const fetcher = options.fetcher ?? fetch;
   const root = `${config2.serviceUrl}/api/v1`;
   async function request(method, path7, input2) {
-    if (input2.auth && !config2.token) throw new ApiError("UNAUTHENTICATED", `Not signed in. Run ${platform2.loginHint} first.`, 401);
+    if (input2.auth && !config2.token)
+      throw new ApiError("UNAUTHENTICATED", `Not signed in. Run ${platform2.loginHint} first.`, 401);
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(input2.query ?? {})) {
       if (value === void 0) continue;
@@ -22578,9 +23724,18 @@ function createApiClient(platform2, pluginVersion, options = {}) {
     if (input2.body !== void 0) headers["Content-Type"] = "application/json";
     let response;
     try {
-      response = await fetcher(`${root}${path7}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(options.timeoutMs ?? 6e4) });
+      response = await fetcher(`${root}${path7}${params.size ? `?${params}` : ""}`, {
+        method,
+        headers,
+        ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {},
+        signal: AbortSignal.timeout(options.timeoutMs ?? 6e4)
+      });
     } catch (error62) {
-      throw new ApiError("UNAVAILABLE", `Could not reach ${config2.serviceUrl}: ${error62 instanceof Error ? error62.message : "network error"}`, 0);
+      throw new ApiError(
+        "UNAVAILABLE",
+        `Could not reach ${config2.serviceUrl}: ${error62 instanceof Error ? error62.message : "network error"}`,
+        0
+      );
     }
     let payload = null;
     if (response.status !== 204) {
@@ -22592,8 +23747,18 @@ function createApiClient(platform2, pluginVersion, options = {}) {
     }
     if (!response.ok) {
       const parsed = ApiErrorSchema.safeParse(payload);
-      if (parsed.success) throw new ApiError(parsed.data.error.code, parsed.data.error.message, response.status, parsed.data.error.requestId);
-      throw new ApiError(response.status === 401 ? "UNAUTHENTICATED" : response.status === 403 ? "FORBIDDEN" : "UNAVAILABLE", `Request failed (HTTP ${response.status}).`, response.status);
+      if (parsed.success)
+        throw new ApiError(
+          parsed.data.error.code,
+          parsed.data.error.message,
+          response.status,
+          parsed.data.error.requestId
+        );
+      throw new ApiError(
+        response.status === 401 ? "UNAUTHENTICATED" : response.status === 403 ? "FORBIDDEN" : "UNAVAILABLE",
+        `Request failed (HTTP ${response.status}).`,
+        response.status
+      );
     }
     return payload;
   }
@@ -22615,7 +23780,11 @@ function commandName(argv) {
 function buildHelp(command, spec) {
   const positional = spec.positional ?? [];
   const flags = spec.flags ?? [];
-  const lines = [`Usage: ${[command, ...positional.map(label), ...flags.map(flagLabel)].join(" ")}`, "", spec.description];
+  const lines = [
+    `Usage: ${[command, ...positional.map(label), ...flags.map(flagLabel)].join(" ")}`,
+    "",
+    spec.description
+  ];
   const width = Math.max(0, ...positional.map((item) => item.name.length), ...flags.map((item) => item.name.length + 2));
   const described = positional.filter((item) => item.description);
   if (described.length) {
@@ -22624,7 +23793,10 @@ function buildHelp(command, spec) {
   }
   if (flags.length) {
     lines.push("", "Flags:");
-    for (const item of flags) lines.push(`  ${`--${item.name}`.padEnd(width)}  ${[item.description, item.default !== void 0 ? `(default: ${item.default})` : ""].filter(Boolean).join(" ")}`.trimEnd());
+    for (const item of flags)
+      lines.push(
+        `  ${`--${item.name}`.padEnd(width)}  ${[item.description, item.default !== void 0 ? `(default: ${item.default})` : ""].filter(Boolean).join(" ")}`.trimEnd()
+      );
   }
   return lines.join("\n");
 }
@@ -22661,8 +23833,14 @@ function parseArgs(spec) {
     index += 1;
   }
   const required2 = (spec.positional ?? []).filter((item) => item.required !== false).length;
-  if (positional.length < required2) throw new UsageError(`Expected at least ${required2} argument${required2 === 1 ? "" : "s"}, got ${positional.length}.`);
-  if (positional.length > (spec.positional ?? []).length) throw new UsageError(`Expected at most ${(spec.positional ?? []).length} argument${(spec.positional ?? []).length === 1 ? "" : "s"}, got ${positional.length}.`);
+  if (positional.length < required2)
+    throw new UsageError(
+      `Expected at least ${required2} argument${required2 === 1 ? "" : "s"}, got ${positional.length}.`
+    );
+  if (positional.length > (spec.positional ?? []).length)
+    throw new UsageError(
+      `Expected at most ${(spec.positional ?? []).length} argument${(spec.positional ?? []).length === 1 ? "" : "s"}, got ${positional.length}.`
+    );
   return { positional, flags };
 }
 async function runCommand(spec, work) {
@@ -22702,10 +23880,13 @@ function installScopeAppliesToProject(projectPath, projectDir) {
 }
 function detectClaudeInstallScopes(pluginKey, homeDir = os3.homedir(), projectDir = process.cwd()) {
   try {
-    const parsed = JSON.parse(fs3.readFileSync(path3.join(homeDir, ".claude", "plugins", "installed_plugins.json"), "utf8"));
+    const parsed = JSON.parse(
+      fs3.readFileSync(path3.join(homeDir, ".claude", "plugins", "installed_plugins.json"), "utf8")
+    );
     const scopes = /* @__PURE__ */ new Set();
     for (const entry of parsed.plugins?.[pluginKey] ?? []) {
-      if (entry.scope && INSTALL_SCOPES.includes(entry.scope) && installScopeAppliesToProject(entry.projectPath, projectDir)) scopes.add(entry.scope);
+      if (entry.scope && INSTALL_SCOPES.includes(entry.scope) && installScopeAppliesToProject(entry.projectPath, projectDir))
+        scopes.add(entry.scope);
     }
     return [...scopes];
   } catch {
@@ -22752,7 +23933,9 @@ import os4 from "node:os";
 import path5 from "node:path";
 async function readRaw(platform2, file2, fetcher) {
   try {
-    const response = await fetcher(`https://raw.githubusercontent.com/${platform2.repo}/main/${file2}`, { signal: AbortSignal.timeout(3e3) });
+    const response = await fetcher(`https://raw.githubusercontent.com/${platform2.repo}/main/${file2}`, {
+      signal: AbortSignal.timeout(3e3)
+    });
     return response.ok ? await response.json() : null;
   } catch {
     return null;
@@ -22768,7 +23951,9 @@ function isNewer(latest, current) {
 }
 function isAutoUpdateEnabled(platform2, homeDir = os4.homedir()) {
   try {
-    const data = JSON.parse(fs5.readFileSync(path5.join(homeDir, ".claude", "plugins", "known_marketplaces.json"), "utf8"));
+    const data = JSON.parse(
+      fs5.readFileSync(path5.join(homeDir, ".claude", "plugins", "known_marketplaces.json"), "utf8")
+    );
     const byName = data[platform2.marketplaceName];
     if (byName) return byName.autoUpdate === true;
     return Object.values(data).some((item) => item.source?.repo === platform2.repo && item.autoUpdate === true);
@@ -22785,7 +23970,13 @@ async function checkForUpdate(currentVersion, platform2, localBuildSha, fetcher 
     const info = await readRaw(platform2, "dist/buildInfo.json", fetcher);
     staleSameVersion = typeof info?.gitSha === "string" && info.gitSha !== localBuildSha;
   }
-  return { current: currentVersion, latest, updateAvailable: versionNewer || staleSameVersion, autoUpdateEnabled: isAutoUpdateEnabled(platform2, homeDir), staleSameVersion };
+  return {
+    current: currentVersion,
+    latest,
+    updateAvailable: versionNewer || staleSameVersion,
+    autoUpdateEnabled: isAutoUpdateEnabled(platform2, homeDir),
+    staleSameVersion
+  };
 }
 var AUTO_UPDATE_RETRY_MS = 30 * 60 * 1e3;
 function formatUpdateMessage(latest, platform2) {
@@ -22820,8 +24011,12 @@ Run ${platform.loginHint} to sign in.`);
     return;
   }
   try {
-    const who = PluginWhoAmISchema.parse(await createApiClient(platform, getVersion(), { config: config2 }).get("/plugin/whoami"));
-    console.log(`Status: signed in as ${who.principal.subjectId} (${who.principal.role}) in workspace ${who.principal.workspaceId}`);
+    const who = PluginWhoAmISchema.parse(
+      await createApiClient(platform, getVersion(), { config: config2 }).get("/plugin/whoami")
+    );
+    console.log(
+      `Status: signed in as ${who.principal.subjectId} (${who.principal.role}) in workspace ${who.principal.workspaceId}`
+    );
     console.log(`Token: "${who.token.label}" \xB7 created ${who.token.createdAt}`);
   } catch (error62) {
     console.log(`Status: saved token rejected (${error62 instanceof Error ? error62.message : "unknown error"})`);
@@ -22829,7 +24024,13 @@ Run ${platform.loginHint} to sign in.`);
 Run ${platform.loginHint} to sign in again.`);
   }
 }
-if (process.env.VITEST === void 0) void runCommand({ description: "Show plugin status: service URL, version and update availability, build, and sign-in state. Takes no arguments." }, runStatus);
+if (process.env.VITEST === void 0)
+  void runCommand(
+    {
+      description: "Show plugin status: service URL, version and update availability, build, and sign-in state. Takes no arguments."
+    },
+    runStatus
+  );
 export {
   runStatus
 };

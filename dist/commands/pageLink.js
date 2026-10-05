@@ -29,7 +29,8 @@ function findProjectConfig(start = process.cwd()) {
 }
 function normalizeServiceUrl(value) {
   const url = new URL(value.trim());
-  if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new Error("Use an http(s) URL without credentials, query, or fragment.");
+  if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.search || url.hash)
+    throw new Error("Use an http(s) URL without credentials, query, or fragment.");
   return url.href.replace(/\/$/, "");
 }
 function getConfig(env = process.env) {
@@ -40,7 +41,12 @@ function getConfig(env = process.env) {
   const serviceUrl = fromEnv ?? (typeof project?.serviceUrl === "string" ? project.serviceUrl : typeof global.serviceUrl === "string" ? global.serviceUrl : DEFAULT_SERVICE_URL);
   const token = env.CONTEXT_GRAPH_TOKEN ?? (typeof credentials.token === "string" ? credentials.token : null);
   const telemetry = env.CONTEXT_GRAPH_TELEMETRY === "0" || env.CONTEXT_GRAPH_TELEMETRY === "false" ? false : global.telemetry !== false;
-  return { serviceUrl: normalizeServiceUrl(serviceUrl), token, verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true, telemetry };
+  return {
+    serviceUrl: normalizeServiceUrl(serviceUrl),
+    token,
+    verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true,
+    telemetry
+  };
 }
 var SESSION_FILE = path.join(CONFIG_DIR, "session.json");
 var SESSION_TTL_MS = 24 * 60 * 60 * 1e3;
@@ -63,7 +69,11 @@ function commandName(argv) {
 function buildHelp(command, spec) {
   const positional = spec.positional ?? [];
   const flags = spec.flags ?? [];
-  const lines = [`Usage: ${[command, ...positional.map(label), ...flags.map(flagLabel)].join(" ")}`, "", spec.description];
+  const lines = [
+    `Usage: ${[command, ...positional.map(label), ...flags.map(flagLabel)].join(" ")}`,
+    "",
+    spec.description
+  ];
   const width = Math.max(0, ...positional.map((item) => item.name.length), ...flags.map((item) => item.name.length + 2));
   const described = positional.filter((item) => item.description);
   if (described.length) {
@@ -72,7 +82,10 @@ function buildHelp(command, spec) {
   }
   if (flags.length) {
     lines.push("", "Flags:");
-    for (const item of flags) lines.push(`  ${`--${item.name}`.padEnd(width)}  ${[item.description, item.default !== void 0 ? `(default: ${item.default})` : ""].filter(Boolean).join(" ")}`.trimEnd());
+    for (const item of flags)
+      lines.push(
+        `  ${`--${item.name}`.padEnd(width)}  ${[item.description, item.default !== void 0 ? `(default: ${item.default})` : ""].filter(Boolean).join(" ")}`.trimEnd()
+      );
   }
   return lines.join("\n");
 }
@@ -109,8 +122,14 @@ function parseArgs(spec) {
     index += 1;
   }
   const required = (spec.positional ?? []).filter((item) => item.required !== false).length;
-  if (positional.length < required) throw new UsageError(`Expected at least ${required} argument${required === 1 ? "" : "s"}, got ${positional.length}.`);
-  if (positional.length > (spec.positional ?? []).length) throw new UsageError(`Expected at most ${(spec.positional ?? []).length} argument${(spec.positional ?? []).length === 1 ? "" : "s"}, got ${positional.length}.`);
+  if (positional.length < required)
+    throw new UsageError(
+      `Expected at least ${required} argument${required === 1 ? "" : "s"}, got ${positional.length}.`
+    );
+  if (positional.length > (spec.positional ?? []).length)
+    throw new UsageError(
+      `Expected at most ${(spec.positional ?? []).length} argument${(spec.positional ?? []).length === 1 ? "" : "s"}, got ${positional.length}.`
+    );
   return { positional, flags };
 }
 async function runCommand(spec, work) {
@@ -140,26 +159,45 @@ function buildPagePath(page, options = {}) {
 // src/commands/pageLink.ts
 function validateRelativePath(path2) {
   const url = new URL(path2, "https://context-graph.invalid");
-  if (!path2.startsWith("/") || path2.startsWith("//") || path2.includes("\\") || url.origin !== "https://context-graph.invalid" || url.pathname.startsWith("/api/")) throw new Error("Provide an app page path such as /?stage=graph.");
+  if (!path2.startsWith("/") || path2.startsWith("//") || path2.includes("\\") || url.origin !== "https://context-graph.invalid" || url.pathname.startsWith("/api/"))
+    throw new Error("Provide an app page path such as /?stage=graph.");
   return path2;
 }
 if (process.env.VITEST === void 0) {
-  void runCommand({
-    description: "Print a link to an app page and exit. With no path, links the context graph page.",
-    positional: [{ name: "path", required: false, description: "Relative app path, e.g. /?stage=document&context=business-context." }],
-    flags: [
-      { name: "page", description: "graph (step 3), document (step 4) or views (step 5) when no path is given.", default: "graph" },
-      { name: "context", description: "Context model id to open." },
-      { name: "section", description: "Section id to focus on the document page." },
-      { name: "node", description: "Node id to focus on the graph page." },
-      { name: "view", description: "View id to open on the views page." }
-    ]
-  }, ({ positional, flags }) => {
-    const page = flags.page === "document" ? "document" : flags.page === "views" ? "views" : "graph";
-    const text = (name) => typeof flags[name] === "string" ? flags[name] : void 0;
-    const path2 = positional[0] ? validateRelativePath(positional[0]) : buildPagePath(page, { contextId: text("context"), sectionId: text("section"), nodeId: text("node"), viewId: text("view") });
-    emitPageLink(getConfig().serviceUrl, path2);
-  });
+  void runCommand(
+    {
+      description: "Print a link to an app page and exit. With no path, links the context graph page.",
+      positional: [
+        {
+          name: "path",
+          required: false,
+          description: "Relative app path, e.g. /?stage=document&context=business-context."
+        }
+      ],
+      flags: [
+        {
+          name: "page",
+          description: "graph (step 3), document (step 4) or views (step 5) when no path is given.",
+          default: "graph"
+        },
+        { name: "context", description: "Context model id to open." },
+        { name: "section", description: "Section id to focus on the document page." },
+        { name: "node", description: "Node id to focus on the graph page." },
+        { name: "view", description: "View id to open on the views page." }
+      ]
+    },
+    ({ positional, flags }) => {
+      const page = flags.page === "document" ? "document" : flags.page === "views" ? "views" : "graph";
+      const text = (name) => typeof flags[name] === "string" ? flags[name] : void 0;
+      const path2 = positional[0] ? validateRelativePath(positional[0]) : buildPagePath(page, {
+        contextId: text("context"),
+        sectionId: text("section"),
+        nodeId: text("node"),
+        viewId: text("view")
+      });
+      emitPageLink(getConfig().serviceUrl, path2);
+    }
+  );
 }
 export {
   buildPagePath,

@@ -821,10 +821,10 @@ function mergeDefs(...defs) {
 function cloneDef(schema) {
   return mergeDefs(schema._zod.def);
 }
-function getElementAtPath(obj, path7) {
-  if (!path7)
+function getElementAtPath(obj, path8) {
+  if (!path8)
     return obj;
-  return path7.reduce((acc, key) => acc?.[key], obj);
+  return path8.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -1164,11 +1164,11 @@ function explicitlyAborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path7, issues) {
+function prefixIssues(path8, issues) {
   return issues.map((iss) => {
     var _a3;
     (_a3 = iss).path ?? (_a3.path = []);
-    iss.path.unshift(path7);
+    iss.path.unshift(path8);
     return iss;
   });
 }
@@ -1618,16 +1618,16 @@ function flattenError(error62, mapper = (issue2) => issue2.message) {
 }
 function formatError(error62, mapper = (issue2) => issue2.message) {
   const fieldErrors = { _errors: [] };
-  const processError = (error63, path7 = []) => {
+  const processError = (error63, path8 = []) => {
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else {
-        const fullpath = [...path7, ...issue2.path];
+        const fullpath = [...path8, ...issue2.path];
         if (fullpath.length === 0) {
           fieldErrors._errors.push(mapper(issue2));
         } else {
@@ -1666,17 +1666,17 @@ function formatError(error62, mapper = (issue2) => issue2.message) {
 }
 function treeifyError(error62, mapper = (issue2) => issue2.message) {
   const result = { errors: [] };
-  const processError = (error63, path7 = []) => {
+  const processError = (error63, path8 = []) => {
     var _a3;
     for (const issue2 of error63.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
-        issue2.errors.map((issues) => processError({ issues }, [...path7, ...issue2.path]));
+        issue2.errors.map((issues) => processError({ issues }, [...path8, ...issue2.path]));
       } else if (issue2.code === "invalid_key") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else if (issue2.code === "invalid_element") {
-        processError({ issues: issue2.issues }, [...path7, ...issue2.path]);
+        processError({ issues: issue2.issues }, [...path8, ...issue2.path]);
       } else {
-        const fullpath = [...path7, ...issue2.path];
+        const fullpath = [...path8, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -1715,8 +1715,8 @@ function treeifyError(error62, mapper = (issue2) => issue2.message) {
 }
 function toDotPath(_path) {
   const segs = [];
-  const path7 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
-  for (const seg of path7) {
+  const path8 = _path.map((seg) => typeof seg === "object" ? seg.key : seg);
+  for (const seg of path8) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -18818,13 +18818,13 @@ function resolveRef(ref, ctx) {
   if (!ref.startsWith("#")) {
     throw new Error("External $ref is not supported, only local refs (#/...) are allowed");
   }
-  const path7 = ref.slice(1).split("/").filter(Boolean);
-  if (path7.length === 0) {
+  const path8 = ref.slice(1).split("/").filter(Boolean);
+  if (path8.length === 0) {
     return ctx.rootSchema;
   }
   const defsKey = ctx.version === "draft-2020-12" ? "$defs" : "definitions";
-  if (path7[0] === defsKey) {
-    const key = path7[1] === void 0 ? void 0 : decodeJSONPointerSegment(path7[1]);
+  if (path8[0] === defsKey) {
+    const key = path8[1] === void 0 ? void 0 : decodeJSONPointerSegment(path8[1]);
     if (!key || !ctx.defs[key]) {
       throw new Error(`Reference not found: ${ref}`);
     }
@@ -19677,17 +19677,14 @@ function date4(params) {
 import os2 from "node:os";
 
 // ../shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.15.0";
+var CONTRACT_VERSION = "1.16.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
-var AttributesSchema = external_exports.record(external_exports.string().min(1), external_exports.union([
-  external_exports.string(),
-  external_exports.number().finite(),
-  external_exports.boolean(),
-  external_exports.null(),
-  external_exports.array(external_exports.string())
-]));
+var AttributesSchema = external_exports.record(
+  external_exports.string().min(1),
+  external_exports.union([external_exports.string(), external_exports.number().finite(), external_exports.boolean(), external_exports.null(), external_exports.array(external_exports.string())])
+);
 var SourceIdentitySchema = external_exports.strictObject({
   connectionId: IdSchema,
   objectType: external_exports.string().min(1),
@@ -19702,9 +19699,19 @@ var EvidenceSchema = external_exports.strictObject({
   id: IdSchema,
   connectionId: IdSchema,
   location: external_exports.discriminatedUnion("kind", [
-    external_exports.strictObject({ kind: external_exports.literal("record"), objectType: external_exports.string().min(1), nativeId: external_exports.string().min(1), field: external_exports.string().min(1).nullable() }),
+    external_exports.strictObject({
+      kind: external_exports.literal("record"),
+      objectType: external_exports.string().min(1),
+      nativeId: external_exports.string().min(1),
+      field: external_exports.string().min(1).nullable()
+    }),
     external_exports.strictObject({ kind: external_exports.literal("schema"), objectType: external_exports.string().min(1), field: external_exports.string().min(1).nullable() }),
-    external_exports.strictObject({ kind: external_exports.literal("file"), path: external_exports.string().min(1), startLine: external_exports.number().int().positive().nullable(), endLine: external_exports.number().int().positive().nullable() })
+    external_exports.strictObject({
+      kind: external_exports.literal("file"),
+      path: external_exports.string().min(1),
+      startLine: external_exports.number().int().positive().nullable(),
+      endLine: external_exports.number().int().positive().nullable()
+    })
   ]),
   observedAt: TimestampSchema,
   sourceModifiedAt: TimestampSchema.nullable(),
@@ -19721,7 +19728,14 @@ var FieldSchema = external_exports.strictObject({
   helpText: external_exports.string().nullable().optional(),
   relationshipName: external_exports.string().nullable().optional(),
   description: external_exports.string().max(1e4).optional(),
-  picklistValues: external_exports.array(external_exports.strictObject({ value: external_exports.string(), label: external_exports.string(), active: external_exports.boolean(), defaultValue: external_exports.boolean().optional() })).max(5e3).optional()
+  picklistValues: external_exports.array(
+    external_exports.strictObject({
+      value: external_exports.string(),
+      label: external_exports.string(),
+      active: external_exports.boolean(),
+      defaultValue: external_exports.boolean().optional()
+    })
+  ).max(5e3).optional()
 });
 var EntityTypeSchema = external_exports.strictObject({
   id: IdSchema,
@@ -19731,7 +19745,12 @@ var EntityTypeSchema = external_exports.strictObject({
   fields: external_exports.array(FieldSchema),
   provenance: ProvenanceSchema,
   /** Exact identities of the same object in other providers, e.g. an ORM class naming its Postgres table (1.2.0). */
-  aliases: external_exports.array(external_exports.strictObject({ provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion"]), nativeName: external_exports.string().min(1) })).max(20).optional()
+  aliases: external_exports.array(
+    external_exports.strictObject({
+      provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion"]),
+      nativeName: external_exports.string().min(1)
+    })
+  ).max(20).optional()
 });
 var RelationshipTypeSchema = external_exports.strictObject({
   id: IdSchema,
@@ -19810,7 +19829,10 @@ var FreshnessSchema = external_exports.strictObject({
   lastSuccessfulSyncAt: TimestampSchema.nullable(),
   syncRunId: IdSchema.nullable()
 });
-var SourceMetadataSchema = external_exports.record(external_exports.string().min(1).max(100), external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean()]));
+var SourceMetadataSchema = external_exports.record(
+  external_exports.string().min(1).max(100),
+  external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean()])
+);
 var SourceConnectionSchema = external_exports.strictObject({
   id: IdSchema,
   provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion"]),
@@ -19823,8 +19845,16 @@ var SourceConnectionSchema = external_exports.strictObject({
   /** Subject id of the person who connected this source (1.4.0). Absent on connections made before attribution existed. */
   connectedBy: IdSchema.optional()
 });
-var SyncCountsSchema = external_exports.strictObject({ records: CountSchema, relationships: CountSchema, errors: CountSchema });
-var CheckpointSchema = external_exports.strictObject({ objectType: external_exports.string().min(1), cursor: external_exports.string().nullable(), batchSequence: CountSchema });
+var SyncCountsSchema = external_exports.strictObject({
+  records: CountSchema,
+  relationships: CountSchema,
+  errors: CountSchema
+});
+var CheckpointSchema = external_exports.strictObject({
+  objectType: external_exports.string().min(1),
+  cursor: external_exports.string().nullable(),
+  batchSequence: CountSchema
+});
 var SyncRunSchema = external_exports.strictObject({
   id: IdSchema,
   revision: external_exports.number().int().positive(),
@@ -19849,11 +19879,13 @@ var DefinitionRuleSchema = external_exports.discriminatedUnion("kind", [
   external_exports.strictObject({
     kind: external_exports.literal("filter"),
     typeId: IdSchema,
-    predicates: external_exports.array(external_exports.strictObject({
-      field: external_exports.string().min(1),
-      operator: external_exports.enum(["eq", "neq", "gt", "gte", "lt", "lte"]),
-      value: external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()])
-    })).min(1)
+    predicates: external_exports.array(
+      external_exports.strictObject({
+        field: external_exports.string().min(1),
+        operator: external_exports.enum(["eq", "neq", "gt", "gte", "lt", "lte"]),
+        value: external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()])
+      })
+    ).min(1)
   })
 ]);
 var DefinitionVersionSchema = external_exports.strictObject({
@@ -19870,7 +19902,25 @@ var DefinitionVersionSchema = external_exports.strictObject({
   publishedAt: TimestampSchema.nullable()
 });
 var ExtractionBatchSchema = external_exports.strictObject({
-  contractVersion: external_exports.enum(["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0", "1.6.0", "1.7.0", "1.8.0", "1.9.0", "1.10.0", "1.11.0", "1.12.0", "1.13.0", "1.14.0", CONTRACT_VERSION]),
+  contractVersion: external_exports.enum([
+    "1.0.0",
+    "1.1.0",
+    "1.2.0",
+    "1.3.0",
+    "1.4.0",
+    "1.5.0",
+    "1.6.0",
+    "1.7.0",
+    "1.8.0",
+    "1.9.0",
+    "1.10.0",
+    "1.11.0",
+    "1.12.0",
+    "1.13.0",
+    "1.14.0",
+    "1.15.0",
+    CONTRACT_VERSION
+  ]),
   connectionId: IdSchema,
   runId: IdSchema,
   batchId: IdSchema,
@@ -19913,42 +19963,400 @@ var InterviewAudienceSchema = external_exports.strictObject({
 var text = external_exports.string().min(1).max(1e4);
 var ids = external_exports.array(IdSchema);
 var base = { id: IdSchema, revision: external_exports.number().int().positive() };
-var EvidenceRefSchema = external_exports.strictObject({ artifactId: IdSchema, version: IdSchema, path: external_exports.string().max(2e3) });
+var EvidenceRefSchema = external_exports.strictObject({
+  artifactId: IdSchema,
+  version: IdSchema,
+  path: external_exports.string().max(2e3)
+});
 var refs = external_exports.array(EvidenceRefSchema);
 var CoveragePhaseSchema = external_exports.enum(["discovery", "retrieval", "parsing", "inspection", "validation", "review"]);
-var CoverageStateSchema = external_exports.enum(["queued", "running", "complete", "failed", "unsupported", "excluded", "blocked_by_access"]);
-var SourceCapabilitySchema = external_exports.strictObject({ ...base, connectionId: IdSchema, kind: text, state: external_exports.enum(["available", "unsupported", "blocked_by_access", "unknown"]), reason: text.nullable(), apiVersion: IdSchema, accessVersion: IdSchema });
-var CatalogKindSchema = external_exports.enum(["object", "field", "report", "flow", "validation_rule", "formula", "record_type", "role", "profile", "permission_set", "path_assistant", "assignment_rule", "opportunity_stage", "lead_status", "organization", "user", "connected_application", "other"]);
-var ReaderKindSchema = external_exports.enum(["object", "report", "flow", "validation_rule", "role", "profile", "permission_set", "path_assistant", "assignment_rule", "record_type", "opportunity_stage", "lead_status", "organization", "user", "connected_application"]);
-var ReaderDescriptorSchema = external_exports.strictObject({ kind: CatalogKindSchema, nativeId: text, label: text, providerId: IdSchema, active: external_exports.boolean().nullable(), objectType: text.optional(), description: external_exports.string().max(3e4).optional(), artifactPath: external_exports.string().optional() });
-var ReaderGapSchema = external_exports.strictObject({ kind: CatalogKindSchema, state: external_exports.enum(["blocked_by_access", "unsupported", "failed"]), reason: text, retryable: external_exports.boolean() });
-var ReaderInventorySchema = external_exports.strictObject({ components: external_exports.array(ReaderDescriptorSchema), nextCursor: external_exports.string().nullable(), gaps: external_exports.array(ReaderGapSchema) });
-var ReaderArtifactSchema = external_exports.strictObject({ content: external_exports.record(external_exports.string(), external_exports.json()), sourceVersion: external_exports.string().nullable() });
-var ReaderRetrievalSchema = external_exports.strictObject({ artifacts: external_exports.array(ReaderArtifactSchema), children: external_exports.array(ReaderDescriptorSchema), nextCursor: external_exports.string().nullable(), complete: external_exports.boolean(), gaps: external_exports.array(ReaderGapSchema), active: external_exports.boolean().nullable().optional() });
-var CatalogComponentSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, kind: CatalogKindSchema, nativeId: text, label: text, description: external_exports.string().max(3e4), version: IdSchema, active: external_exports.boolean().nullable(), access: external_exports.enum(["allowed", "blocked_by_access", "excluded", "unknown"]), accessVersion: IdSchema, observedAt: TimestampSchema, parentId: IdSchema.nullable(), artifact: EvidenceRefSchema.nullable(), provider: ReaderDescriptorSchema.optional() });
-var ImportPlanSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, catalogRevision: CountSchema, selectedComponentIds: ids, selectedFields: external_exports.record(IdSchema, ids), excludedComponentIds: ids, state: external_exports.enum(["draft", "submitted", "superseded"]), createdAt: TimestampSchema });
-var ComponentCoverageSchema = external_exports.strictObject({ ...base, componentId: IdSchema, componentVersion: IdSchema, phase: CoveragePhaseSchema, state: CoverageStateSchema, cursor: external_exports.string().nullable(), continuation: external_exports.string().nullable().optional(), inspectedPaths: external_exports.array(external_exports.string()), reason: text.nullable(), updatedAt: TimestampSchema });
-var RetainedArtifactSchema = external_exports.strictObject({ id: IdSchema, version: IdSchema, connectionId: IdSchema, componentId: IdSchema, apiVersion: IdSchema, accessVersion: IdSchema, contentHash: IdSchema, content: external_exports.string().max(5e6), mediaType: text, observedAt: TimestampSchema, sourceModifiedAt: TimestampSchema.nullable() });
-var ComponentDependencySchema = external_exports.strictObject({ ...base, sourceComponentId: IdSchema, sourceVersion: IdSchema, targetComponentId: IdSchema.nullable(), targetNativeId: text, targetKind: CatalogComponentSchema.shape.kind.optional(), relation: external_exports.enum(["reads", "writes", "filters", "calls", "references"]), path: external_exports.string(), state: external_exports.enum(["resolved", "unsupported", "blocked_by_access", "unresolved"]), reason: text.nullable() });
-var DependencyCandidateSchema = external_exports.strictObject({ relation: ComponentDependencySchema.shape.relation, targetKind: CatalogComponentSchema.shape.kind, targetNativeId: text, path: external_exports.string(), resolution: external_exports.enum(["resolved", "unresolved"]), reason: text.optional() });
-var DependencyParseResultSchema = external_exports.strictObject({ references: external_exports.array(DependencyCandidateSchema), unsupported: external_exports.array(external_exports.strictObject({ path: external_exports.string(), reason: text })), coverage: external_exports.enum(["complete", "partial", "unsupported"]) });
-var SnapshotVectorSchema = external_exports.strictObject({ sources: external_exports.array(external_exports.strictObject({ connectionId: IdSchema, batchWatermark: IdSchema.nullable(), catalogVersion: IdSchema, accessVersion: IdSchema, coverageRevision: CountSchema })), answerRevision: CountSchema, skillVersion: IdSchema, promptVersion: IdSchema });
-var SourceProfileSchema = external_exports.strictObject({ ...base, connectionId: IdSchema, componentId: IdSchema, snapshot: SnapshotVectorSchema, method: external_exports.enum(["exact", "sampled"]), population: text, denominator: CountSchema, sampleSize: CountSchema.nullable(), complete: external_exports.boolean(), statistics: external_exports.record(external_exports.string(), external_exports.json()), evidence: refs, gaps: external_exports.array(text) });
-var InvestigationCheckpointSchema = external_exports.strictObject({ queue: ids, visited: ids, cursors: external_exports.record(IdSchema, external_exports.string()), toolCalls: CountSchema, sampledRecords: CountSchema, inputTokens: CountSchema, outputTokens: CountSchema, elapsedMs: CountSchema, agentState: external_exports.json().optional() });
-var InvestigationRunSchema = external_exports.strictObject({ ...base, expectedRevision: CountSchema, snapshot: SnapshotVectorSchema, status: external_exports.enum(["queued", "running", "waiting_for_input", "completed", "failed", "superseded"]), model: IdSchema, checkpoint: InvestigationCheckpointSchema, leaseToken: IdSchema.nullable(), leaseExpiresAt: TimestampSchema.nullable(), failure: text.nullable(), createdAt: TimestampSchema, updatedAt: TimestampSchema });
-var DiscoveryEventSchema = external_exports.strictObject({ id: IdSchema, deduplicationKey: IdSchema, kind: external_exports.enum(["batch_accepted", "catalog_updated", "answer_submitted", "run_progress", "run_completed", "message", "proposal_updated", "interview_planned", "interview_sent"]), actor: external_exports.enum(["system", "assistant", "user"]), message: external_exports.string().max(3e4), runId: IdSchema.nullable(), recordIds: ids, evidence: refs, createdAt: TimestampSchema });
-var ClaimScopeSchema = external_exports.strictObject({ subject: text, purpose: text, population: text, timeWindow: text, grain: text.nullable().optional(), unit: text.nullable().optional(), currency: text.nullable().optional() });
-var WorkflowStepSchema = external_exports.strictObject({ id: IdSchema, label: text, conceptIds: ids, claimIds: ids, evidence: refs, kind: external_exports.enum(["action", "decision", "handoff", "terminal"]).optional(), roleIds: ids.optional(), systemIds: ids.optional(), inputIds: ids.optional(), outputIds: ids.optional() });
-var WorkflowTriggerSchema = external_exports.strictObject({ description: text, entryStepId: IdSchema, conceptIds: ids, evidence: refs });
-var WorkflowTransitionSchema = external_exports.strictObject({ id: IdSchema, sourceStepId: IdSchema, targetStepId: IdSchema, kind: external_exports.enum(["next", "conditional", "default", "fault"]), condition: text.nullable(), claimIds: ids, evidence: refs });
-var BusinessWorkflowSchema = external_exports.strictObject({ ...base, name: text, description: text, steps: external_exports.array(WorkflowStepSchema), trigger: WorkflowTriggerSchema.optional(), transitions: external_exports.array(WorkflowTransitionSchema).optional(), unresolvedRequirements: external_exports.array(text) });
-var EvidenceCheckSchema = external_exports.strictObject({ id: IdSchema, requirement: text, result: external_exports.enum(["passed", "failed", "unknown", "not_applicable"]), rationale: text, evidence: refs });
-var EvidenceAssessmentSchema = external_exports.strictObject({ status: external_exports.enum(["supported", "provisional", "disputed", "unresolved"]), checks: external_exports.array(EvidenceCheckSchema), gaps: external_exports.array(text), rationale: text, assessedAt: TimestampSchema });
-var InvestigationTaskSchema = external_exports.strictObject({ ...base, runId: IdSchema, question: text, scope: ClaimScopeSchema, queue: external_exports.enum(["coverage", "investigation"]), status: external_exports.enum(["queued", "running", "waiting_for_input", "supported", "provisional", "unresolved", "disputed", "unsupported", "superseded"]), domain: IdSchema.optional(), attempts: CountSchema.optional(), snapshot: SnapshotVectorSchema, componentIds: ids, claimIds: ids, dependencyTaskIds: ids, checks: external_exports.array(EvidenceCheckSchema), gaps: external_exports.array(text), nextAction: text.nullable(), stopReason: text.nullable(), createdAt: TimestampSchema, updatedAt: TimestampSchema });
-var BusinessConceptKindSchema = external_exports.enum(["company", "customer", "product", "process", "metric", "term", "other", "department", "team", "role", "person", "system", "business_object", "customer_segment", "journey_stage"]);
-var ContextRelationSchema = external_exports.enum(["supported_by", "contradicted_by", "maps_to", "depends_on", "clarifies", "buys", "renews", "delivered_through", "related_to", "owns", "performs", "uses", "reads", "produces", "updates", "hands_off_to", "measured_by", "contains"]);
-var BusinessFindingSchema = external_exports.strictObject({ key: IdSchema, name: text, kind: BusinessConceptKindSchema, relationships: external_exports.array(external_exports.strictObject({ relation: ContextRelationSchema, targetKey: IdSchema, evidence: refs })), workflow: BusinessWorkflowSchema.optional() });
-var BusinessClaimSchema = external_exports.strictObject({ ...base, scope: ClaimScopeSchema, predicate: text, value: external_exports.json(), business: BusinessFindingSchema.optional(), assessment: EvidenceAssessmentSchema.optional(), basis: external_exports.enum(["configured", "observed", "confirmed", "derived"]), status: external_exports.enum(["proposed", "supported", "confirmed_by_user", "disputed", "rejected", "superseded"]), supportingEvidence: refs, contradictingEvidence: refs, answerIds: ids, premiseClaimIds: ids, uncertainty: external_exports.array(text), rationale: text, runId: IdSchema });
+var CoverageStateSchema = external_exports.enum([
+  "queued",
+  "running",
+  "complete",
+  "failed",
+  "unsupported",
+  "excluded",
+  "blocked_by_access"
+]);
+var SourceCapabilitySchema = external_exports.strictObject({
+  ...base,
+  connectionId: IdSchema,
+  kind: text,
+  state: external_exports.enum(["available", "unsupported", "blocked_by_access", "unknown"]),
+  reason: text.nullable(),
+  apiVersion: IdSchema,
+  accessVersion: IdSchema
+});
+var CatalogKindSchema = external_exports.enum([
+  "object",
+  "field",
+  "report",
+  "flow",
+  "validation_rule",
+  "formula",
+  "record_type",
+  "role",
+  "profile",
+  "permission_set",
+  "path_assistant",
+  "assignment_rule",
+  "opportunity_stage",
+  "lead_status",
+  "organization",
+  "user",
+  "connected_application",
+  "other"
+]);
+var ReaderKindSchema = external_exports.enum([
+  "object",
+  "report",
+  "flow",
+  "validation_rule",
+  "role",
+  "profile",
+  "permission_set",
+  "path_assistant",
+  "assignment_rule",
+  "record_type",
+  "opportunity_stage",
+  "lead_status",
+  "organization",
+  "user",
+  "connected_application"
+]);
+var ReaderDescriptorSchema = external_exports.strictObject({
+  kind: CatalogKindSchema,
+  nativeId: text,
+  label: text,
+  providerId: IdSchema,
+  active: external_exports.boolean().nullable(),
+  objectType: text.optional(),
+  description: external_exports.string().max(3e4).optional(),
+  artifactPath: external_exports.string().optional()
+});
+var ReaderGapSchema = external_exports.strictObject({
+  kind: CatalogKindSchema,
+  state: external_exports.enum(["blocked_by_access", "unsupported", "failed"]),
+  reason: text,
+  retryable: external_exports.boolean()
+});
+var ReaderInventorySchema = external_exports.strictObject({
+  components: external_exports.array(ReaderDescriptorSchema),
+  nextCursor: external_exports.string().nullable(),
+  gaps: external_exports.array(ReaderGapSchema)
+});
+var ReaderArtifactSchema = external_exports.strictObject({
+  content: external_exports.record(external_exports.string(), external_exports.json()),
+  sourceVersion: external_exports.string().nullable()
+});
+var ReaderRetrievalSchema = external_exports.strictObject({
+  artifacts: external_exports.array(ReaderArtifactSchema),
+  children: external_exports.array(ReaderDescriptorSchema),
+  nextCursor: external_exports.string().nullable(),
+  complete: external_exports.boolean(),
+  gaps: external_exports.array(ReaderGapSchema),
+  active: external_exports.boolean().nullable().optional()
+});
+var CatalogComponentSchema = external_exports.strictObject({
+  ...base,
+  connectionId: IdSchema,
+  kind: CatalogKindSchema,
+  nativeId: text,
+  label: text,
+  description: external_exports.string().max(3e4),
+  version: IdSchema,
+  active: external_exports.boolean().nullable(),
+  access: external_exports.enum(["allowed", "blocked_by_access", "excluded", "unknown"]),
+  accessVersion: IdSchema,
+  observedAt: TimestampSchema,
+  parentId: IdSchema.nullable(),
+  artifact: EvidenceRefSchema.nullable(),
+  provider: ReaderDescriptorSchema.optional()
+});
+var ImportPlanSchema = external_exports.strictObject({
+  ...base,
+  connectionId: IdSchema,
+  catalogRevision: CountSchema,
+  selectedComponentIds: ids,
+  selectedFields: external_exports.record(IdSchema, ids),
+  excludedComponentIds: ids,
+  state: external_exports.enum(["draft", "submitted", "superseded"]),
+  createdAt: TimestampSchema
+});
+var ComponentCoverageSchema = external_exports.strictObject({
+  ...base,
+  componentId: IdSchema,
+  componentVersion: IdSchema,
+  phase: CoveragePhaseSchema,
+  state: CoverageStateSchema,
+  cursor: external_exports.string().nullable(),
+  continuation: external_exports.string().nullable().optional(),
+  inspectedPaths: external_exports.array(external_exports.string()),
+  reason: text.nullable(),
+  updatedAt: TimestampSchema
+});
+var RetainedArtifactSchema = external_exports.strictObject({
+  id: IdSchema,
+  version: IdSchema,
+  connectionId: IdSchema,
+  componentId: IdSchema,
+  apiVersion: IdSchema,
+  accessVersion: IdSchema,
+  contentHash: IdSchema,
+  content: external_exports.string().max(5e6),
+  mediaType: text,
+  observedAt: TimestampSchema,
+  sourceModifiedAt: TimestampSchema.nullable()
+});
+var ComponentDependencySchema = external_exports.strictObject({
+  ...base,
+  sourceComponentId: IdSchema,
+  sourceVersion: IdSchema,
+  targetComponentId: IdSchema.nullable(),
+  targetNativeId: text,
+  targetKind: CatalogComponentSchema.shape.kind.optional(),
+  relation: external_exports.enum(["reads", "writes", "filters", "calls", "references"]),
+  path: external_exports.string(),
+  state: external_exports.enum(["resolved", "unsupported", "blocked_by_access", "unresolved"]),
+  reason: text.nullable()
+});
+var DependencyCandidateSchema = external_exports.strictObject({
+  relation: ComponentDependencySchema.shape.relation,
+  targetKind: CatalogComponentSchema.shape.kind,
+  targetNativeId: text,
+  path: external_exports.string(),
+  resolution: external_exports.enum(["resolved", "unresolved"]),
+  reason: text.optional()
+});
+var DependencyParseResultSchema = external_exports.strictObject({
+  references: external_exports.array(DependencyCandidateSchema),
+  unsupported: external_exports.array(external_exports.strictObject({ path: external_exports.string(), reason: text })),
+  coverage: external_exports.enum(["complete", "partial", "unsupported"])
+});
+var SnapshotVectorSchema = external_exports.strictObject({
+  sources: external_exports.array(
+    external_exports.strictObject({
+      connectionId: IdSchema,
+      batchWatermark: IdSchema.nullable(),
+      catalogVersion: IdSchema,
+      accessVersion: IdSchema,
+      coverageRevision: CountSchema
+    })
+  ),
+  answerRevision: CountSchema,
+  skillVersion: IdSchema,
+  promptVersion: IdSchema
+});
+var SourceProfileSchema = external_exports.strictObject({
+  ...base,
+  connectionId: IdSchema,
+  componentId: IdSchema,
+  snapshot: SnapshotVectorSchema,
+  method: external_exports.enum(["exact", "sampled"]),
+  population: text,
+  denominator: CountSchema,
+  sampleSize: CountSchema.nullable(),
+  complete: external_exports.boolean(),
+  statistics: external_exports.record(external_exports.string(), external_exports.json()),
+  evidence: refs,
+  gaps: external_exports.array(text)
+});
+var InvestigationCheckpointSchema = external_exports.strictObject({
+  queue: ids,
+  visited: ids,
+  cursors: external_exports.record(IdSchema, external_exports.string()),
+  toolCalls: CountSchema,
+  sampledRecords: CountSchema,
+  inputTokens: CountSchema,
+  outputTokens: CountSchema,
+  elapsedMs: CountSchema,
+  agentState: external_exports.json().optional()
+});
+var InvestigationRunSchema = external_exports.strictObject({
+  ...base,
+  expectedRevision: CountSchema,
+  snapshot: SnapshotVectorSchema,
+  status: external_exports.enum(["queued", "running", "waiting_for_input", "completed", "failed", "superseded"]),
+  model: IdSchema,
+  checkpoint: InvestigationCheckpointSchema,
+  leaseToken: IdSchema.nullable(),
+  leaseExpiresAt: TimestampSchema.nullable(),
+  failure: text.nullable(),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema
+});
+var DiscoveryEventSchema = external_exports.strictObject({
+  id: IdSchema,
+  deduplicationKey: IdSchema,
+  kind: external_exports.enum([
+    "batch_accepted",
+    "catalog_updated",
+    "answer_submitted",
+    "run_progress",
+    "run_completed",
+    "message",
+    "proposal_updated",
+    "interview_planned",
+    "interview_sent"
+  ]),
+  actor: external_exports.enum(["system", "assistant", "user"]),
+  message: external_exports.string().max(3e4),
+  runId: IdSchema.nullable(),
+  recordIds: ids,
+  evidence: refs,
+  createdAt: TimestampSchema
+});
+var ClaimScopeSchema = external_exports.strictObject({
+  subject: text,
+  purpose: text,
+  population: text,
+  timeWindow: text,
+  grain: text.nullable().optional(),
+  unit: text.nullable().optional(),
+  currency: text.nullable().optional()
+});
+var WorkflowStepSchema = external_exports.strictObject({
+  id: IdSchema,
+  label: text,
+  conceptIds: ids,
+  claimIds: ids,
+  evidence: refs,
+  kind: external_exports.enum(["action", "decision", "handoff", "terminal"]).optional(),
+  roleIds: ids.optional(),
+  systemIds: ids.optional(),
+  inputIds: ids.optional(),
+  outputIds: ids.optional()
+});
+var WorkflowTriggerSchema = external_exports.strictObject({
+  description: text,
+  entryStepId: IdSchema,
+  conceptIds: ids,
+  evidence: refs
+});
+var WorkflowTransitionSchema = external_exports.strictObject({
+  id: IdSchema,
+  sourceStepId: IdSchema,
+  targetStepId: IdSchema,
+  kind: external_exports.enum(["next", "conditional", "default", "fault"]),
+  condition: text.nullable(),
+  claimIds: ids,
+  evidence: refs
+});
+var BusinessWorkflowSchema = external_exports.strictObject({
+  ...base,
+  name: text,
+  description: text,
+  steps: external_exports.array(WorkflowStepSchema),
+  trigger: WorkflowTriggerSchema.optional(),
+  transitions: external_exports.array(WorkflowTransitionSchema).optional(),
+  unresolvedRequirements: external_exports.array(text)
+});
+var EvidenceCheckSchema = external_exports.strictObject({
+  id: IdSchema,
+  requirement: text,
+  result: external_exports.enum(["passed", "failed", "unknown", "not_applicable"]),
+  rationale: text,
+  evidence: refs
+});
+var EvidenceAssessmentSchema = external_exports.strictObject({
+  status: external_exports.enum(["supported", "provisional", "disputed", "unresolved"]),
+  checks: external_exports.array(EvidenceCheckSchema),
+  gaps: external_exports.array(text),
+  rationale: text,
+  assessedAt: TimestampSchema
+});
+var InvestigationTaskSchema = external_exports.strictObject({
+  ...base,
+  runId: IdSchema,
+  question: text,
+  scope: ClaimScopeSchema,
+  queue: external_exports.enum(["coverage", "investigation"]),
+  status: external_exports.enum([
+    "queued",
+    "running",
+    "waiting_for_input",
+    "supported",
+    "provisional",
+    "unresolved",
+    "disputed",
+    "unsupported",
+    "superseded"
+  ]),
+  domain: IdSchema.optional(),
+  attempts: CountSchema.optional(),
+  snapshot: SnapshotVectorSchema,
+  componentIds: ids,
+  claimIds: ids,
+  dependencyTaskIds: ids,
+  checks: external_exports.array(EvidenceCheckSchema),
+  gaps: external_exports.array(text),
+  nextAction: text.nullable(),
+  stopReason: text.nullable(),
+  createdAt: TimestampSchema,
+  updatedAt: TimestampSchema
+});
+var BusinessConceptKindSchema = external_exports.enum([
+  "company",
+  "customer",
+  "product",
+  "process",
+  "metric",
+  "term",
+  "other",
+  "department",
+  "team",
+  "role",
+  "person",
+  "system",
+  "business_object",
+  "customer_segment",
+  "journey_stage"
+]);
+var ContextRelationSchema = external_exports.enum([
+  "supported_by",
+  "contradicted_by",
+  "maps_to",
+  "depends_on",
+  "clarifies",
+  "buys",
+  "renews",
+  "delivered_through",
+  "related_to",
+  "owns",
+  "performs",
+  "uses",
+  "reads",
+  "produces",
+  "updates",
+  "hands_off_to",
+  "measured_by",
+  "contains"
+]);
+var BusinessFindingSchema = external_exports.strictObject({
+  key: IdSchema,
+  name: text,
+  kind: BusinessConceptKindSchema,
+  relationships: external_exports.array(external_exports.strictObject({ relation: ContextRelationSchema, targetKey: IdSchema, evidence: refs })),
+  workflow: BusinessWorkflowSchema.optional()
+});
+var BusinessClaimSchema = external_exports.strictObject({
+  ...base,
+  scope: ClaimScopeSchema,
+  predicate: text,
+  value: external_exports.json(),
+  business: BusinessFindingSchema.optional(),
+  assessment: EvidenceAssessmentSchema.optional(),
+  basis: external_exports.enum(["configured", "observed", "confirmed", "derived"]),
+  status: external_exports.enum(["proposed", "supported", "confirmed_by_user", "disputed", "rejected", "superseded"]),
+  supportingEvidence: refs,
+  contradictingEvidence: refs,
+  answerIds: ids,
+  premiseClaimIds: ids,
+  uncertainty: external_exports.array(text),
+  rationale: text,
+  runId: IdSchema
+});
 var ClarificationQuestionSchema = external_exports.strictObject({
   ...base,
   deduplicationKey: IdSchema,
@@ -19962,25 +20370,153 @@ var ClarificationQuestionSchema = external_exports.strictObject({
   /** Roles the question should reach and why (1.7.0). Set by the interview planner; absent until a question is routed. */
   audience: InterviewAudienceSchema.optional()
 });
-var ClarificationAnswerSchema = external_exports.strictObject({ ...base, questionId: IdSchema, questionRevision: external_exports.number().int().positive(), subjectId: IdSchema, response: text, action: external_exports.enum(["confirm", "correct", "defer", "unknown"]), scope: ClaimScopeSchema, supersedesAnswerId: IdSchema.nullable(), createdAt: TimestampSchema });
-var SourceMappingSchema = external_exports.strictObject({ ...base, conceptId: IdSchema, connectionId: IdSchema, componentIds: ids, description: text, execution: external_exports.enum(["descriptive", "executable"]), rule: external_exports.string().nullable(), unresolvedRequirements: external_exports.array(text), evidence: refs });
-var BusinessConceptSchema = external_exports.strictObject({ ...base, businessKey: IdSchema.optional(), name: text, aliases: external_exports.array(text), description: text, scope: ClaimScopeSchema.optional(), metric: external_exports.strictObject({ population: text, measure: text, grain: text, timeWindow: text, unit: text, currency: text.nullable(), execution: external_exports.literal("descriptive"), unresolvedRequirements: external_exports.array(text) }).optional(), kind: BusinessConceptKindSchema, claimIds: ids, mappingIds: ids, questionIds: ids, evidence: refs });
-var ContextEdgeSchema = external_exports.strictObject({ ...base, sourceId: IdSchema, targetId: IdSchema, relation: ContextRelationSchema, layer: external_exports.literal("context"), claimIds: ids, evidence: refs });
-var GraphExpansionSchema = external_exports.strictObject({ rootId: IdSchema, depth: external_exports.number().int().min(0).max(5), concepts: external_exports.array(BusinessConceptSchema), edges: external_exports.array(ContextEdgeSchema), frontierIds: ids, truncated: external_exports.boolean(), nextCursor: external_exports.string().nullable() });
-var DocumentSectionSchema = external_exports.strictObject({ ...base, conceptId: IdSchema.nullable(), heading: text, markdown: external_exports.string().max(2e5), evidence: refs, answerIds: ids, questionIds: ids, review: external_exports.enum(["unreviewed", "approved", "changes_requested"]) });
-var DocumentCommentSchema = external_exports.strictObject({ ...base, sectionId: IdSchema, sectionRevision: external_exports.number().int().positive(), subjectId: IdSchema, body: text, createdAt: TimestampSchema, resolvedAt: TimestampSchema.nullable() });
-var ContextProposalSchema = external_exports.strictObject({ ...base, discoveryRevision: CountSchema.optional(), snapshot: SnapshotVectorSchema, ontologyVersion: external_exports.number().int().positive().nullable(), concepts: external_exports.array(BusinessConceptSchema), workflows: external_exports.array(BusinessWorkflowSchema), mappings: external_exports.array(SourceMappingSchema), claims: external_exports.array(BusinessClaimSchema), edges: external_exports.array(ContextEdgeSchema), sections: external_exports.array(DocumentSectionSchema), openQuestionIds: ids, createdAt: TimestampSchema });
-var ContextPublicationSchema = external_exports.strictObject({ ...base, ontologyVersion: external_exports.number().int().positive(), proposalId: IdSchema, proposalRevision: external_exports.number().int().positive(), snapshot: SnapshotVectorSchema, publishedBy: IdSchema, publishedAt: TimestampSchema });
+var ClarificationAnswerSchema = external_exports.strictObject({
+  ...base,
+  questionId: IdSchema,
+  questionRevision: external_exports.number().int().positive(),
+  subjectId: IdSchema,
+  response: text,
+  action: external_exports.enum(["confirm", "correct", "defer", "unknown"]),
+  scope: ClaimScopeSchema,
+  supersedesAnswerId: IdSchema.nullable(),
+  createdAt: TimestampSchema
+});
+var SourceMappingSchema = external_exports.strictObject({
+  ...base,
+  conceptId: IdSchema,
+  connectionId: IdSchema,
+  componentIds: ids,
+  description: text,
+  execution: external_exports.enum(["descriptive", "executable"]),
+  rule: external_exports.string().nullable(),
+  unresolvedRequirements: external_exports.array(text),
+  evidence: refs
+});
+var BusinessConceptSchema = external_exports.strictObject({
+  ...base,
+  businessKey: IdSchema.optional(),
+  name: text,
+  aliases: external_exports.array(text),
+  description: text,
+  scope: ClaimScopeSchema.optional(),
+  metric: external_exports.strictObject({
+    population: text,
+    measure: text,
+    grain: text,
+    timeWindow: text,
+    unit: text,
+    currency: text.nullable(),
+    execution: external_exports.literal("descriptive"),
+    unresolvedRequirements: external_exports.array(text)
+  }).optional(),
+  kind: BusinessConceptKindSchema,
+  claimIds: ids,
+  mappingIds: ids,
+  questionIds: ids,
+  evidence: refs
+});
+var ContextEdgeSchema = external_exports.strictObject({
+  ...base,
+  sourceId: IdSchema,
+  targetId: IdSchema,
+  relation: ContextRelationSchema,
+  layer: external_exports.literal("context"),
+  claimIds: ids,
+  evidence: refs
+});
+var GraphExpansionSchema = external_exports.strictObject({
+  rootId: IdSchema,
+  depth: external_exports.number().int().min(0).max(5),
+  concepts: external_exports.array(BusinessConceptSchema),
+  edges: external_exports.array(ContextEdgeSchema),
+  frontierIds: ids,
+  truncated: external_exports.boolean(),
+  nextCursor: external_exports.string().nullable()
+});
+var DocumentSectionSchema = external_exports.strictObject({
+  ...base,
+  conceptId: IdSchema.nullable(),
+  heading: text,
+  markdown: external_exports.string().max(2e5),
+  evidence: refs,
+  answerIds: ids,
+  questionIds: ids,
+  review: external_exports.enum(["unreviewed", "approved", "changes_requested"])
+});
+var DocumentCommentSchema = external_exports.strictObject({
+  ...base,
+  sectionId: IdSchema,
+  sectionRevision: external_exports.number().int().positive(),
+  subjectId: IdSchema,
+  body: text,
+  createdAt: TimestampSchema,
+  resolvedAt: TimestampSchema.nullable()
+});
+var ContextProposalSchema = external_exports.strictObject({
+  ...base,
+  discoveryRevision: CountSchema.optional(),
+  snapshot: SnapshotVectorSchema,
+  ontologyVersion: external_exports.number().int().positive().nullable(),
+  concepts: external_exports.array(BusinessConceptSchema),
+  workflows: external_exports.array(BusinessWorkflowSchema),
+  mappings: external_exports.array(SourceMappingSchema),
+  claims: external_exports.array(BusinessClaimSchema),
+  edges: external_exports.array(ContextEdgeSchema),
+  sections: external_exports.array(DocumentSectionSchema),
+  openQuestionIds: ids,
+  createdAt: TimestampSchema
+});
+var ContextPublicationSchema = external_exports.strictObject({
+  ...base,
+  ontologyVersion: external_exports.number().int().positive(),
+  proposalId: IdSchema,
+  proposalRevision: external_exports.number().int().positive(),
+  snapshot: SnapshotVectorSchema,
+  publishedBy: IdSchema,
+  publishedAt: TimestampSchema
+});
 var DiscoverySnapshotSchema = external_exports.strictObject({ ...base, vector: SnapshotVectorSchema });
-var ModelRevisionRefSchema = external_exports.strictObject({ proposalId: IdSchema, proposalRevision: external_exports.number().int().positive() });
+var ModelRevisionRefSchema = external_exports.strictObject({
+  proposalId: IdSchema,
+  proposalRevision: external_exports.number().int().positive()
+});
 var GraphPerspectiveSchema = external_exports.enum(["company", "department", "journey"]);
 var GraphDetailLevelSchema = external_exports.enum(["company", "department", "workflow", "step", "evidence"]);
-var GraphProjectionRequestSchema = external_exports.strictObject({ model: ModelRevisionRefSchema, perspective: GraphPerspectiveSchema, detail: GraphDetailLevelSchema, focusId: IdSchema.nullable(), cursor: external_exports.string().nullable().optional() });
-var GraphProjectionSchema = external_exports.strictObject({ request: GraphProjectionRequestSchema, concepts: external_exports.array(BusinessConceptSchema), workflows: external_exports.array(BusinessWorkflowSchema), edges: external_exports.array(ContextEdgeSchema), groups: external_exports.array(external_exports.strictObject({ id: IdSchema, label: text, lane: external_exports.enum(["people", "process", "technology", "unclassified"]), memberIds: ids })), frontierIds: ids, truncated: external_exports.boolean(), nextCursor: external_exports.string().nullable() });
-var ConversationScopeSchema = external_exports.strictObject({ model: ModelRevisionRefSchema, conceptIds: ids, workflowIds: ids });
+var GraphProjectionRequestSchema = external_exports.strictObject({
+  model: ModelRevisionRefSchema,
+  perspective: GraphPerspectiveSchema,
+  detail: GraphDetailLevelSchema,
+  focusId: IdSchema.nullable(),
+  cursor: external_exports.string().nullable().optional()
+});
+var GraphProjectionSchema = external_exports.strictObject({
+  request: GraphProjectionRequestSchema,
+  concepts: external_exports.array(BusinessConceptSchema),
+  workflows: external_exports.array(BusinessWorkflowSchema),
+  edges: external_exports.array(ContextEdgeSchema),
+  groups: external_exports.array(
+    external_exports.strictObject({
+      id: IdSchema,
+      label: text,
+      lane: external_exports.enum(["people", "process", "technology", "unclassified"]),
+      memberIds: ids
+    })
+  ),
+  frontierIds: ids,
+  truncated: external_exports.boolean(),
+  nextCursor: external_exports.string().nullable()
+});
+var ConversationScopeSchema = external_exports.strictObject({
+  model: ModelRevisionRefSchema,
+  conceptIds: ids,
+  workflowIds: ids
+});
 
 // ../shared/src/ontology/workflow.ts
-var OntologySourceSelectionSchema = external_exports.strictObject({ connectionId: IdSchema, objects: external_exports.array(external_exports.string().min(1)).min(1).max(500) });
+var OntologySourceSelectionSchema = external_exports.strictObject({
+  connectionId: IdSchema,
+  objects: external_exports.array(external_exports.string().min(1)).min(1).max(500)
+});
 var OntologySelectionSchema = external_exports.strictObject({
   connectionId: IdSchema,
   objects: external_exports.array(external_exports.string().min(1)).min(1).max(500),
@@ -20000,14 +20536,21 @@ var OntologySettingsSchema = external_exports.strictObject({
   /** Set when sources changed but the newest version is human-authored, so automation deferred to a person. */
   pendingSourceChange: external_exports.boolean()
 });
-var OntologySettingsUpdateSchema = external_exports.strictObject({ autoDraft: external_exports.boolean().optional(), questions: external_exports.string().max(1e4).optional() });
+var OntologySettingsUpdateSchema = external_exports.strictObject({
+  autoDraft: external_exports.boolean().optional(),
+  questions: external_exports.string().max(1e4).optional()
+});
 var OntologyStoredDefinitionSchema = external_exports.strictObject({
   name: external_exports.string(),
   description: external_exports.string(),
   rule: DefinitionRuleSchema,
   sourceMappings: external_exports.array(external_exports.strictObject({ connectionId: IdSchema, typeId: IdSchema, field: external_exports.string().nullable() }))
 });
-var OntologySourceSnapshotSchema = external_exports.strictObject({ connectionId: IdSchema, syncRunId: IdSchema.nullable(), dataVersion: external_exports.string() });
+var OntologySourceSnapshotSchema = external_exports.strictObject({
+  connectionId: IdSchema,
+  syncRunId: IdSchema.nullable(),
+  dataVersion: external_exports.string()
+});
 var OntologySnapshotSchema = external_exports.strictObject({
   connectionId: IdSchema,
   syncRunId: IdSchema.nullable(),
@@ -20058,7 +20601,9 @@ var ContextPublicationPreviewSchema = external_exports.strictObject({
   snapshot: SnapshotVectorSchema,
   answerRevision: external_exports.number().int().nonnegative(),
   discoveryRevision: external_exports.number().int().nonnegative(),
-  semanticChanges: external_exports.array(external_exports.strictObject({ id: IdSchema, kind: external_exports.enum(["added", "changed", "removed"]), description: external_exports.string() })),
+  semanticChanges: external_exports.array(
+    external_exports.strictObject({ id: IdSchema, kind: external_exports.enum(["added", "changed", "removed"]), description: external_exports.string() })
+  ),
   unresolved: external_exports.array(external_exports.string())
 });
 var OntologyPreviewSchema = external_exports.strictObject({
@@ -20066,17 +20611,19 @@ var OntologyPreviewSchema = external_exports.strictObject({
   revision: external_exports.number().int().nonnegative(),
   previewToken: external_exports.string(),
   sourceSnapshot: OntologySnapshotSchema,
-  changes: external_exports.array(external_exports.strictObject({
-    name: external_exports.string(),
-    kind: external_exports.enum(["filter", "description", "removed"]),
-    beforeCount: external_exports.number().int().nonnegative().nullable(),
-    afterCount: external_exports.number().int().nonnegative().nullable(),
-    enteredCount: external_exports.number().int().nonnegative(),
-    leftCount: external_exports.number().int().nonnegative(),
-    entered: external_exports.array(IdSchema),
-    left: external_exports.array(IdSchema),
-    idsTruncated: external_exports.boolean()
-  }))
+  changes: external_exports.array(
+    external_exports.strictObject({
+      name: external_exports.string(),
+      kind: external_exports.enum(["filter", "description", "removed"]),
+      beforeCount: external_exports.number().int().nonnegative().nullable(),
+      afterCount: external_exports.number().int().nonnegative().nullable(),
+      enteredCount: external_exports.number().int().nonnegative(),
+      leftCount: external_exports.number().int().nonnegative(),
+      entered: external_exports.array(IdSchema),
+      left: external_exports.array(IdSchema),
+      idsTruncated: external_exports.boolean()
+    })
+  )
 });
 
 // ../shared/src/schemas/api.ts
@@ -20085,7 +20632,10 @@ var PageQuerySchema = external_exports.strictObject({
   limit: external_exports.coerce.number().int().min(1).max(100).default(25)
 });
 var ModelQuerySchema = PageQuerySchema.extend({ connectionId: IdSchema.optional() });
-var EntityQuerySchema = ModelQuerySchema.extend({ typeId: IdSchema.optional(), search: external_exports.string().max(200).optional() });
+var EntityQuerySchema = ModelQuerySchema.extend({
+  typeId: IdSchema.optional(),
+  search: external_exports.string().max(200).optional()
+});
 var NeighborQuerySchema = external_exports.strictObject({
   connectionId: IdSchema.optional(),
   maxNodes: external_exports.coerce.number().int().min(1).max(100).default(50),
@@ -20149,7 +20699,10 @@ var AggregateQuerySchema = external_exports.strictObject({
   limit: external_exports.coerce.number().int().min(1).max(500).default(50)
 });
 var AggregateValueSchema = external_exports.union([external_exports.number(), external_exports.string(), external_exports.null()]);
-var ViewFactsSchema = external_exports.record(external_exports.string().min(1).max(40), external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean(), external_exports.null()]));
+var ViewFactsSchema = external_exports.record(
+  external_exports.string().min(1).max(40),
+  external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean(), external_exports.null()])
+);
 var ViewSchema = external_exports.strictObject({
   id: IdSchema,
   title: external_exports.string().min(1).max(120),
@@ -20184,13 +20737,28 @@ var AggregateResponseSchema = external_exports.strictObject({
   type: external_exports.strictObject({ id: IdSchema, connectionId: IdSchema, nativeName: external_exports.string(), label: external_exports.string() }),
   query: external_exports.strictObject({
     where: DefinitionRuleSchema.nullable(),
-    groupBy: external_exports.array(external_exports.strictObject({ spec: external_exports.string(), field: external_exports.string(), attribute: external_exports.string().optional(), bucket: external_exports.enum(["day", "week", "month", "quarter", "year"]).optional() })),
-    metrics: external_exports.array(external_exports.strictObject({ spec: external_exports.string(), fn: external_exports.enum(["count", "sum", "avg", "min", "max", "distinct"]), field: external_exports.string().optional() })),
+    groupBy: external_exports.array(
+      external_exports.strictObject({
+        spec: external_exports.string(),
+        field: external_exports.string(),
+        attribute: external_exports.string().optional(),
+        bucket: external_exports.enum(["day", "week", "month", "quarter", "year"]).optional()
+      })
+    ),
+    metrics: external_exports.array(
+      external_exports.strictObject({
+        spec: external_exports.string(),
+        fn: external_exports.enum(["count", "sum", "avg", "min", "max", "distinct"]),
+        field: external_exports.string().optional()
+      })
+    ),
     orderBy: external_exports.string(),
     limit: CountSchema
   }),
   /** One row per group, in the requested order; `keys` align with `query.groupBy`, `values` with `query.metrics`. */
-  rows: external_exports.array(external_exports.strictObject({ keys: external_exports.array(external_exports.string().nullable()), values: external_exports.array(AggregateValueSchema), count: CountSchema })),
+  rows: external_exports.array(
+    external_exports.strictObject({ keys: external_exports.array(external_exports.string().nullable()), values: external_exports.array(AggregateValueSchema), count: CountSchema })
+  ),
   /** The same metrics over every matching record, so a chart can reconcile its parts to the whole. */
   totals: external_exports.strictObject({ count: CountSchema, values: external_exports.array(AggregateValueSchema) }),
   groups: external_exports.strictObject({ total: CountSchema, returned: CountSchema, truncated: external_exports.boolean() }),
@@ -20209,34 +20777,85 @@ var ApiErrorCodeSchema = external_exports.enum([
   "RATE_LIMITED",
   "SERVICE_UNAVAILABLE"
 ]);
-var ApiErrorSchema = external_exports.strictObject({ error: external_exports.strictObject({
-  code: ApiErrorCodeSchema,
-  message: external_exports.string(),
-  requestId: IdSchema
-}) });
+var ApiErrorSchema = external_exports.strictObject({
+  error: external_exports.strictObject({
+    code: ApiErrorCodeSchema,
+    message: external_exports.string(),
+    requestId: IdSchema
+  })
+});
 var ConnectRequestSchema = external_exports.strictObject({
   displayName: external_exports.string().min(1).max(100),
   environment: external_exports.enum(["production", "sandbox"]),
-  allowedObjects: external_exports.array(external_exports.string().regex(/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)?$/).max(255)).min(1).max(500)
+  allowedObjects: external_exports.array(
+    external_exports.string().regex(/^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)?$/).max(255)
+  ).min(1).max(500)
 });
-var ConnectResponseSchema = external_exports.strictObject({ authorizationUrl: external_exports.url(), expiresAt: external_exports.iso.datetime({ offset: true }) });
+var ConnectResponseSchema = external_exports.strictObject({
+  authorizationUrl: external_exports.url(),
+  expiresAt: external_exports.iso.datetime({ offset: true })
+});
 var SyncRequestSchema = external_exports.strictObject({ mode: external_exports.enum(["initial", "refresh"]) });
-var SourceConnectRequestSchema = external_exports.strictObject({ displayName: external_exports.string().min(1).max(100), credentials: external_exports.unknown() });
-var SourceConnectResponseSchema = external_exports.strictObject({ connectionId: IdSchema, runId: IdSchema, status: external_exports.literal("pending"), dispatched: external_exports.boolean() });
+var SourceConnectRequestSchema = external_exports.strictObject({
+  displayName: external_exports.string().min(1).max(100),
+  credentials: external_exports.unknown()
+});
+var SourceConnectResponseSchema = external_exports.strictObject({
+  connectionId: IdSchema,
+  runId: IdSchema,
+  status: external_exports.literal("pending"),
+  dispatched: external_exports.boolean()
+});
 var ChangeRefRequestSchema = external_exports.strictObject({ ref: external_exports.string().min(1).max(200) });
-var GithubLinkStatusSchema = external_exports.strictObject({ configured: external_exports.boolean(), linked: external_exports.boolean(), login: external_exports.string().nullable(), installUrl: external_exports.string().url().nullable() });
-var GithubInstallationsResponseSchema = external_exports.strictObject({ installations: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), account: external_exports.string(), targetType: external_exports.string(), repositorySelection: external_exports.enum(["all", "selected"]), settingsUrl: external_exports.string().url().nullable() })) });
-var GithubRepositoriesResponseSchema = external_exports.strictObject({ repositories: external_exports.array(external_exports.strictObject({ id: external_exports.number().int().positive(), fullName: external_exports.string(), defaultBranch: external_exports.string(), private: external_exports.boolean() })), truncated: external_exports.boolean() });
+var GithubLinkStatusSchema = external_exports.strictObject({
+  configured: external_exports.boolean(),
+  linked: external_exports.boolean(),
+  login: external_exports.string().nullable(),
+  installUrl: external_exports.string().url().nullable()
+});
+var GithubInstallationsResponseSchema = external_exports.strictObject({
+  installations: external_exports.array(
+    external_exports.strictObject({
+      id: external_exports.number().int().positive(),
+      account: external_exports.string(),
+      targetType: external_exports.string(),
+      repositorySelection: external_exports.enum(["all", "selected"]),
+      settingsUrl: external_exports.string().url().nullable()
+    })
+  )
+});
+var GithubRepositoriesResponseSchema = external_exports.strictObject({
+  repositories: external_exports.array(
+    external_exports.strictObject({
+      id: external_exports.number().int().positive(),
+      fullName: external_exports.string(),
+      defaultBranch: external_exports.string(),
+      private: external_exports.boolean()
+    })
+  ),
+  truncated: external_exports.boolean()
+});
 var GithubBranchesResponseSchema = external_exports.strictObject({ branches: external_exports.array(external_exports.string()) });
-var NotionLinkStatusSchema = external_exports.strictObject({ configured: external_exports.boolean(), linked: external_exports.boolean(), workspaceName: external_exports.string().nullable() });
-var NotionSearchQuerySchema = external_exports.strictObject({ query: external_exports.string().max(200).optional(), kind: external_exports.enum(["data_source", "page"]).default("data_source") });
-var NotionSearchResponseSchema = external_exports.strictObject({ results: external_exports.array(external_exports.strictObject({
-  id: IdSchema,
-  kind: external_exports.enum(["data_source", "page"]),
-  title: external_exports.string(),
-  url: external_exports.string().nullable(),
-  lastEditedAt: external_exports.string().nullable()
-})) });
+var NotionLinkStatusSchema = external_exports.strictObject({
+  configured: external_exports.boolean(),
+  linked: external_exports.boolean(),
+  workspaceName: external_exports.string().nullable()
+});
+var NotionSearchQuerySchema = external_exports.strictObject({
+  query: external_exports.string().max(200).optional(),
+  kind: external_exports.enum(["data_source", "page"]).default("data_source")
+});
+var NotionSearchResponseSchema = external_exports.strictObject({
+  results: external_exports.array(
+    external_exports.strictObject({
+      id: IdSchema,
+      kind: external_exports.enum(["data_source", "page"]),
+      title: external_exports.string(),
+      url: external_exports.string().nullable(),
+      lastEditedAt: external_exports.string().nullable()
+    })
+  )
+});
 var SyncAcceptedSchema = external_exports.strictObject({ runId: IdSchema, status: external_exports.literal("queued") });
 var DefinitionInputSchema = external_exports.strictObject({
   name: external_exports.string().min(1).max(200),
@@ -20244,7 +20863,9 @@ var DefinitionInputSchema = external_exports.strictObject({
   sourceMappings: DefinitionVersionSchema.shape.sourceMappings,
   rule: DefinitionRuleSchema
 });
-var DefinitionDraftRequestSchema = DefinitionInputSchema.extend({ expectedRevision: external_exports.number().int().positive() });
+var DefinitionDraftRequestSchema = DefinitionInputSchema.extend({
+  expectedRevision: external_exports.number().int().positive()
+});
 var DefinitionPublishRequestSchema = external_exports.strictObject({ expectedRevision: external_exports.number().int().positive() });
 
 // ../shared/src/services.ts
@@ -20277,7 +20898,8 @@ function validateDefinitionRule(input2, entityTypes) {
   const rule = DefinitionRuleSchema.parse(input2);
   if (rule.kind === "description") return rule;
   const matches = entityTypes.filter((type2) => type2.id === rule.typeId || type2.nativeName === rule.typeId);
-  if (matches.length !== 1) throw new OntologyParseError(`${matches.length ? "Ambiguous" : "Unknown"} entity type: ${rule.typeId}`);
+  if (matches.length !== 1)
+    throw new OntologyParseError(`${matches.length ? "Ambiguous" : "Unknown"} entity type: ${rule.typeId}`);
   const type = matches[0];
   for (const predicate of rule.predicates) {
     const field = type.fields.find((field2) => field2.name === predicate.field);
@@ -20294,9 +20916,12 @@ function validateDefinitionRule(input2, entityTypes) {
     if (field.dataType === "json" || typeof value !== expected || typeof value === "number" && !Number.isFinite(value)) {
       throw new OntologyParseError(`Invalid value type for ${predicate.field}`);
     }
-    if (field.dataType === "boolean" && !equality) throw new OntologyParseError("Boolean only supports equality comparisons");
-    if (field.dataType === "date" && (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value) || !Number.isFinite(Date.parse(value)) || new Date(value).toISOString().slice(0, 10) !== value)) throw new OntologyParseError("Invalid date");
-    if (field.dataType === "datetime" && !TimestampSchema.safeParse(value).success) throw new OntologyParseError("Invalid datetime");
+    if (field.dataType === "boolean" && !equality)
+      throw new OntologyParseError("Boolean only supports equality comparisons");
+    if (field.dataType === "date" && (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value) || !Number.isFinite(Date.parse(value)) || new Date(value).toISOString().slice(0, 10) !== value))
+      throw new OntologyParseError("Invalid date");
+    if (field.dataType === "datetime" && !TimestampSchema.safeParse(value).success)
+      throw new OntologyParseError("Invalid datetime");
   }
   return { ...rule, typeId: type.id };
 }
@@ -20316,10 +20941,13 @@ function parseDefinitionRule(text3, entityTypes) {
     const comparison = /^([A-Za-z_][A-Za-z0-9_]*)\s*(>=|<=|!=|=|>|<)\s*/.exec(remaining);
     if (!comparison) throw new OntologyParseError("Expected a field comparison");
     remaining = remaining.slice(comparison[0].length);
-    const literal2 = /^("(?:[^"\\\r\n]|\\["\\/bfnrt]|\\u[0-9a-fA-F]{4})*"|true\b|false\b|null\b|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/.exec(remaining);
+    const literal2 = /^("(?:[^"\\\r\n]|\\["\\/bfnrt]|\\u[0-9a-fA-F]{4})*"|true\b|false\b|null\b|-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?)/.exec(
+      remaining
+    );
     if (!literal2) throw new OntologyParseError("Expected a JSON string, finite number, boolean, or null");
     const value = JSON.parse(literal2[0]);
-    if (typeof value === "number" && !Number.isFinite(value)) throw new OntologyParseError("Rule numbers must be finite");
+    if (typeof value === "number" && !Number.isFinite(value))
+      throw new OntologyParseError("Rule numbers must be finite");
     predicates.push({ field: comparison[1], operator: operators[comparison[2]], value });
     remaining = remaining.slice(literal2[0].length);
     if (!remaining.trim()) break;
@@ -20333,8 +20961,17 @@ function parseDefinitionRule(text3, entityTypes) {
 }
 
 // ../shared/src/ontology/markdown.ts
-var sections = /* @__PURE__ */ new Set(["entities", "definitions", "relationships", "metrics", "questions", "workflows", "processes", "automations"]);
-var labelPattern = /^\s*(?:[-*]\s+)?(?:\*\*)?([A-Za-z][A-Za-z ]*)(?:\*\*)?:(?:\*\*)?\s*(.*)$/;
+var sections = /* @__PURE__ */ new Set([
+  "entities",
+  "definitions",
+  "relationships",
+  "metrics",
+  "questions",
+  "workflows",
+  "processes",
+  "automations"
+]);
+var labelPattern = /^\s*(?:[-*]\s+)?(?:\*\*)?([A-Za-z][A-Za-z ]*)(?:\*\*)?:(?:\*\*)?\s*(.*)$/s;
 function parseLabeledLine(line) {
   const match = labelPattern.exec(line);
   return match ? { label: match[1].trim(), key: match[1].toLowerCase().trim(), value: match[2].trim() } : null;
@@ -20368,7 +21005,8 @@ function scalar(value, line) {
     if (!Number.isFinite(number4)) throw new OntologyParseError("Frontmatter number must be finite", line);
     return number4;
   }
-  if (!value || /^[[\]{}&*!>|]/.test(value)) throw new OntologyParseError("Frontmatter supports scalar values only", line);
+  if (!value || /^[[\]{}&*!>|]/.test(value))
+    throw new OntologyParseError("Frontmatter supports scalar values only", line);
   return value;
 }
 function parseOntologyMarkdown(markdown, entityTypes) {
@@ -20379,13 +21017,24 @@ function parseOntologyMarkdown(markdown, entityTypes) {
   for (; cursor < lines.length && lines[cursor].trim() !== "---"; cursor++) {
     const line = lines[cursor];
     if (!line.trim() || line.trimStart().startsWith("#")) continue;
-    const pair = /^([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$/.exec(line);
+    const pair = /^([A-Za-z_][A-Za-z0-9_-]*):\s*(.*?)\s*$/s.exec(line);
     if (!pair) throw new OntologyParseError("Expected a flat frontmatter key/value pair", cursor + 1);
     if (Object.hasOwn(frontmatter, pair[1])) throw new OntologyParseError("Duplicate frontmatter key", cursor + 1);
     Object.defineProperty(frontmatter, pair[1], { value: scalar(pair[2], cursor + 1), enumerable: true });
   }
   if (cursor === lines.length) throw new OntologyParseError("Unclosed frontmatter", 1);
-  const document = { frontmatter, title: "", entities: [], definitions: [], relationships: [], metrics: [], questions: [], workflows: [], processes: [], automations: [] };
+  const document = {
+    frontmatter,
+    title: "",
+    entities: [],
+    definitions: [],
+    relationships: [],
+    metrics: [],
+    questions: [],
+    workflows: [],
+    processes: [],
+    automations: []
+  };
   let section;
   let entry;
   let group;
@@ -20417,10 +21066,18 @@ function parseOntologyMarkdown(markdown, entityTypes) {
       }
       prose.push(line);
     }
-    if (entry.process !== void 0 && !Object.hasOwn(properties, "process")) Object.defineProperty(properties, "process", { value: entry.process, enumerable: true });
-    const parsed = { name: entry.name, line: entry.line, markdown: entry.lines.join("\n").trim(), properties };
+    if (entry.process !== void 0 && !Object.hasOwn(properties, "process"))
+      Object.defineProperty(properties, "process", { value: entry.process, enumerable: true });
+    const parsed = {
+      name: entry.name,
+      line: entry.line,
+      markdown: entry.lines.join("\n").trim(),
+      properties
+    };
     const sameProcess = (item) => (item.properties.process ?? "").toLowerCase() === (parsed.properties.process ?? "").toLowerCase();
-    if (document[section].some((item) => item.name.toLowerCase() === parsed.name.toLowerCase() && (section !== "processes" || sameProcess(item)))) {
+    if (document[section].some(
+      (item) => item.name.toLowerCase() === parsed.name.toLowerCase() && (section !== "processes" || sameProcess(item))
+    )) {
       throw new OntologyParseError(`Duplicate ${section} entry: ${parsed.name}`, entry.line);
     }
     if (section === "definitions") {
@@ -20431,7 +21088,11 @@ function parseOntologyMarkdown(markdown, entityTypes) {
       } catch (error62) {
         throw new OntologyParseError(error62 instanceof Error ? error62.message : "Invalid rule", entry.line);
       }
-      if (rule.kind === "description") rule = { kind: "description", text: properties.rule && !/^undetermined$/i.test(properties.rule) ? [description, rule.text].filter(Boolean).join("\n") : description || rule.text };
+      if (rule.kind === "description")
+        rule = {
+          kind: "description",
+          text: properties.rule && !/^undetermined$/i.test(properties.rule) ? [description, rule.text].filter(Boolean).join("\n") : description || rule.text
+        };
       document.definitions.push({ ...parsed, description, rule });
     } else document[section].push(parsed);
     entry = void 0;
@@ -20450,7 +21111,7 @@ function parseOntologyMarkdown(markdown, entityTypes) {
       entry.lines.push(line);
       continue;
     }
-    const heading = /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+    const heading = /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/s.exec(line);
     if (heading?.[1] === "#") {
       if (document.title || section) throw new OntologyParseError("Unexpected document title", cursor + 1);
       document.title = heading[2];
@@ -20471,12 +21132,13 @@ function parseOntologyMarkdown(markdown, entityTypes) {
       else finish2();
       entry = { name: heading[2], line: cursor + 1, lines: [], process: group };
     } else {
-      const item = section === "questions" ? /^\d+[.)]\s+(.+)$/.exec(line) : section === "relationships" && !parseLabeledLine(line) ? /^[-*]\s+(.+)$/.exec(line) : null;
+      const item = section === "questions" ? /^\d+[.)]\s+(.+)$/s.exec(line) : section === "relationships" && !parseLabeledLine(line) ? /^[-*]\s+(.+)$/s.exec(line) : null;
       if (item) {
         finish2();
         entry = { name: item[1], line: cursor + 1, lines: [item[1]] };
       } else if (entry) entry.lines.push(line);
-      else if (line.trim() && !section) throw new OntologyParseError("Content must belong to a section entry", cursor + 1);
+      else if (line.trim() && !section)
+        throw new OntologyParseError("Content must belong to a section entry", cursor + 1);
     }
   }
   if (fence) throw new OntologyParseError("Unclosed code block", cursor);
@@ -20485,9 +21147,11 @@ function parseOntologyMarkdown(markdown, entityTypes) {
   const definitionNames = new Set(document.definitions.map((definition) => definition.name.toLowerCase()));
   for (const stage of document.processes) {
     const target = stage.properties.definition;
-    if (target !== void 0 && !definitionNames.has(target.trim().toLowerCase())) throw new OntologyParseError(`Unknown definition in process stage ${stage.name}: ${target}`, stage.line);
+    if (target !== void 0 && !definitionNames.has(target.trim().toLowerCase()))
+      throw new OntologyParseError(`Unknown definition in process stage ${stage.name}: ${target}`, stage.line);
     const order = stage.properties.order;
-    if (order !== void 0 && !/^\d{1,4}$/.test(order.trim())) throw new OntologyParseError(`Process stage ${stage.name} needs a whole-number Order`, stage.line);
+    if (order !== void 0 && !/^\d{1,4}$/.test(order.trim()))
+      throw new OntologyParseError(`Process stage ${stage.name} needs a whole-number Order`, stage.line);
   }
   return document;
 }
@@ -20499,21 +21163,42 @@ var GROUP_PATTERN = new RegExp(`^(${IDENT})(?:\\.(${IDENT}))?(?::(${AGGREGATE_BU
 var METRIC_PATTERN = new RegExp(`^(?:(count)|(sum|avg|min|max|distinct):(${IDENT}))$`);
 
 // ../shared/src/ontology/edit.ts
-var ONTOLOGY_SECTIONS = ["entities", "definitions", "relationships", "workflows", "metrics", "processes", "automations", "questions"];
-var TITLES = { entities: "Entities", definitions: "Definitions", relationships: "Relationships", workflows: "Workflows", metrics: "Metrics", processes: "Processes", automations: "Automations", questions: "Questions" };
+var ONTOLOGY_SECTIONS = [
+  "entities",
+  "definitions",
+  "relationships",
+  "workflows",
+  "metrics",
+  "processes",
+  "automations",
+  "questions"
+];
+var TITLES = {
+  entities: "Entities",
+  definitions: "Definitions",
+  relationships: "Relationships",
+  workflows: "Workflows",
+  metrics: "Metrics",
+  processes: "Processes",
+  automations: "Automations",
+  questions: "Questions"
+};
 var rows = (markdown) => markdown.replace(/\r\n?/g, "\n").split("\n");
-var headingOf = (line) => /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+var headingOf = (line) => /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/s.exec(line);
 var finish = (lines) => `${lines.join("\n").replace(/\s+$/, "")}
 `;
 var labelLine = (key, value) => `${key[0].toUpperCase()}${key.slice(1)}: ${value.trim()}`;
 function sectionRange(lines, fenced, section) {
-  const start = lines.findIndex((line, index) => !fenced[index] && headingOf(line)?.[1] === "##" && headingOf(line)[2].toLowerCase() === section);
+  const start = lines.findIndex(
+    (line, index) => !fenced[index] && headingOf(line)?.[1] === "##" && headingOf(line)[2].toLowerCase() === section
+  );
   if (start === -1) return null;
   let end = lines.length;
-  for (let index = start + 1; index < lines.length; index++) if (!fenced[index] && headingOf(lines[index])?.[1] === "##") {
-    end = index;
-    break;
-  }
+  for (let index = start + 1; index < lines.length; index++)
+    if (!fenced[index] && headingOf(lines[index])?.[1] === "##") {
+      end = index;
+      break;
+    }
   return { start, end };
 }
 function locate(lines) {
@@ -20526,10 +21211,11 @@ function locate(lines) {
       const heading = fenced[index] ? null : headingOf(lines[index]);
       if (heading?.[1] !== "###") continue;
       let end = range.end;
-      for (let cursor = index + 1; cursor < range.end; cursor++) if (!fenced[cursor] && /^#{1,3}\s+/.test(lines[cursor])) {
-        end = cursor;
-        break;
-      }
+      for (let cursor = index + 1; cursor < range.end; cursor++)
+        if (!fenced[cursor] && /^#{1,3}\s+/.test(lines[cursor])) {
+          end = cursor;
+          break;
+        }
       const labels2 = /* @__PURE__ */ new Map();
       const properties = {};
       const prose = [];
@@ -20540,7 +21226,15 @@ function locate(lines) {
           properties[label2.key] = label2.value;
         } else prose.push(lines[cursor]);
       }
-      entries.push({ section, name: heading[2], prose: prose.join("\n").trim(), properties, start: index, end, labels: labels2 });
+      entries.push({
+        section,
+        name: heading[2],
+        prose: prose.join("\n").trim(),
+        properties,
+        start: index,
+        end,
+        labels: labels2
+      });
     }
   }
   return entries;
@@ -20556,7 +21250,8 @@ function findEntry(lines, section, name) {
 function splice(lines, start, count, next) {
   lines.splice(start, count, ...next);
   const seam = start + next.length;
-  while (seam > 0 && seam < lines.length && lines[seam].trim() === "" && lines[seam - 1].trim() === "") lines.splice(seam, 1);
+  while (seam > 0 && seam < lines.length && lines[seam].trim() === "" && lines[seam - 1].trim() === "")
+    lines.splice(seam, 1);
   return finish(lines);
 }
 function updateEntry(markdown, section, name, change) {
@@ -20573,14 +21268,25 @@ function updateEntry(markdown, section, name, change) {
   if (heading.toLowerCase() !== entry.name.toLowerCase() && locate(lines).some((other) => other.section === section && other.name.toLowerCase() === heading.toLowerCase())) {
     throw new Error(`${TITLES[section]} already has an entry named "${heading}".`);
   }
-  return splice(lines, entry.start, entry.end - entry.start, [`### ${heading}`, ...prose ? [prose] : [], ...labels2.values(), ""]);
+  return splice(lines, entry.start, entry.end - entry.start, [
+    `### ${heading}`,
+    ...prose ? [prose] : [],
+    ...labels2.values(),
+    ""
+  ]);
 }
 function addEntry(markdown, section, name, prose, properties = {}) {
   const lines = rows(markdown);
   const heading = name.replace(/[\r\n]+/g, " ").trim();
   if (!heading) throw new Error("An entry name cannot be empty.");
-  if (locate(lines).some((entry2) => entry2.section === section && entry2.name.toLowerCase() === heading.toLowerCase())) throw new Error(`${TITLES[section]} already has an entry named "${heading}".`);
-  const entry = [`### ${heading}`, ...prose.trim() ? [prose.trim()] : [], ...Object.entries(properties).filter(([, value]) => value.trim()).map(([key, value]) => labelLine(key, value)), ""];
+  if (locate(lines).some((entry2) => entry2.section === section && entry2.name.toLowerCase() === heading.toLowerCase()))
+    throw new Error(`${TITLES[section]} already has an entry named "${heading}".`);
+  const entry = [
+    `### ${heading}`,
+    ...prose.trim() ? [prose.trim()] : [],
+    ...Object.entries(properties).filter(([, value]) => value.trim()).map(([key, value]) => labelLine(key, value)),
+    ""
+  ];
   const fenced = fencedLines(lines);
   const range = sectionRange(lines, fenced, section);
   if (range) {
@@ -20604,14 +21310,20 @@ function removeEntry(markdown, section, name) {
 }
 
 // ../shared/src/context-document.ts
-var PROTECTED_LABELS = /* @__PURE__ */ new Set(["context section", "evidence", "answers", "questions", "review"]);
+var PROTECTED_LABELS = /* @__PURE__ */ new Set([
+  "context section",
+  "evidence",
+  "answers",
+  "questions",
+  "review"
+]);
 var contextHeading = (text3) => text3.replace(/[\r\n]+/g, " ").replace(/\s+#+\s*$/, "").trim();
 var rows2 = (markdown) => markdown.replace(/\r\n?/g, "\n").split("\n");
 function sectionRule(proposal, section) {
   const mappings = proposal.mappings.filter((mapping) => mapping.conceptId === section.conceptId);
   return mappings.length === 1 && mappings[0]?.execution === "executable" ? mappings[0].rule : null;
 }
-var headingOf2 = (line) => /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+var headingOf2 = (line) => /^(#{1,6})\s+(.+?)(?:\s+#+)?\s*$/s.exec(line);
 function blocks(lines) {
   const fenced = fencedLines(lines);
   const found = [];
@@ -20621,10 +21333,11 @@ function blocks(lines) {
     if (heading?.[1] === "##") group = heading[2];
     if (heading?.[1] !== "###") continue;
     let end = lines.length;
-    for (let cursor = index + 1; cursor < lines.length; cursor++) if (!fenced[cursor] && /^#{1,3}\s+/.test(lines[cursor])) {
-      end = cursor;
-      break;
-    }
+    for (let cursor = index + 1; cursor < lines.length; cursor++)
+      if (!fenced[cursor] && /^#{1,3}\s+/.test(lines[cursor])) {
+        end = cursor;
+        break;
+      }
     const body = [];
     let rule;
     let sectionId = null;
@@ -20646,18 +21359,39 @@ function blocks(lines) {
       if (label2 && PROTECTED_LABELS.has(label2.key)) continue;
       body.push(line);
     }
-    found.push({ index: found.length, group, heading: heading[2], sectionId, rule: rule ?? "undetermined", body: body.join("\n").trim(), start: index, end });
+    found.push({
+      index: found.length,
+      group,
+      heading: heading[2],
+      sectionId,
+      rule: rule ?? "undetermined",
+      body: body.join("\n").trim(),
+      start: index,
+      end
+    });
   }
   return found;
 }
-var publicSection = ({ index, group, heading, sectionId, rule, body }) => ({ index, group, heading, sectionId, rule, body });
+var publicSection = ({ index, group, heading, sectionId, rule, body }) => ({
+  index,
+  group,
+  heading,
+  sectionId,
+  rule,
+  body
+});
 function listSections(markdown) {
   return blocks(rows2(markdown)).map(publicSection);
 }
 function pick2(sections2, selector) {
-  const matches = sections2.filter((section) => (selector.sectionId ? section.sectionId === selector.sectionId : false) || (selector.heading ? section.heading.toLowerCase() === selector.heading.toLowerCase() : false));
+  const matches = sections2.filter(
+    (section) => (selector.sectionId ? section.sectionId === selector.sectionId : false) || (selector.heading ? section.heading.toLowerCase() === selector.heading.toLowerCase() : false)
+  );
   if (matches.length === 1) return matches[0];
-  if (matches.length > 1) throw new Error(`"${selector.heading ?? selector.sectionId}" matches ${matches.length} sections; pass its sectionId.`);
+  if (matches.length > 1)
+    throw new Error(
+      `"${selector.heading ?? selector.sectionId}" matches ${matches.length} sections; pass its sectionId.`
+    );
   const wanted = selector.sectionId ?? selector.heading ?? "";
   const nearby = sections2.filter((section) => section.heading.toLowerCase().includes(wanted.toLowerCase())).map((section) => section.heading).slice(0, 5);
   throw new Error(`No section named "${wanted}".${nearby.length ? ` Did you mean: ${nearby.join(", ")}?` : ""}`);
@@ -20671,9 +21405,13 @@ function assertBody(body) {
   if (fenced.at(-1)) throw new Error("A section body cannot leave a code block open.");
   lines.forEach((line, index) => {
     if (fenced[index]) return;
-    if (/^#{1,3}\s+/.test(line)) throw new Error("A section body cannot contain #, ## or ### headings; each section keeps its one heading.");
+    if (/^#{1,3}\s+/.test(line))
+      throw new Error("A section body cannot contain #, ## or ### headings; each section keeps its one heading.");
     const label2 = parseLabeledLine(line);
-    if (label2 && (label2.key === "rule" || PROTECTED_LABELS.has(label2.key))) throw new Error(`A section body cannot contain a "${label2.label}:" line; pass the rule separately and leave provenance lines as they are.`);
+    if (label2 && (label2.key === "rule" || PROTECTED_LABELS.has(label2.key)))
+      throw new Error(
+        `A section body cannot contain a "${label2.label}:" line; pass the rule separately and leave provenance lines as they are.`
+      );
   });
 }
 function editSection(markdown, selector, change) {
@@ -20692,10 +21430,21 @@ function editSection(markdown, selector, change) {
   assertBody(body);
   const heading = contextHeading(change.heading ?? section.heading);
   if (!heading) throw new Error("A section heading cannot be empty.");
-  lines.splice(section.start, section.end - section.start, `### ${heading}`, "", ...body ? [body, ""] : [], ...labels2, "");
+  lines.splice(
+    section.start,
+    section.end - section.start,
+    `### ${heading}`,
+    "",
+    ...body ? [body, ""] : [],
+    ...labels2,
+    ""
+  );
   const result = `${lines.join("\n").replace(/\s+$/, "")}
 `;
-  return { markdown: result, section: findSection(result, section.sectionId ? { sectionId: section.sectionId } : { heading }) };
+  return {
+    markdown: result,
+    section: findSection(result, section.sectionId ? { sectionId: section.sectionId } : { heading })
+  };
 }
 function uniqueHeadings(headings) {
   const used = /* @__PURE__ */ new Set();
@@ -20720,7 +21469,7 @@ function dedupeHeadings(markdown) {
 }
 function documentIdentity(markdown) {
   const front = /^---\n([\s\S]*?)\n---/.exec(markdown.replace(/\r\n?/g, "\n"))?.[1] ?? "";
-  const model = /^context_model:\s*(.+)$/m.exec(front)?.[1]?.trim();
+  const model = /^context_model:\s*([^\n]+)$/m.exec(front)?.[1]?.trim();
   const revision2 = /^context_revision:\s*(\d+)$/m.exec(front)?.[1];
   let contextModel = null;
   if (model) {
@@ -20732,17 +21481,66 @@ function documentIdentity(markdown) {
   }
   return { contextModel, contextRevision: revision2 ? Number(revision2) : null };
 }
-var ContextSummarySchema = external_exports.object({ id: external_exports.string(), label: external_exports.string(), revision: external_exports.number().int(), ontologyVersion: external_exports.number().int().nullable(), sources: external_exports.array(external_exports.string()), createdAt: external_exports.string() });
+var ContextSummarySchema = external_exports.object({
+  id: external_exports.string(),
+  label: external_exports.string(),
+  revision: external_exports.number().int(),
+  ontologyVersion: external_exports.number().int().nullable(),
+  sources: external_exports.array(external_exports.string()),
+  createdAt: external_exports.string()
+});
 var ContextListSchema = external_exports.object({ items: external_exports.array(ContextSummarySchema) });
-var ContextStateSchema = external_exports.object({ proposal: ContextProposalSchema, publication: ContextPublicationSchema.nullable(), answerRevision: external_exports.number().int(), discoveryRevision: external_exports.number().int() });
-var ContextDocumentSchema = external_exports.object({ proposalId: external_exports.string(), revision: external_exports.number().int(), markdown: external_exports.string(), sections: external_exports.array(DocumentSectionSchema), comments: external_exports.array(DocumentCommentSchema) });
-var ContextGraphNodeKindSchema = external_exports.enum(["concept", "workflow", "source", "object", "record", "claim", "evidence", "question", "answer"]);
+var ContextStateSchema = external_exports.object({
+  proposal: ContextProposalSchema,
+  publication: ContextPublicationSchema.nullable(),
+  answerRevision: external_exports.number().int(),
+  discoveryRevision: external_exports.number().int()
+});
+var ContextDocumentSchema = external_exports.object({
+  proposalId: external_exports.string(),
+  revision: external_exports.number().int(),
+  markdown: external_exports.string(),
+  sections: external_exports.array(DocumentSectionSchema),
+  comments: external_exports.array(DocumentCommentSchema)
+});
+var ContextGraphNodeKindSchema = external_exports.enum([
+  "concept",
+  "workflow",
+  "source",
+  "object",
+  "record",
+  "claim",
+  "evidence",
+  "question",
+  "answer"
+]);
 var ContextGraphSchema = external_exports.looseObject({
   modelId: external_exports.string(),
   revision: external_exports.number().int(),
   focusId: external_exports.string().nullable(),
-  nodes: external_exports.array(external_exports.looseObject({ id: external_exports.string(), kind: ContextGraphNodeKindSchema, label: external_exports.string(), evidenceIds: external_exports.array(external_exports.string()), sectionId: external_exports.string().optional(), status: external_exports.string().optional(), depth: external_exports.number().int(), hiddenNeighborCount: external_exports.number().int(), expandable: external_exports.boolean() })),
-  edges: external_exports.array(external_exports.looseObject({ id: external_exports.string(), source: external_exports.string(), target: external_exports.string(), kind: external_exports.string(), layer: external_exports.enum(["semantic", "source"]), evidenceIds: external_exports.array(external_exports.string()) })),
+  nodes: external_exports.array(
+    external_exports.looseObject({
+      id: external_exports.string(),
+      kind: ContextGraphNodeKindSchema,
+      label: external_exports.string(),
+      evidenceIds: external_exports.array(external_exports.string()),
+      sectionId: external_exports.string().optional(),
+      status: external_exports.string().optional(),
+      depth: external_exports.number().int(),
+      hiddenNeighborCount: external_exports.number().int(),
+      expandable: external_exports.boolean()
+    })
+  ),
+  edges: external_exports.array(
+    external_exports.looseObject({
+      id: external_exports.string(),
+      source: external_exports.string(),
+      target: external_exports.string(),
+      kind: external_exports.string(),
+      layer: external_exports.enum(["semantic", "source"]),
+      evidenceIds: external_exports.array(external_exports.string())
+    })
+  ),
   truncated: external_exports.boolean(),
   remainingRootIds: external_exports.array(external_exports.string()),
   recordPage: external_exports.object({ nextCursor: external_exports.string().nullable(), hasMore: external_exports.boolean() }).nullable(),
@@ -20754,8 +21552,22 @@ var ContextPreviewSchema = external_exports.looseObject({
   proposalId: external_exports.string(),
   revision: external_exports.number().int(),
   snapshot: SnapshotVectorSchema,
-  changes: external_exports.array(external_exports.object({ conceptId: external_exports.string(), kind: external_exports.enum(["added", "changed", "removed"]), before: BusinessConceptSchema.nullable(), after: BusinessConceptSchema.nullable() })),
-  comparisons: external_exports.array(external_exports.looseObject({ leftId: external_exports.string(), rightId: external_exports.string(), disposition: external_exports.string(), differences: external_exports.array(external_exports.string()) })),
+  changes: external_exports.array(
+    external_exports.object({
+      conceptId: external_exports.string(),
+      kind: external_exports.enum(["added", "changed", "removed"]),
+      before: BusinessConceptSchema.nullable(),
+      after: BusinessConceptSchema.nullable()
+    })
+  ),
+  comparisons: external_exports.array(
+    external_exports.looseObject({
+      leftId: external_exports.string(),
+      rightId: external_exports.string(),
+      disposition: external_exports.string(),
+      differences: external_exports.array(external_exports.string())
+    })
+  ),
   unresolvedRequirements: external_exports.array(external_exports.string()),
   openQuestionIds: external_exports.array(external_exports.string()),
   descriptiveMappingIds: external_exports.array(external_exports.string()),
@@ -20786,15 +21598,15 @@ var DynamicBooleanSchema = external_exports.union([
 function unescapeJsonPointer(token) {
   return token.replace(/~1/g, "/").replace(/~0/g, "~");
 }
-function parseJsonPointer(path7) {
-  const raw = path7.startsWith("/") ? path7.slice(1).split("/") : path7.split("/");
+function parseJsonPointer(path8) {
+  const raw = path8.startsWith("/") ? path8.slice(1).split("/") : path8.split("/");
   return raw.map(unescapeJsonPointer);
 }
-function getByPath(obj, path7) {
-  if (!path7 || path7 === "/") {
+function getByPath(obj, path8) {
+  if (!path8 || path8 === "/") {
     return obj;
   }
-  const segments = parseJsonPointer(path7);
+  const segments = parseJsonPointer(path8);
   let current = obj;
   for (const segment of segments) {
     if (current === null || current === void 0) {
@@ -21314,8 +22126,8 @@ function createBuilder() {
     record: (value) => ({ kind: "record", inner: value }),
     any: () => ({ kind: "any" }),
     zod: () => ({ kind: "zod" }),
-    ref: (path7) => ({ kind: "ref", inner: path7 }),
-    propsOf: (path7) => ({ kind: "propsOf", inner: path7 }),
+    ref: (path8) => ({ kind: "ref", inner: path8 }),
+    propsOf: (path8) => ({ kind: "propsOf", inner: path8 }),
     map: (entryShape) => ({ kind: "map", inner: entryShape }),
     optional: () => ({ optional: true })
   };
@@ -21405,8 +22217,8 @@ function buildZodType(schemaType, catalogData) {
       return external_exports.record(external_exports.string(), inner);
     }
     case "ref": {
-      const path7 = schemaType.inner;
-      const keys = getKeysFromPath(path7, catalogData);
+      const path8 = schemaType.inner;
+      const keys = getKeysFromPath(path8, catalogData);
       if (keys.length === 0) {
         return external_exports.string();
       }
@@ -21416,8 +22228,8 @@ function buildZodType(schemaType, catalogData) {
       return external_exports.enum(keys);
     }
     case "propsOf": {
-      const path7 = schemaType.inner;
-      const propsSchemas = getPropsFromPath(path7, catalogData);
+      const path8 = schemaType.inner;
+      const propsSchemas = getPropsFromPath(path8, catalogData);
       if (propsSchemas.length === 0) {
         return external_exports.record(external_exports.string(), external_exports.unknown());
       }
@@ -21430,8 +22242,8 @@ function buildZodType(schemaType, catalogData) {
       return external_exports.unknown();
   }
 }
-function getKeysFromPath(path7, catalogData) {
-  const parts = path7.split(".");
+function getKeysFromPath(path8, catalogData) {
+  const parts = path8.split(".");
   let current = { catalog: catalogData };
   for (const part of parts) {
     if (current && typeof current === "object") {
@@ -21445,8 +22257,8 @@ function getKeysFromPath(path7, catalogData) {
   }
   return [];
 }
-function getPropsFromPath(path7, catalogData) {
-  const parts = path7.split(".");
+function getPropsFromPath(path8, catalogData) {
+  const parts = path8.split(".");
   let current = { catalog: catalogData };
   for (const part of parts) {
     if (current && typeof current === "object") {
@@ -22244,24 +23056,49 @@ var ViewTableSchema = external_exports.object({
 var column = (what) => external_exports.string().min(1).describe(`Header in data.columns of ${what}.`);
 var optionalColumn = (what) => external_exports.string().nullable().describe(`Header in data.columns of ${what}, or null.`);
 var title = external_exports.string().nullable().describe("Short title above the chart, or null.");
-var unit = external_exports.string().nullable().describe('Unit written after values, such as "USD", "opportunities" or "%", or null when the source states none. Never invent a currency.');
-var sampleTable = { columns: ["StageName", "count", "sum:Amount"], rows: [["Closed Won", 90, 11783485], ["Closed Lost", 217, 33440754], ["Prospecting", 41, 4430914]] };
-var palette = (fallback) => external_exports.enum(["single", "category", "signed", "sequential"]).nullish().describe(`How colour is assigned: single (one hue for every mark), category (a hue per category, folding past eight into "Other"), signed (one hue for what adds, red for what takes away), sequential (light to dark by value). Omit for ${fallback}.`);
-var emphasis = external_exports.array(external_exports.string().min(1).max(200)).max(12).nullish().describe("Category values drawn at full strength while the rest fade back, so the chart carries the point the caption makes. Omit to draw every mark equally.");
-var size = external_exports.enum(["small", "medium", "full"]).nullish().describe("How much width the chart asks for when it shares a Row: small (a third), medium (a half), full. Omit for full.");
-var annotations = external_exports.array(external_exports.object({
-  value: external_exports.number().describe("Where the line sits on the value axis."),
-  label: external_exports.string().min(1).max(60).describe('What the line means, e.g. "Target" or "Average deal".')
-})).max(4).nullish().describe("Reference lines across the value axis, each labelled: a target, an average, a threshold. Omit for none.");
-var labels = external_exports.enum(["none", "value", "share", "both"]).nullish().describe("What is written on the marks themselves: value (the number), share (its percentage of the whole, or of the step before it in a funnel), both, or none to leave the marks bare and let the table carry the numbers. Omit for value, which is what a chart read without hovering needs.");
-var tooltip = external_exports.enum(["auto", "detailed", "off"]).nullish().describe("What hovering a mark reveals: auto (its category and value), detailed (every measure the data holds for that row, not only the one drawn), or off. Omit for auto.");
-var overlay = external_exports.string().nullish().describe("A second column from the same data drawn behind the marks for comparison: an amount behind a count, last year behind this year, a target behind actuals. Null for none. It is drawn in a muted tone and always named in the legend, so the drawn measure stays the one the caption argues about.");
+var unit = external_exports.string().nullable().describe(
+  'Unit written after values, such as "USD", "opportunities" or "%", or null when the source states none. Never invent a currency.'
+);
+var sampleTable = {
+  columns: ["StageName", "count", "sum:Amount"],
+  rows: [
+    ["Closed Won", 90, 11783485],
+    ["Closed Lost", 217, 33440754],
+    ["Prospecting", 41, 4430914]
+  ]
+};
+var palette = (fallback) => external_exports.enum(["single", "category", "signed", "sequential"]).nullish().describe(
+  `How colour is assigned: single (one hue for every mark), category (a hue per category, folding past eight into "Other"), signed (one hue for what adds, red for what takes away), sequential (light to dark by value). Omit for ${fallback}.`
+);
+var emphasis = external_exports.array(external_exports.string().min(1).max(200)).max(12).nullish().describe(
+  "Category values drawn at full strength while the rest fade back, so the chart carries the point the caption makes. Omit to draw every mark equally."
+);
+var size = external_exports.enum(["small", "medium", "full"]).nullish().describe(
+  "How much width the chart asks for when it shares a Row: small (a third), medium (a half), full. Omit for full."
+);
+var annotations = external_exports.array(
+  external_exports.object({
+    value: external_exports.number().describe("Where the line sits on the value axis."),
+    label: external_exports.string().min(1).max(60).describe('What the line means, e.g. "Target" or "Average deal".')
+  })
+).max(4).nullish().describe("Reference lines across the value axis, each labelled: a target, an average, a threshold. Omit for none.");
+var labels = external_exports.enum(["none", "value", "share", "both"]).nullish().describe(
+  "What is written on the marks themselves: value (the number), share (its percentage of the whole, or of the step before it in a funnel), both, or none to leave the marks bare and let the table carry the numbers. Omit for value, which is what a chart read without hovering needs."
+);
+var tooltip = external_exports.enum(["auto", "detailed", "off"]).nullish().describe(
+  "What hovering a mark reveals: auto (its category and value), detailed (every measure the data holds for that row, not only the one drawn), or off. Omit for auto."
+);
+var overlay = external_exports.string().nullish().describe(
+  "A second column from the same data drawn behind the marks for comparison: an amount behind a count, last year behind this year, a target behind actuals. Null for none. It is drawn in a muted tone and always named in the legend, so the drawn measure stays the one the caption argues about."
+);
 var VIEW_COMPONENTS = {
   Page: {
     props: external_exports.object({
       title: external_exports.string().min(1).max(120).describe("The question answered, in words."),
       subtitle: external_exports.string().nullable().describe("One line under the title, or null."),
-      density: external_exports.enum(["comfortable", "compact"]).nullish().describe("How much air between the parts: comfortable for one chart, compact when the page stacks several. Omit for comfortable.")
+      density: external_exports.enum(["comfortable", "compact"]).nullish().describe(
+        "How much air between the parts: comfortable for one chart, compact when the page stacks several. Omit for comfortable."
+      )
     }),
     slots: ["default"],
     description: "The root of every view: a heading, then its children stacked top to bottom. Use exactly one, as the root.",
@@ -22271,10 +23108,15 @@ var VIEW_COMPONENTS = {
     props: external_exports.object({ text: external_exports.string().min(1).max(2e3) }),
     slots: [],
     description: "Provenance under the heading: type and record count, the where clause in words, the definition applied, snapshot date, coverage, and whether counts are exact. Every view has one.",
-    example: { text: 'Opportunity records where StageName = "Closed Won" (90 of 520). Snapshot of 2026-09-15, coverage complete, counts exact.' }
+    example: {
+      text: 'Opportunity records where StageName = "Closed Won" (90 of 520). Snapshot of 2026-09-15, coverage complete, counts exact.'
+    }
   },
   Note: {
-    props: external_exports.object({ text: external_exports.string().min(1).max(2e3), tone: external_exports.enum(["muted", "warning"]).nullable().describe("warning for assumptions or inexact counts, else null.") }),
+    props: external_exports.object({
+      text: external_exports.string().min(1).max(2e3),
+      tone: external_exports.enum(["muted", "warning"]).nullable().describe("warning for assumptions or inexact counts, else null.")
+    }),
     slots: [],
     description: "A short paragraph: an assumption that was made, a caveat, or how to read the chart.",
     example: { text: "Opportunities whose account has no industry are shown on their own row.", tone: null }
@@ -22282,21 +23124,32 @@ var VIEW_COMPONENTS = {
   Callout: {
     props: external_exports.object({
       text: external_exports.string().min(1).max(2e3),
-      tone: external_exports.enum(["info", "success", "warning", "danger"]).describe("What kind of thing this is: info for context, success for a target met, warning for an assumption or a caveat, danger for something wrong with the data."),
+      tone: external_exports.enum(["info", "success", "warning", "danger"]).describe(
+        "What kind of thing this is: info for context, success for a target met, warning for an assumption or a caveat, danger for something wrong with the data."
+      ),
       title: external_exports.string().max(120).nullable().describe("A few words of heading, or null.")
     }),
     slots: [],
     description: "The one thing the reader should take away, set apart from the prose so it is not skipped. At most one or two per page: a page of callouts is a page of nothing.",
-    example: { text: "Conversion out of Negotiation fell by half this quarter, on 14 opportunities.", tone: "warning", title: "Worth looking at" }
+    example: {
+      text: "Conversion out of Negotiation fell by half this quarter, on 14 opportunities.",
+      tone: "warning",
+      title: "Worth looking at"
+    }
   },
   Quote: {
     props: external_exports.object({
       text: external_exports.string().min(1).max(2e3).describe("The words themselves, as they were written."),
-      attribution: external_exports.string().max(200).nullable().describe('Who said or wrote it, or where it came from, e.g. "Customer definition, ontology v7". Null when it would add nothing.')
+      attribution: external_exports.string().max(200).nullable().describe(
+        'Who said or wrote it, or where it came from, e.g. "Customer definition, ontology v7". Null when it would add nothing.'
+      )
     }),
     slots: [],
     description: "Words from somewhere else quoted verbatim: a definition from the ontology, a line of the context document, an answer someone gave. Never paraphrase inside one.",
-    example: { text: "An account with at least one closed-won opportunity in the last 12 months.", attribution: "Customer, ontology v7" }
+    example: {
+      text: "An account with at least one closed-won opportunity in the last 12 months.",
+      attribution: "Customer, ontology v7"
+    }
   },
   Toggle: {
     props: external_exports.object({
@@ -22309,31 +23162,50 @@ var VIEW_COMPONENTS = {
   },
   Checklist: {
     props: external_exports.object({
-      items: external_exports.array(external_exports.object({
-        label: external_exports.string().min(1).max(200),
-        done: external_exports.boolean().describe("Whether this one holds today."),
-        note: external_exports.string().max(200).nullable().describe('What decided it, e.g. "3 of 40 accounts", or null.')
-      })).min(1).max(20)
+      items: external_exports.array(
+        external_exports.object({
+          label: external_exports.string().min(1).max(200),
+          done: external_exports.boolean().describe("Whether this one holds today."),
+          note: external_exports.string().max(200).nullable().describe('What decided it, e.g. "3 of 40 accounts", or null.')
+        })
+      ).min(1).max(20)
     }),
     slots: [],
     description: "A list of conditions with whether each one holds: data quality checks, the parts of a definition, what a workflow still needs. Not a to-do list for the reader.",
-    example: { items: [{ label: "Every opportunity has a close date", done: true, note: "520 of 520" }, { label: "Every account has an industry", done: false, note: "88 of 140 missing" }] }
+    example: {
+      items: [
+        { label: "Every opportunity has a close date", done: true, note: "520 of 520" },
+        { label: "Every account has an industry", done: false, note: "88 of 140 missing" }
+      ]
+    }
   },
   Badges: {
     props: external_exports.object({
-      items: external_exports.array(external_exports.object({
-        label: external_exports.string().min(1).max(60),
-        tone: external_exports.enum(["neutral", "info", "success", "warning", "danger"]).nullable().describe("What the badge says about the thing, or null for neutral.")
-      })).min(1).max(12)
+      items: external_exports.array(
+        external_exports.object({
+          label: external_exports.string().min(1).max(60),
+          tone: external_exports.enum(["neutral", "info", "success", "warning", "danger"]).nullable().describe("What the badge says about the thing, or null for neutral.")
+        })
+      ).min(1).max(12)
     }),
     slots: [],
     description: "A row of short labels: which sources a number came from, which filters are on, which stages are counted. Use for facts that fit in two words each.",
-    example: { items: [{ label: "Salesforce", tone: "neutral" }, { label: "Snapshot 2026-09-15", tone: "neutral" }, { label: "Counts exact", tone: "success" }] }
+    example: {
+      items: [
+        { label: "Salesforce", tone: "neutral" },
+        { label: "Snapshot 2026-09-15", tone: "neutral" },
+        { label: "Counts exact", tone: "success" }
+      ]
+    }
   },
   Row: {
     props: external_exports.object({
-      weights: external_exports.array(external_exports.number().positive().max(12)).max(6).nullish().describe("Relative widths of the children, one number each, e.g. [2,1] for a chart twice the width of the table beside it. Omit for equal widths."),
-      align: external_exports.enum(["stretch", "top"]).nullish().describe("How children of different heights line up: stretch (equal height, the default) or top, for a tile beside a tall chart.")
+      weights: external_exports.array(external_exports.number().positive().max(12)).max(6).nullish().describe(
+        "Relative widths of the children, one number each, e.g. [2,1] for a chart twice the width of the table beside it. Omit for equal widths."
+      ),
+      align: external_exports.enum(["stretch", "top"]).nullish().describe(
+        "How children of different heights line up: stretch (equal height, the default) or top, for a tile beside a tall chart."
+      )
     }),
     slots: ["default"],
     description: "Lays its children side by side, wrapping on narrow screens. Use for a row of Kpi tiles or two charts that belong together.",
@@ -22350,13 +23222,20 @@ var VIEW_COMPONENTS = {
     example: { title: "Where the pipeline leaks", subtitle: "Stage by stage, this quarter", collapsed: null }
   },
   Divider: {
-    props: external_exports.object({ label: external_exports.string().max(80).nullable().describe("A few words naming what follows, or null for a plain rule.") }),
+    props: external_exports.object({
+      label: external_exports.string().max(80).nullable().describe("A few words naming what follows, or null for a plain rule.")
+    }),
     slots: [],
     description: "A horizontal rule between parts of a page. Prefer a Section when the parts have names; use this for a single clean break.",
     example: { label: null }
   },
   Kpi: {
-    props: external_exports.object({ label: external_exports.string().min(1).max(80), value: external_exports.union([external_exports.string(), external_exports.number()]), unit, note: external_exports.string().nullable().describe('What is behind the number, e.g. "90 opportunities", or null.') }),
+    props: external_exports.object({
+      label: external_exports.string().min(1).max(80),
+      value: external_exports.union([external_exports.string(), external_exports.number()]),
+      unit,
+      note: external_exports.string().nullable().describe('What is behind the number, e.g. "90 opportunities", or null.')
+    }),
     slots: [],
     description: "One headline number with its label. Put several in a Row for a KPI strip. Not a chart with one bar.",
     example: { label: "Closed-won amount", value: 11783485, unit: null, note: "90 opportunities" }
@@ -22373,7 +23252,15 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: 'One number with the change from the period before it, drawn as an arrow and a percentage. Use instead of Kpi whenever the reader would ask "compared with what?".',
-    example: { label: "Closed-won amount", value: 11783485, previous: 9240110, unit: null, periodLabel: "last quarter", goodDirection: "up", size: null }
+    example: {
+      label: "Closed-won amount",
+      value: 11783485,
+      previous: 9240110,
+      unit: null,
+      periodLabel: "last quarter",
+      goodDirection: "up",
+      size: null
+    }
   },
   Progress: {
     props: external_exports.object({
@@ -22386,7 +23273,14 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: "How far a number has come toward a target, as a filled bar with the share written on it. For quota, coverage, completeness; not for a value with no target.",
-    example: { label: "Bookings against quota", value: 11783485, target: 15e6, unit: null, note: "Q3, 90 opportunities", size: null }
+    example: {
+      label: "Bookings against quota",
+      value: 11783485,
+      target: 15e6,
+      unit: null,
+      note: "Q3, 90 opportunities",
+      size: null
+    }
   },
   Gauge: {
     props: external_exports.object({
@@ -22394,17 +23288,31 @@ var VIEW_COMPONENTS = {
       value: external_exports.number(),
       min: external_exports.number(),
       max: external_exports.number(),
-      bands: external_exports.array(external_exports.object({
-        upTo: external_exports.number().describe("Upper edge of this band on the scale."),
-        label: external_exports.string().min(1).max(40),
-        tone: external_exports.enum(["good", "fair", "poor"])
-      })).max(4).nullish().describe('Named ranges the value falls into, e.g. under 30 days "good". Omit for a plain scale.'),
+      bands: external_exports.array(
+        external_exports.object({
+          upTo: external_exports.number().describe("Upper edge of this band on the scale."),
+          label: external_exports.string().min(1).max(40),
+          tone: external_exports.enum(["good", "fair", "poor"])
+        })
+      ).max(4).nullish().describe('Named ranges the value falls into, e.g. under 30 days "good". Omit for a plain scale.'),
       unit,
       size
     }),
     slots: [],
     description: "One value on a named scale, for a measure a reader judges rather than compares: days to close, health, utilisation. Never for money or counts, which belong on a bar.",
-    example: { label: "Median days to close", value: 34, min: 0, max: 90, bands: [{ upTo: 30, label: "Fast", tone: "good" }, { upTo: 60, label: "Typical", tone: "fair" }, { upTo: 90, label: "Slow", tone: "poor" }], unit: "days", size: null }
+    example: {
+      label: "Median days to close",
+      value: 34,
+      min: 0,
+      max: 90,
+      bands: [
+        { upTo: 30, label: "Fast", tone: "good" },
+        { upTo: 60, label: "Typical", tone: "fair" },
+        { upTo: 90, label: "Slow", tone: "poor" }
+      ],
+      unit: "days",
+      size: null
+    }
   },
   Sparkline: {
     props: external_exports.object({
@@ -22418,7 +23326,22 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: "The shape of one series, small and unlabelled, beside a number rather than in place of a chart. Use in a Row of tiles where a full LineChart would not fit.",
-    example: { label: "Bookings", data: { columns: ["CloseDate:month", "sum:Amount"], rows: [["2026-05-01", 820431], ["2026-06-01", 1390239], ["2026-07-01", 2104880]] }, x: "CloseDate:month", value: "sum:Amount", unit: null, note: "Last 3 months", size: "small" }
+    example: {
+      label: "Bookings",
+      data: {
+        columns: ["CloseDate:month", "sum:Amount"],
+        rows: [
+          ["2026-05-01", 820431],
+          ["2026-06-01", 1390239],
+          ["2026-07-01", 2104880]
+        ]
+      },
+      x: "CloseDate:month",
+      value: "sum:Amount",
+      unit: null,
+      note: "Last 3 months",
+      size: "small"
+    }
   },
   Cards: {
     props: external_exports.object({
@@ -22433,7 +23356,19 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: "One small card per row: a gallery of accounts, deals or people, each with a name, a number and a label. Use when the reader is looking for particular records rather than reading a distribution; a DataTable is better once there are more than about a dozen.",
-    example: { title: "Largest open opportunities", data: { columns: ["Name", "StageName", "Amount", "AccountId.Name"], rows: [["Acme renewal", "Negotiation", 24e4, "Acme"]] }, heading: "Name", body: "AccountId.Name", badge: "StageName", value: "Amount", unit: null, size: null }
+    example: {
+      title: "Largest open opportunities",
+      data: {
+        columns: ["Name", "StageName", "Amount", "AccountId.Name"],
+        rows: [["Acme renewal", "Negotiation", 24e4, "Acme"]]
+      },
+      heading: "Name",
+      body: "AccountId.Name",
+      badge: "StageName",
+      value: "Amount",
+      unit: null,
+      size: null
+    }
   },
   BarChart: {
     props: external_exports.object({
@@ -22444,7 +23379,9 @@ var VIEW_COMPONENTS = {
       series: optionalColumn("a second category that splits each bar into stacked segments"),
       sort: external_exports.enum(["value", "category", "none"]).nullable().describe("Order of the bars: by value (largest first), by category, or as the rows come. Null means value."),
       unit,
-      orientation: external_exports.enum(["horizontal", "vertical"]).nullish().describe("Which way the bars run: horizontal reads long category names and many bars; vertical (columns) suits short labels, a time order, or a shape the reader expects to stand up. Omit for horizontal."),
+      orientation: external_exports.enum(["horizontal", "vertical"]).nullish().describe(
+        "Which way the bars run: horizontal reads long category names and many bars; vertical (columns) suits short labels, a time order, or a shape the reader expects to stand up. Omit for horizontal."
+      ),
       palette: palette("single, or a hue per series when series is set"),
       emphasis,
       size,
@@ -22455,49 +23392,218 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: 'Bars, sorted and direct-labelled: compare categories, or share of a whole when series stacks them. Horizontal by default; orientation "vertical" draws columns. More than about 8 bars: fold the tail into "Other" first.',
-    example: { title: "Opportunities by stage", data: sampleTable, category: "StageName", value: "count", series: null, sort: "value", unit: "opportunities", orientation: "vertical", palette: "category", emphasis: ["Closed Won"], size: null, annotations: [{ value: 100, label: "Quarterly target" }], labels: "value", tooltip: "detailed", overlay: "sum:Amount" }
+    example: {
+      title: "Opportunities by stage",
+      data: sampleTable,
+      category: "StageName",
+      value: "count",
+      series: null,
+      sort: "value",
+      unit: "opportunities",
+      orientation: "vertical",
+      palette: "category",
+      emphasis: ["Closed Won"],
+      size: null,
+      annotations: [{ value: 100, label: "Quarterly target" }],
+      labels: "value",
+      tooltip: "detailed",
+      overlay: "sum:Amount"
+    }
   },
   LineChart: {
-    props: external_exports.object({ title, data: ViewTableSchema, x: column("the ordered x axis, usually a date bucket such as CloseDate:month"), y: column("the numeric value"), series: optionalColumn("a category that gives one line per value (at most four)"), unit, emphasis, size, annotations, labels, tooltip, overlay }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      x: column("the ordered x axis, usually a date bucket such as CloseDate:month"),
+      y: column("the numeric value"),
+      series: optionalColumn("a category that gives one line per value (at most four)"),
+      unit,
+      emphasis,
+      size,
+      annotations,
+      labels,
+      tooltip,
+      overlay
+    }),
     slots: [],
     description: "A trend over an ordered axis; one line per series with a legend. Never two y axes: use two charts.",
-    example: { title: "Bookings per quarter", data: { columns: ["CloseDate:quarter", "sum:Amount"], rows: [["2026-01-01", 1390239], ["2026-04-01", 4608898], ["2026-07-01", 12955576]] }, x: "CloseDate:quarter", y: "sum:Amount", series: null, unit: null }
+    example: {
+      title: "Bookings per quarter",
+      data: {
+        columns: ["CloseDate:quarter", "sum:Amount"],
+        rows: [
+          ["2026-01-01", 1390239],
+          ["2026-04-01", 4608898],
+          ["2026-07-01", 12955576]
+        ]
+      },
+      x: "CloseDate:quarter",
+      y: "sum:Amount",
+      series: null,
+      unit: null
+    }
   },
   Waterfall: {
-    props: external_exports.object({ title, data: ViewTableSchema, category: column("each contributor"), value: column("its signed contribution"), totalLabel: external_exports.string().nullable().describe('Label of the closing total bar, or null for "Total".'), unit, palette: palette("signed, which is what a bridge usually wants"), emphasis, size, labels, tooltip }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      category: column("each contributor"),
+      value: column("its signed contribution"),
+      totalLabel: external_exports.string().nullable().describe('Label of the closing total bar, or null for "Total".'),
+      unit,
+      palette: palette("signed, which is what a bridge usually wants"),
+      emphasis,
+      size,
+      labels,
+      tooltip
+    }),
     slots: [],
     description: "How a total is built up or bridged: one floating bar per contributor from the running total before it to the running total after it, then a total bar. Attribution, revenue bridges, what added and what took away.",
-    example: { title: "Closed-won amount by industry", data: { columns: ["AccountId.Industry", "sum:Amount"], rows: [["Finance", 2312731], ["Banking", 1911207], ["Technology", 1758867]] }, category: "AccountId.Industry", value: "sum:Amount", totalLabel: "Total closed-won", unit: null }
+    example: {
+      title: "Closed-won amount by industry",
+      data: {
+        columns: ["AccountId.Industry", "sum:Amount"],
+        rows: [
+          ["Finance", 2312731],
+          ["Banking", 1911207],
+          ["Technology", 1758867]
+        ]
+      },
+      category: "AccountId.Industry",
+      value: "sum:Amount",
+      totalLabel: "Total closed-won",
+      unit: null
+    }
   },
   Funnel: {
-    props: external_exports.object({ title, data: ViewTableSchema, stage: column("the stage"), value: column("the count or amount at that stage"), order: external_exports.array(external_exports.string()).nullable().describe("Stage names in process order (from the picklist), or null to keep the row order."), unit, palette: palette("single, so the eye follows the drop and not the colour"), emphasis, size, labels, tooltip, overlay }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      stage: column("the stage"),
+      value: column("the count or amount at that stage"),
+      order: external_exports.array(external_exports.string()).nullable().describe("Stage names in process order (from the picklist), or null to keep the row order."),
+      unit,
+      palette: palette("single, so the eye follows the drop and not the colour"),
+      emphasis,
+      size,
+      labels,
+      tooltip,
+      overlay
+    }),
     slots: [],
     description: 'Progression through ordered stages, each step carrying its own value and the conversion from the step before it. Order by the process, never by size. `labels` decides what is written on the steps themselves and `overlay` draws a second measure behind them, so one funnel can show both the count and the amount at each stage. Only for cohorts that pass through the stages, where each step counts records that also reached the one before it: a snapshot of how many records sit in each stage today is not one, and drawing it here produces conversions above 100% that mean nothing. Use a BarChart with sort "none" and the stages in process order for a snapshot.',
-    example: { title: "Pipeline by stage", data: sampleTable, stage: "StageName", value: "count", order: ["Prospecting", "Closed Won", "Closed Lost"], unit: "opportunities", labels: "both", overlay: "sum:Amount", tooltip: "detailed" }
+    example: {
+      title: "Pipeline by stage",
+      data: sampleTable,
+      stage: "StageName",
+      value: "count",
+      order: ["Prospecting", "Closed Won", "Closed Lost"],
+      unit: "opportunities",
+      labels: "both",
+      overlay: "sum:Amount",
+      tooltip: "detailed"
+    }
   },
   Heatmap: {
-    props: external_exports.object({ title, data: ViewTableSchema, row: column("the row dimension"), col: column("the column dimension"), value: column("the numeric cell value"), unit, size }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      row: column("the row dimension"),
+      col: column("the column dimension"),
+      value: column("the numeric cell value"),
+      unit,
+      size
+    }),
     slots: [],
     description: "A grid of two dimensions, one hue light to dark by value: for example month by stage from a two-way grouping.",
-    example: { title: "Closed deals by quarter and stage", data: { columns: ["CloseDate:quarter", "StageName", "count"], rows: [["2026-01-01", "Closed Won", 8], ["2026-01-01", "Closed Lost", 12]] }, row: "StageName", col: "CloseDate:quarter", value: "count", unit: null }
+    example: {
+      title: "Closed deals by quarter and stage",
+      data: {
+        columns: ["CloseDate:quarter", "StageName", "count"],
+        rows: [
+          ["2026-01-01", "Closed Won", 8],
+          ["2026-01-01", "Closed Lost", 12]
+        ]
+      },
+      row: "StageName",
+      col: "CloseDate:quarter",
+      value: "count",
+      unit: null
+    }
   },
   Scatter: {
-    props: external_exports.object({ title, data: ViewTableSchema, x: column("the numeric x value"), y: column("the numeric y value"), label: optionalColumn("the point label shown on hover"), series: optionalColumn("a category colouring the points (at most three values)"), xUnit: unit, yUnit: unit, size, annotations }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      x: column("the numeric x value"),
+      y: column("the numeric y value"),
+      label: optionalColumn("the point label shown on hover"),
+      series: optionalColumn("a category colouring the points (at most three values)"),
+      xUnit: unit,
+      yUnit: unit,
+      size,
+      annotations
+    }),
     slots: [],
     description: "Relates two measures per record, from exported rows. Fewer than about 2,000 points.",
-    example: { title: "Amount against days open", data: { columns: ["label", "Amount", "daysOpen"], rows: [["Acme renewal", 12e4, 45]] }, x: "daysOpen", y: "Amount", label: "label", series: null, xUnit: "days", yUnit: null }
+    example: {
+      title: "Amount against days open",
+      data: { columns: ["label", "Amount", "daysOpen"], rows: [["Acme renewal", 12e4, 45]] },
+      x: "daysOpen",
+      y: "Amount",
+      label: "label",
+      series: null,
+      xUnit: "days",
+      yUnit: null
+    }
   },
   Histogram: {
-    props: external_exports.object({ title, data: ViewTableSchema, value: column("the numeric value to bin"), bins: external_exports.number().int().min(2).max(60).nullable().describe("Number of equal-width bins, or null for about 12."), unit, palette: palette("single"), size, annotations }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      value: column("the numeric value to bin"),
+      bins: external_exports.number().int().min(2).max(60).nullable().describe("Number of equal-width bins, or null for about 12."),
+      unit,
+      palette: palette("single"),
+      size,
+      annotations
+    }),
     slots: [],
     description: "The distribution of one numeric column from exported rows, binned in the app.",
-    example: { title: "Deal sizes", data: { columns: ["Amount"], rows: [[12e4], [15e3], [43e3]] }, value: "Amount", bins: null, unit: null }
+    example: {
+      title: "Deal sizes",
+      data: { columns: ["Amount"], rows: [[12e4], [15e3], [43e3]] },
+      value: "Amount",
+      bins: null,
+      unit: null
+    }
   },
   Flow: {
-    props: external_exports.object({ title, data: ViewTableSchema, source: column("the left-hand category"), target: column("the right-hand category"), value: column("the numeric weight of the link"), unit, size }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      source: column("the left-hand category"),
+      target: column("the right-hand category"),
+      value: column("the numeric weight of the link"),
+      unit,
+      size
+    }),
     slots: [],
     description: "A flow between two dimensions (sankey): each row is a link from a source category to a target category with a weight, from a two-way grouping.",
-    example: { title: "Lead source to stage", data: { columns: ["LeadSource", "StageName", "count"], rows: [["Web", "Closed Won", 12], ["Web", "Closed Lost", 30]] }, source: "LeadSource", target: "StageName", value: "count", unit: "opportunities" }
+    example: {
+      title: "Lead source to stage",
+      data: {
+        columns: ["LeadSource", "StageName", "count"],
+        rows: [
+          ["Web", "Closed Won", 12],
+          ["Web", "Closed Lost", 30]
+        ]
+      },
+      source: "LeadSource",
+      target: "StageName",
+      value: "count",
+      unit: "opportunities"
+    }
   },
   PieChart: {
     props: external_exports.object({
@@ -22514,10 +23620,35 @@ var VIEW_COMPONENTS = {
     }),
     slots: [],
     description: 'Parts of one whole as slices of a circle. Only when the parts really do sum to a meaningful total, the reader wants the shares rather than the values, and there are at most about six slices: fold the rest into "Other" first. A circle is harder to compare across than a bar, so every slice is direct-labelled and a DataTable goes underneath. For ranking categories, or for anything that does not add up to a whole, use a BarChart instead.',
-    example: { title: "Share of closed-won amount by lead source", data: { columns: ["LeadSource", "sum:Amount"], rows: [["Web", 4210331], ["Partner", 3120887], ["Outbound", 2402110], ["Other", 2050157]] }, category: "LeadSource", value: "sum:Amount", donut: true, unit: null, labels: "both", tooltip: "auto", emphasis: null, size: null }
+    example: {
+      title: "Share of closed-won amount by lead source",
+      data: {
+        columns: ["LeadSource", "sum:Amount"],
+        rows: [
+          ["Web", 4210331],
+          ["Partner", 3120887],
+          ["Outbound", 2402110],
+          ["Other", 2050157]
+        ]
+      },
+      category: "LeadSource",
+      value: "sum:Amount",
+      donut: true,
+      unit: null,
+      labels: "both",
+      tooltip: "auto",
+      emphasis: null,
+      size: null
+    }
   },
   DataTable: {
-    props: external_exports.object({ title, data: ViewTableSchema, totals: external_exports.array(ViewValueSchema).nullable().describe("A totals row aligned with the columns (null for grouping columns), or null."), unit, size }),
+    props: external_exports.object({
+      title,
+      data: ViewTableSchema,
+      totals: external_exports.array(ViewValueSchema).nullable().describe("A totals row aligned with the columns (null for grouping columns), or null."),
+      unit,
+      size
+    }),
     slots: [],
     description: "The numbers themselves, sortable by any column, with an optional totals row. Put one under every chart so every value can be read.",
     example: { title: null, data: sampleTable, totals: [null, 348, 49655153], unit: null }
@@ -22526,14 +23657,16 @@ var VIEW_COMPONENTS = {
 var viewSchema = defineSchema((s) => ({
   spec: s.object({
     root: s.string(),
-    elements: s.record(s.object({
-      type: s.ref("catalog.components"),
-      props: s.propsOf("catalog.components"),
-      children: s.array(s.string()),
-      slots: { ...s.record(s.array(s.string())), ...s.optional() },
-      visible: { ...s.any(), ...s.optional() },
-      repeat: { ...s.any(), ...s.optional() }
-    }))
+    elements: s.record(
+      s.object({
+        type: s.ref("catalog.components"),
+        props: s.propsOf("catalog.components"),
+        children: s.array(s.string()),
+        slots: { ...s.record(s.array(s.string())), ...s.optional() },
+        visible: { ...s.any(), ...s.optional() },
+        repeat: { ...s.any(), ...s.optional() }
+      })
+    )
   }),
   catalog: s.object({
     components: s.map({ props: s.zod(), slots: s.array(s.string()), description: s.string(), example: s.any() }),
@@ -22542,27 +23675,44 @@ var viewSchema = defineSchema((s) => ({
 }));
 var viewCatalog = defineCatalog(viewSchema, { components: VIEW_COMPONENTS, actions: {} });
 var VIEW_COMPONENT_NAMES = Object.keys(VIEW_COMPONENTS);
-var COLUMN_PROPS = ["category", "value", "series", "x", "y", "stage", "row", "col", "source", "target", "overlay", "heading", "body", "badge"];
+var COLUMN_PROPS = [
+  "category",
+  "value",
+  "series",
+  "x",
+  "y",
+  "stage",
+  "row",
+  "col",
+  "source",
+  "target",
+  "overlay",
+  "heading",
+  "body",
+  "badge"
+];
 var LABEL_IS_COLUMN = /* @__PURE__ */ new Set(["Scatter"]);
 function validateViewSpec(input2) {
   const text3 = JSON.stringify(input2);
-  if (typeof text3 !== "string" || text3.length > VIEW_SPEC_MAX_LENGTH) return { ok: false, issues: [`The spec must be JSON of at most ${VIEW_SPEC_MAX_LENGTH} characters.`] };
+  if (typeof text3 !== "string" || text3.length > VIEW_SPEC_MAX_LENGTH)
+    return { ok: false, issues: [`The spec must be JSON of at most ${VIEW_SPEC_MAX_LENGTH} characters.`] };
   const parsed = viewCatalog.validate(input2);
   const issues = [];
   const shape = input2;
   const usable = typeof shape === "object" && shape !== null && typeof shape.root === "string" && typeof shape.elements === "object" && shape.elements !== null && !Array.isArray(shape.elements);
   if (!parsed.success || !parsed.data) {
     for (const issue2 of parsed.error?.issues ?? []) {
-      const path7 = issue2.path.map(String);
-      if (usable && path7[0] === "elements" && (path7[2] === "props" || path7[2] === "type")) continue;
-      issues.push(`${path7.join(".") || "spec"}: ${issue2.message}`);
+      const path8 = issue2.path.map(String);
+      if (usable && path8[0] === "elements" && (path8[2] === "props" || path8[2] === "type")) continue;
+      issues.push(`${path8.join(".") || "spec"}: ${issue2.message}`);
     }
     if (!usable) return { ok: false, issues: issues.slice(0, 20) };
   }
   const spec = parsed.data ?? input2;
   if (!issues.length) {
     const structural = validateSpec(spec);
-    for (const issue2 of structural.issues) if (issue2.severity === "error") issues.push(`${issue2.elementKey ? `${issue2.elementKey}: ` : ""}${issue2.message}`);
+    for (const issue2 of structural.issues)
+      if (issue2.severity === "error") issues.push(`${issue2.elementKey ? `${issue2.elementKey}: ` : ""}${issue2.message}`);
   }
   const elements = spec.elements;
   const root = elements[spec.root];
@@ -22575,7 +23725,9 @@ function validateViewSpec(input2) {
       continue;
     }
     const slotChildren = element.slots && typeof element.slots === "object" ? Object.values(element.slots).filter(Array.isArray).flat() : [];
-    const children = [...Array.isArray(element.children) ? element.children : [], ...slotChildren].filter((child) => typeof child === "string");
+    const children = [...Array.isArray(element.children) ? element.children : [], ...slotChildren].filter(
+      (child) => typeof child === "string"
+    );
     for (const child of children) {
       if (!elements[child]) issues.push(`${key}: child "${child}" is not an element key`);
       else if (referenced.has(child)) issues.push(`${key}: child "${child}" is used more than once`);
@@ -22590,7 +23742,8 @@ function validateViewSpec(input2) {
     if (key !== spec.root && element.type === "Page") issues.push(`${key}: only the root may be a Page`);
     const props = definition.props.safeParse(element.props);
     if (!props.success) {
-      for (const issue2 of props.error.issues.slice(0, 5)) issues.push(`${key}: ${element.type}.${issue2.path.join(".") || "props"}: ${issue2.message}`);
+      for (const issue2 of props.error.issues.slice(0, 5))
+        issues.push(`${key}: ${element.type}.${issue2.path.join(".") || "props"}: ${issue2.message}`);
       continue;
     }
     const data = element.props.data;
@@ -22598,15 +23751,20 @@ function validateViewSpec(input2) {
       const named = LABEL_IS_COLUMN.has(element.type) ? [...COLUMN_PROPS, "label"] : COLUMN_PROPS;
       for (const prop of named) {
         const name = element.props[prop];
-        if (typeof name === "string" && !data.columns.includes(name)) issues.push(`${key}: ${prop} names column "${name}", which is not in data.columns (${data.columns.join(", ")})`);
+        if (typeof name === "string" && !data.columns.includes(name))
+          issues.push(
+            `${key}: ${prop} names column "${name}", which is not in data.columns (${data.columns.join(", ")})`
+          );
       }
-      for (const [index, row] of data.rows.entries()) if (row.length !== data.columns.length) {
-        issues.push(`${key}: data.rows[${index}] has ${row.length} values for ${data.columns.length} columns`);
-        break;
-      }
+      for (const [index, row] of data.rows.entries())
+        if (row.length !== data.columns.length) {
+          issues.push(`${key}: data.rows[${index}] has ${row.length} values for ${data.columns.length} columns`);
+          break;
+        }
     }
   }
-  for (const key of Object.keys(elements)) if (!referenced.has(key)) issues.push(`${key} is not reachable from the root`);
+  for (const key of Object.keys(elements))
+    if (!referenced.has(key)) issues.push(`${key} is not reachable from the root`);
   return issues.length ? { ok: false, issues: issues.slice(0, 20) } : { ok: true, spec };
 }
 function viewCatalogPrompt() {
@@ -22636,7 +23794,9 @@ var BusinessConversationRequestSchema = external_exports.strictObject({
 var BusinessConversationReplySchema = external_exports.strictObject({
   scope: ConversationScopeSchema,
   answer: external_exports.string().max(3e4),
-  citations: external_exports.array(external_exports.strictObject({ claimId: external_exports.string(), evidence: external_exports.array(EvidenceRefSchema), conceptIds: external_exports.array(external_exports.string()) })).max(20),
+  citations: external_exports.array(
+    external_exports.strictObject({ claimId: external_exports.string(), evidence: external_exports.array(EvidenceRefSchema), conceptIds: external_exports.array(external_exports.string()) })
+  ).max(20),
   limitations: external_exports.array(external_exports.string().max(2e3)).max(100),
   model: external_exports.string(),
   usage: external_exports.strictObject({ inputTokens: external_exports.number().int().nonnegative(), outputTokens: external_exports.number().int().nonnegative() })
@@ -22670,7 +23830,10 @@ var HandoffTicketPollSchema = external_exports.discriminatedUnion("status", [
   external_exports.strictObject({ status: external_exports.literal("completed"), data: external_exports.strictObject({ token: external_exports.string().min(1) }) }),
   external_exports.strictObject({ status: external_exports.literal("expired") })
 ]);
-var HandoffTicketCompleteSchema = external_exports.strictObject({ id: IdSchema, status: external_exports.enum(["completed", "already_completed"]) });
+var HandoffTicketCompleteSchema = external_exports.strictObject({
+  id: IdSchema,
+  status: external_exports.enum(["completed", "already_completed"])
+});
 var PluginTokenSummarySchema = external_exports.strictObject({
   id: IdSchema,
   label: external_exports.string(),
@@ -22775,7 +23938,11 @@ var WorkspaceClearedSchema = external_exports.strictObject({
 var positive = external_exports.number().int().positive();
 var short = external_exports.string().min(1).max(200);
 var PERSON_SOURCE_PROVIDERS = ["salesforce", "rippling", "slack", "manual"];
-var PersonSourceSchema = external_exports.strictObject({ provider: external_exports.enum(PERSON_SOURCE_PROVIDERS), nativeId: short, connectionId: IdSchema.nullable() });
+var PersonSourceSchema = external_exports.strictObject({
+  provider: external_exports.enum(PERSON_SOURCE_PROVIDERS),
+  nativeId: short,
+  connectionId: IdSchema.nullable()
+});
 var PersonSchema = external_exports.strictObject({
   id: IdSchema,
   revision: positive,
@@ -22809,8 +23976,18 @@ var PeopleQuerySchema = external_exports.strictObject({
 });
 var PeopleListSchema = external_exports.strictObject({ items: external_exports.array(PersonSchema), nextCursor: external_exports.string().nullable() });
 var PeopleSyncRequestSchema = external_exports.strictObject({ source: external_exports.enum(["slack", "sources"]) });
-var PeopleSyncResultSchema = external_exports.strictObject({ source: external_exports.enum(["slack", "sources"]), upserted: CountSchema, skipped: CountSchema, reason: external_exports.string().max(500).nullable() });
-var RoleSummarySchema = external_exports.strictObject({ role: RoleKeySchema, count: CountSchema, reachable: CountSchema, titles: external_exports.array(external_exports.string().max(200)).max(10) });
+var PeopleSyncResultSchema = external_exports.strictObject({
+  source: external_exports.enum(["slack", "sources"]),
+  upserted: CountSchema,
+  skipped: CountSchema,
+  reason: external_exports.string().max(500).nullable()
+});
+var RoleSummarySchema = external_exports.strictObject({
+  role: RoleKeySchema,
+  count: CountSchema,
+  reachable: CountSchema,
+  titles: external_exports.array(external_exports.string().max(200)).max(10)
+});
 var AssignmentStateSchema = external_exports.enum(["proposed", "queued", "sent", "answered", "cancelled", "failed"]);
 var DeliveryAttemptSchema = external_exports.strictObject({
   attempt: positive,
@@ -22846,7 +24023,13 @@ var InterviewSettingsSchema = external_exports.strictObject({
   maxPeoplePerQuestion: external_exports.number().int().min(1).max(10)
 });
 var InterviewSettingsUpdateSchema = InterviewSettingsSchema.partial();
-var SlackInstallSchema = external_exports.strictObject({ teamId: short, teamName: short, installedBy: IdSchema, scopes: external_exports.array(external_exports.string().max(100)).max(50), installedAt: TimestampSchema });
+var SlackInstallSchema = external_exports.strictObject({
+  teamId: short,
+  teamName: short,
+  installedBy: IdSchema,
+  scopes: external_exports.array(external_exports.string().max(100)).max(50),
+  installedAt: TimestampSchema
+});
 var SlackInstallStatusSchema = external_exports.strictObject({
   configured: external_exports.boolean(),
   installed: external_exports.boolean(),
@@ -22868,8 +24051,19 @@ var InterviewPlanResultSchema = external_exports.strictObject({
   routed: CountSchema,
   planned: CountSchema
 });
-var InterviewAssignRequestSchema = external_exports.strictObject({ questionId: IdSchema, personIds: external_exports.array(IdSchema).min(1).max(20), note: external_exports.string().max(2e3).optional(), askedBy: external_exports.string().max(120).optional() });
-var InterviewAskRequestSchema = external_exports.strictObject({ idempotencyKey: IdSchema, question: external_exports.string().min(1).max(2e3), personIds: external_exports.array(IdSchema).min(1).max(20), note: external_exports.string().max(2e3).optional(), askedBy: external_exports.string().max(120).optional() });
+var InterviewAssignRequestSchema = external_exports.strictObject({
+  questionId: IdSchema,
+  personIds: external_exports.array(IdSchema).min(1).max(20),
+  note: external_exports.string().max(2e3).optional(),
+  askedBy: external_exports.string().max(120).optional()
+});
+var InterviewAskRequestSchema = external_exports.strictObject({
+  idempotencyKey: IdSchema,
+  question: external_exports.string().min(1).max(2e3),
+  personIds: external_exports.array(IdSchema).min(1).max(20),
+  note: external_exports.string().max(2e3).optional(),
+  askedBy: external_exports.string().max(120).optional()
+});
 var InterviewApproveRequestSchema = external_exports.strictObject({ assignmentIds: external_exports.array(IdSchema).min(1).max(100) });
 var InterviewCancelRequestSchema = external_exports.strictObject({ assignmentId: IdSchema });
 var InterviewAssignmentsResultSchema = external_exports.strictObject({ assignments: external_exports.array(InterviewAssignmentSchema) });
@@ -22878,7 +24072,15 @@ var InterviewAssignmentsResultSchema = external_exports.strictObject({ assignmen
 var PlumAnswerSegmentSchema = external_exports.discriminatedUnion("kind", [
   external_exports.object({ kind: external_exports.literal("text"), text: external_exports.string() }),
   /** A number from the run, formatted by the client. */
-  external_exports.object({ kind: external_exports.literal("value"), slot: external_exports.string(), metric: external_exports.string(), key: external_exports.array(external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()])), value: external_exports.string().nullable(), undefinedReason: external_exports.string().nullable(), format: external_exports.enum(["number", "percent", "currency"]) }),
+  external_exports.object({
+    kind: external_exports.literal("value"),
+    slot: external_exports.string(),
+    metric: external_exports.string(),
+    key: external_exports.array(external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean(), external_exports.null()])),
+    value: external_exports.string().nullable(),
+    undefinedReason: external_exports.string().nullable(),
+    format: external_exports.enum(["number", "percent", "currency"])
+  }),
   /** A label from the plan or the run (period, metric, dimension value). */
   external_exports.object({ kind: external_exports.literal("label"), slot: external_exports.string(), text: external_exports.string() })
 ]);
@@ -22906,8 +24108,10 @@ var PlumPredicateSchema = external_exports.strictObject({
   if (rule.op === "is_null" || rule.op === "is_not_null") {
     if (rule.value !== void 0) ctx.addIssue({ code: "custom", message: `${rule.op} takes no value` });
   } else if (rule.op === "in" || rule.op === "not_in") {
-    if (!Array.isArray(rule.value) || !rule.value.length) ctx.addIssue({ code: "custom", message: `${rule.op} needs a non-empty list` });
-  } else if (rule.value === void 0 || Array.isArray(rule.value)) ctx.addIssue({ code: "custom", message: `${rule.op} needs a single value` });
+    if (!Array.isArray(rule.value) || !rule.value.length)
+      ctx.addIssue({ code: "custom", message: `${rule.op} needs a non-empty list` });
+  } else if (rule.value === void 0 || Array.isArray(rule.value))
+    ctx.addIssue({ code: "custom", message: `${rule.op} needs a single value` });
 });
 var PlumDimensionSchema = external_exports.strictObject({ key: Name, column: FieldPath, label: external_exports.string().optional() });
 var PlumFilterSpecSchema = external_exports.strictObject({
@@ -22916,7 +24120,11 @@ var PlumFilterSpecSchema = external_exports.strictObject({
   type: external_exports.enum(["string", "picklist", "boolean", "date", "number"]),
   allowed_values: external_exports.array(Scalar).optional()
 });
-var PlumCoverageCheckSchema = external_exports.strictObject({ name: Name, sql_predicate: external_exports.string().min(1), description: external_exports.string().min(1) });
+var PlumCoverageCheckSchema = external_exports.strictObject({
+  name: Name,
+  sql_predicate: external_exports.string().min(1),
+  description: external_exports.string().min(1)
+});
 var PlumReconcileSchema = external_exports.strictObject({
   sf_report_id: external_exports.string().regex(/^00O[A-Za-z0-9]{12}([A-Za-z0-9]{3})?$/),
   compare_column: external_exports.string().min(1),
@@ -22970,14 +24178,20 @@ var PlumMetricSchema = external_exports.strictObject({
         if (metric.inputs.includes(metric.name)) issue2("derived metric cannot be its own input");
         const inputs = new Set(metric.inputs);
         if (used.size !== inputs.size || [...used].some((name) => !inputs.has(name))) {
-          issue2(`formula names [${[...used].sort().join(", ")}] must equal inputs [${[...inputs].sort().join(", ")}]`);
+          issue2(
+            `formula names [${[...used].sort().join(", ")}] must equal inputs [${[...inputs].sort().join(", ")}]`
+          );
         }
       } catch (error62) {
         issue2(error62 instanceof Error ? error62.message : "formula does not parse");
       }
     }
   }
-  for (const [label2, keys] of [["dimension", metric.dimensions.map((d) => d.key)], ["filter", metric.filters.map((f) => f.key)], ["coverage check", metric.coverage_checks.map((c) => c.name)]]) {
+  for (const [label2, keys] of [
+    ["dimension", metric.dimensions.map((d) => d.key)],
+    ["filter", metric.filters.map((f) => f.key)],
+    ["coverage check", metric.coverage_checks.map((c) => c.name)]
+  ]) {
     const dupes = [...new Set(keys.filter((key, index) => keys.indexOf(key) !== index))].sort();
     if (dupes.length) issue2(`duplicate ${label2} keys: ${dupes.join(", ")}`);
   }
@@ -22990,7 +24204,9 @@ function parseFormula(formula) {
     const at = FORMULA_TOKEN.lastIndex;
     const match = FORMULA_TOKEN.exec(formula);
     if (!match) throw new Error(`formula has an unexpected character at ${at}: ${JSON.stringify(formula.slice(at))}`);
-    tokens.push(match[1] ? { kind: "num", text: match[1] } : match[2] ? { kind: "name", text: match[2] } : { kind: "op", text: match[3] });
+    tokens.push(
+      match[1] ? { kind: "num", text: match[1] } : match[2] ? { kind: "name", text: match[2] } : { kind: "op", text: match[3] }
+    );
   }
   if (!tokens.length) throw new Error("formula is empty");
   let position = 0;
@@ -23053,7 +24269,15 @@ function formulaNames(formula) {
       return /* @__PURE__ */ new Set();
   }
 }
-var PLUM_RELATIVE_PERIODS = ["this_fiscal_year", "last_fiscal_year", "this_fiscal_quarter", "last_fiscal_quarter", "fiscal_ytd", "this_month", "last_month"];
+var PLUM_RELATIVE_PERIODS = [
+  "this_fiscal_year",
+  "last_fiscal_year",
+  "this_fiscal_quarter",
+  "last_fiscal_quarter",
+  "fiscal_ytd",
+  "this_month",
+  "last_month"
+];
 var PlumPeriodSchema = external_exports.strictObject({
   fiscal_year: external_exports.number().int().min(1900).max(2100).optional(),
   fiscal_quarter: external_exports.tuple([external_exports.number().int().min(1900).max(2100), external_exports.number().int().min(1).max(4)]).optional(),
@@ -23061,9 +24285,16 @@ var PlumPeriodSchema = external_exports.strictObject({
   range: external_exports.tuple([external_exports.iso.date(), external_exports.iso.date()]).optional(),
   relative: external_exports.enum(PLUM_RELATIVE_PERIODS).optional()
 }).superRefine((period, ctx) => {
-  const given = ["fiscal_year", "fiscal_quarter", "month", "range", "relative"].filter((key) => period[key] !== void 0);
-  if (given.length !== 1) ctx.addIssue({ code: "custom", message: "period needs exactly one of fiscal_year, fiscal_quarter, month, range, relative" });
-  if (period.range && period.range[0] > period.range[1]) ctx.addIssue({ code: "custom", message: "range start is after its end" });
+  const given = ["fiscal_year", "fiscal_quarter", "month", "range", "relative"].filter(
+    (key) => period[key] !== void 0
+  );
+  if (given.length !== 1)
+    ctx.addIssue({
+      code: "custom",
+      message: "period needs exactly one of fiscal_year, fiscal_quarter, month, range, relative"
+    });
+  if (period.range && period.range[0] > period.range[1])
+    ctx.addIssue({ code: "custom", message: "range start is after its end" });
 });
 var PlumPlanSchema = external_exports.strictObject({
   metric: external_exports.string().min(1),
@@ -23085,7 +24316,15 @@ var CoverageSchema2 = external_exports.object({
   count: external_exports.number().int(),
   complete: external_exports.boolean(),
   recordIds: external_exports.array(external_exports.string()).optional(),
-  checks: external_exports.array(external_exports.object({ checkName: external_exports.string(), reason: external_exports.string(), predicate: external_exports.string(), count: external_exports.number().int(), recordIds: external_exports.array(external_exports.string()).optional() }))
+  checks: external_exports.array(
+    external_exports.object({
+      checkName: external_exports.string(),
+      reason: external_exports.string(),
+      predicate: external_exports.string(),
+      count: external_exports.number().int(),
+      recordIds: external_exports.array(external_exports.string()).optional()
+    })
+  )
 });
 var PlumRunSchema = external_exports.object({
   id: external_exports.string(),
@@ -23106,12 +24345,25 @@ var PlumRunSchema = external_exports.object({
   error: external_exports.string().nullable(),
   durationMs: external_exports.number().int(),
   /** Numbers are decimal strings, never floats. A null value carries the reason it is undefined. */
-  results: external_exports.array(external_exports.object({ metric: external_exports.string(), key: Key, value: external_exports.string().nullable(), undefinedReason: external_exports.string().nullable(), isRoot: external_exports.boolean() })),
+  results: external_exports.array(
+    external_exports.object({
+      metric: external_exports.string(),
+      key: Key,
+      value: external_exports.string().nullable(),
+      undefinedReason: external_exports.string().nullable(),
+      isRoot: external_exports.boolean()
+    })
+  ),
   coverage: external_exports.array(CoverageSchema2),
   /** The answer text: a validated template filled from the results. Null for failed runs and older runs. */
   answer: PlumAnswerSchema.nullable().default(null),
   /** Exploratory runs only: the SQL the model wrote, as run, and the rows it returned (capped). */
-  exploratory: external_exports.object({ sql: external_exports.string(), columns: external_exports.array(external_exports.string()), rows: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown())), truncated: external_exports.boolean() }).nullable().default(null)
+  exploratory: external_exports.object({
+    sql: external_exports.string(),
+    columns: external_exports.array(external_exports.string()),
+    rows: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown())),
+    truncated: external_exports.boolean()
+  }).nullable().default(null)
 });
 var PlumDerivationSchema = PlumRunSchema.pick({
   id: true,
@@ -23127,27 +24379,31 @@ var PlumDerivationSchema = PlumRunSchema.pick({
   plan: true,
   coverage: true
 }).extend({
-  steps: external_exports.array(external_exports.object({
-    step: external_exports.number().int(),
-    metric: external_exports.string(),
-    key: Key,
-    formula: external_exports.string().nullable(),
-    inputs: external_exports.record(external_exports.string(), external_exports.object({ value: external_exports.string().nullable(), reason: external_exports.string().nullable() })),
-    value: external_exports.string().nullable(),
-    undefinedReason: external_exports.string().nullable()
-  })),
-  queries: external_exports.array(external_exports.object({
-    metric: external_exports.string(),
-    kind: external_exports.enum(["measure", "coverage", "exploratory"]),
-    sql: external_exports.string(),
-    params: external_exports.array(external_exports.unknown()),
-    notes: external_exports.array(external_exports.string()),
-    jobId: external_exports.string().nullable(),
-    bytesProcessed: external_exports.number().nullable(),
-    rowCount: external_exports.number().int(),
-    truncated: external_exports.boolean(),
-    durationMs: external_exports.number().int()
-  }))
+  steps: external_exports.array(
+    external_exports.object({
+      step: external_exports.number().int(),
+      metric: external_exports.string(),
+      key: Key,
+      formula: external_exports.string().nullable(),
+      inputs: external_exports.record(external_exports.string(), external_exports.object({ value: external_exports.string().nullable(), reason: external_exports.string().nullable() })),
+      value: external_exports.string().nullable(),
+      undefinedReason: external_exports.string().nullable()
+    })
+  ),
+  queries: external_exports.array(
+    external_exports.object({
+      metric: external_exports.string(),
+      kind: external_exports.enum(["measure", "coverage", "exploratory"]),
+      sql: external_exports.string(),
+      params: external_exports.array(external_exports.unknown()),
+      notes: external_exports.array(external_exports.string()),
+      jobId: external_exports.string().nullable(),
+      bytesProcessed: external_exports.number().nullable(),
+      rowCount: external_exports.number().int(),
+      truncated: external_exports.boolean(),
+      durationMs: external_exports.number().int()
+    })
+  )
 });
 var PlumMetricSummarySchema = external_exports.object({
   name: external_exports.string(),
@@ -23173,7 +24429,14 @@ var PlumMetricSummarySchema = external_exports.object({
   formula: external_exports.string().nullable(),
   inputs: external_exports.array(external_exports.string()),
   dimensions: external_exports.array(external_exports.object({ key: external_exports.string(), label: external_exports.string(), column: external_exports.string() })),
-  filters: external_exports.array(external_exports.object({ key: external_exports.string(), column: external_exports.string(), type: external_exports.enum(["string", "picklist", "boolean", "date", "number"]), allowedValues: external_exports.array(Scalar).nullable() })),
+  filters: external_exports.array(
+    external_exports.object({
+      key: external_exports.string(),
+      column: external_exports.string(),
+      type: external_exports.enum(["string", "picklist", "boolean", "date", "number"]),
+      allowedValues: external_exports.array(Scalar).nullable()
+    })
+  ),
   coverageChecks: external_exports.array(external_exports.object({ name: external_exports.string(), description: external_exports.string() })),
   reconcileReportId: external_exports.string().nullable()
 });
@@ -23239,7 +24502,10 @@ var PlumProposalSchema = external_exports.object({
   runId: external_exports.string().nullable(),
   createdAt: external_exports.string()
 });
-var PlumAskRequestSchema = external_exports.strictObject({ question: external_exports.string().trim().min(1).max(2e3), ontologyRef: external_exports.string().min(1).max(200).default("HEAD") });
+var PlumAskRequestSchema = external_exports.strictObject({
+  question: external_exports.string().trim().min(1).max(2e3),
+  ontologyRef: external_exports.string().min(1).max(200).default("HEAD")
+});
 var PlumAskResultSchema = external_exports.object({
   /** answered: a run with an answer; ambiguous: several accepted metrics fit and a person picks; unanswered: no answer could be made. */
   status: external_exports.enum(["answered", "ambiguous", "unanswered"]),
@@ -23262,7 +24528,15 @@ var PlumTraceSchema = external_exports.object({
   /** What answered: the agent's prompt-and-tools hash (or "interpreter"), and the ontology commit it read. Null on traces recorded before 1.13.0. */
   agentVersion: external_exports.string().nullable().default(null),
   ontologyVersion: external_exports.string().nullable().default(null),
-  tools: external_exports.array(external_exports.object({ name: external_exports.string(), input: external_exports.unknown(), ok: external_exports.boolean(), summary: external_exports.string(), durationMs: external_exports.number().int() })),
+  tools: external_exports.array(
+    external_exports.object({
+      name: external_exports.string(),
+      input: external_exports.unknown(),
+      ok: external_exports.boolean(),
+      summary: external_exports.string(),
+      durationMs: external_exports.number().int()
+    })
+  ),
   filesRead: external_exports.array(external_exports.string()),
   plan: external_exports.unknown(),
   sql: external_exports.array(external_exports.string()),
@@ -23276,10 +24550,26 @@ var PlumTraceSchema = external_exports.object({
 var PlumOntologyEntrySchema = external_exports.object({
   path: external_exports.string(),
   /** What the file is, from where it lives: metrics/, objects/, reports/, findings/, paths/, or a named top-level file. */
-  kind: external_exports.enum(["metric", "object", "report", "finding", "recipe", "glossary", "gotchas", "questions", "summary", "readme", "other"]),
+  kind: external_exports.enum([
+    "metric",
+    "object",
+    "report",
+    "finding",
+    "recipe",
+    "glossary",
+    "gotchas",
+    "questions",
+    "summary",
+    "readme",
+    "other"
+  ]),
   title: external_exports.string()
 });
-var PlumOntologyFilesResponseSchema = external_exports.object({ ontologyVersion: external_exports.string(), files: external_exports.array(PlumOntologyEntrySchema), repositoryUrl: external_exports.string().nullable() });
+var PlumOntologyFilesResponseSchema = external_exports.object({
+  ontologyVersion: external_exports.string(),
+  files: external_exports.array(PlumOntologyEntrySchema),
+  repositoryUrl: external_exports.string().nullable()
+});
 var PlumOntologyDocumentSchema = PlumOntologyEntrySchema.extend({
   ontologyVersion: external_exports.string(),
   /** The file as stored (Markdown, possibly with frontmatter). */
@@ -23323,7 +24613,8 @@ function findProjectConfig(start = process.cwd()) {
 }
 function normalizeServiceUrl(value) {
   const url2 = new URL(value.trim());
-  if (!["http:", "https:"].includes(url2.protocol) || url2.username || url2.password || url2.search || url2.hash) throw new Error("Use an http(s) URL without credentials, query, or fragment.");
+  if (!["http:", "https:"].includes(url2.protocol) || url2.username || url2.password || url2.search || url2.hash)
+    throw new Error("Use an http(s) URL without credentials, query, or fragment.");
   return url2.href.replace(/\/$/, "");
 }
 function getConfig(env = process.env) {
@@ -23334,7 +24625,12 @@ function getConfig(env = process.env) {
   const serviceUrl = fromEnv ?? (typeof project?.serviceUrl === "string" ? project.serviceUrl : typeof global.serviceUrl === "string" ? global.serviceUrl : DEFAULT_SERVICE_URL);
   const token = env.CONTEXT_GRAPH_TOKEN ?? (typeof credentials.token === "string" ? credentials.token : null);
   const telemetry = env.CONTEXT_GRAPH_TELEMETRY === "0" || env.CONTEXT_GRAPH_TELEMETRY === "false" ? false : global.telemetry !== false;
-  return { serviceUrl: normalizeServiceUrl(serviceUrl), token, verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true, telemetry };
+  return {
+    serviceUrl: normalizeServiceUrl(serviceUrl),
+    token,
+    verbose: env.CONTEXT_GRAPH_VERBOSE === "1" || global.verbose === true,
+    telemetry
+  };
 }
 function saveToken(token) {
   writeJson(CREDENTIALS_FILE, { token });
@@ -23353,7 +24649,8 @@ var SESSION_FILE = path.join(CONFIG_DIR, "session.json");
 var SESSION_TTL_MS = 24 * 60 * 60 * 1e3;
 function getTelemetrySessionId(now = Date.now()) {
   const saved = readJson(SESSION_FILE);
-  if (typeof saved?.id === "string" && typeof saved.startedAt === "number" && now - saved.startedAt < SESSION_TTL_MS) return saved.id;
+  if (typeof saved?.id === "string" && typeof saved.startedAt === "number" && now - saved.startedAt < SESSION_TTL_MS)
+    return saved.id;
   return void 0;
 }
 
@@ -23381,8 +24678,9 @@ function createApiClient(platform2, pluginVersion, options = {}) {
   const config2 = options.config ?? getConfig();
   const fetcher = options.fetcher ?? fetch;
   const root = `${config2.serviceUrl}/api/v1`;
-  async function request(method, path7, input2) {
-    if (input2.auth && !config2.token) throw new ApiError("UNAUTHENTICATED", `Not signed in. Run ${platform2.loginHint} first.`, 401);
+  async function request(method, path8, input2) {
+    if (input2.auth && !config2.token)
+      throw new ApiError("UNAUTHENTICATED", `Not signed in. Run ${platform2.loginHint} first.`, 401);
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(input2.query ?? {})) {
       if (value === void 0) continue;
@@ -23394,9 +24692,18 @@ function createApiClient(platform2, pluginVersion, options = {}) {
     if (input2.body !== void 0) headers["Content-Type"] = "application/json";
     let response;
     try {
-      response = await fetcher(`${root}${path7}${params.size ? `?${params}` : ""}`, { method, headers, ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {}, signal: AbortSignal.timeout(options.timeoutMs ?? 6e4) });
+      response = await fetcher(`${root}${path8}${params.size ? `?${params}` : ""}`, {
+        method,
+        headers,
+        ...input2.body !== void 0 ? { body: JSON.stringify(input2.body) } : {},
+        signal: AbortSignal.timeout(options.timeoutMs ?? 6e4)
+      });
     } catch (error62) {
-      throw new ApiError("UNAVAILABLE", `Could not reach ${config2.serviceUrl}: ${error62 instanceof Error ? error62.message : "network error"}`, 0);
+      throw new ApiError(
+        "UNAVAILABLE",
+        `Could not reach ${config2.serviceUrl}: ${error62 instanceof Error ? error62.message : "network error"}`,
+        0
+      );
     }
     let payload = null;
     if (response.status !== 204) {
@@ -23408,17 +24715,27 @@ function createApiClient(platform2, pluginVersion, options = {}) {
     }
     if (!response.ok) {
       const parsed = ApiErrorSchema.safeParse(payload);
-      if (parsed.success) throw new ApiError(parsed.data.error.code, parsed.data.error.message, response.status, parsed.data.error.requestId);
-      throw new ApiError(response.status === 401 ? "UNAUTHENTICATED" : response.status === 403 ? "FORBIDDEN" : "UNAVAILABLE", `Request failed (HTTP ${response.status}).`, response.status);
+      if (parsed.success)
+        throw new ApiError(
+          parsed.data.error.code,
+          parsed.data.error.message,
+          response.status,
+          parsed.data.error.requestId
+        );
+      throw new ApiError(
+        response.status === 401 ? "UNAUTHENTICATED" : response.status === 403 ? "FORBIDDEN" : "UNAVAILABLE",
+        `Request failed (HTTP ${response.status}).`,
+        response.status
+      );
     }
     return payload;
   }
   return {
     serviceUrl: config2.serviceUrl,
-    get: (path7, query) => request("GET", path7, { query, auth: true }),
-    post: (path7, body) => request("POST", path7, { body, auth: true }),
-    delete: (path7) => request("DELETE", path7, { auth: true }),
-    anonymous: (method, path7, body) => request(method, path7, { body, auth: false })
+    get: (path8, query) => request("GET", path8, { query, auth: true }),
+    post: (path8, body) => request("POST", path8, { body, auth: true }),
+    delete: (path8) => request("DELETE", path8, { auth: true }),
+    anonymous: (method, path8, body) => request(method, path8, { body, auth: false })
   };
 }
 
@@ -23431,7 +24748,11 @@ function commandName(argv) {
 function buildHelp(command, spec) {
   const positional = spec.positional ?? [];
   const flags = spec.flags ?? [];
-  const lines = [`Usage: ${[command, ...positional.map(label), ...flags.map(flagLabel)].join(" ")}`, "", spec.description];
+  const lines = [
+    `Usage: ${[command, ...positional.map(label), ...flags.map(flagLabel)].join(" ")}`,
+    "",
+    spec.description
+  ];
   const width = Math.max(0, ...positional.map((item) => item.name.length), ...flags.map((item) => item.name.length + 2));
   const described = positional.filter((item) => item.description);
   if (described.length) {
@@ -23440,7 +24761,10 @@ function buildHelp(command, spec) {
   }
   if (flags.length) {
     lines.push("", "Flags:");
-    for (const item of flags) lines.push(`  ${`--${item.name}`.padEnd(width)}  ${[item.description, item.default !== void 0 ? `(default: ${item.default})` : ""].filter(Boolean).join(" ")}`.trimEnd());
+    for (const item of flags)
+      lines.push(
+        `  ${`--${item.name}`.padEnd(width)}  ${[item.description, item.default !== void 0 ? `(default: ${item.default})` : ""].filter(Boolean).join(" ")}`.trimEnd()
+      );
   }
   return lines.join("\n");
 }
@@ -23477,8 +24801,14 @@ function parseArgs(spec) {
     index += 1;
   }
   const required2 = (spec.positional ?? []).filter((item) => item.required !== false).length;
-  if (positional.length < required2) throw new UsageError(`Expected at least ${required2} argument${required2 === 1 ? "" : "s"}, got ${positional.length}.`);
-  if (positional.length > (spec.positional ?? []).length) throw new UsageError(`Expected at most ${(spec.positional ?? []).length} argument${(spec.positional ?? []).length === 1 ? "" : "s"}, got ${positional.length}.`);
+  if (positional.length < required2)
+    throw new UsageError(
+      `Expected at least ${required2} argument${required2 === 1 ? "" : "s"}, got ${positional.length}.`
+    );
+  if (positional.length > (spec.positional ?? []).length)
+    throw new UsageError(
+      `Expected at most ${(spec.positional ?? []).length} argument${(spec.positional ?? []).length === 1 ? "" : "s"}, got ${positional.length}.`
+    );
   return { positional, flags };
 }
 async function runCommand(spec, work) {
@@ -23518,10 +24848,13 @@ function installScopeAppliesToProject(projectPath, projectDir) {
 }
 function detectClaudeInstallScopes(pluginKey, homeDir = os3.homedir(), projectDir = process.cwd()) {
   try {
-    const parsed = JSON.parse(fs2.readFileSync(path2.join(homeDir, ".claude", "plugins", "installed_plugins.json"), "utf8"));
+    const parsed = JSON.parse(
+      fs2.readFileSync(path2.join(homeDir, ".claude", "plugins", "installed_plugins.json"), "utf8")
+    );
     const scopes = /* @__PURE__ */ new Set();
     for (const entry of parsed.plugins?.[pluginKey] ?? []) {
-      if (entry.scope && INSTALL_SCOPES.includes(entry.scope) && installScopeAppliesToProject(entry.projectPath, projectDir)) scopes.add(entry.scope);
+      if (entry.scope && INSTALL_SCOPES.includes(entry.scope) && installScopeAppliesToProject(entry.projectPath, projectDir))
+        scopes.add(entry.scope);
     }
     return [...scopes];
   } catch {
@@ -23640,9 +24973,9 @@ function createApiSender(post) {
 }
 
 // src/toolHandlers.ts
-import fs4 from "node:fs";
-import os4 from "node:os";
-import path4 from "node:path";
+import fs5 from "node:fs";
+import os5 from "node:os";
+import path5 from "node:path";
 
 // src/links.ts
 function buildPagePath(page, options = {}) {
@@ -23668,124 +25001,335 @@ function parseJson(value) {
 }
 var int2 = (schema) => external_exports.preprocess(parseJson, schema.int());
 var bool = () => external_exports.preprocess(parseJson, external_exports.boolean());
-var proposalId = external_exports.string().min(1).max(200).default("business-context").describe("Context model id. The discovery model is `business-context`; bridged ontology models are `ontology:<connectionId>`. Use list_context_models to see them.");
-var expectedRevision = int2(external_exports.number().positive()).describe("The revision you read. The write is refused with CONFLICT when a newer revision landed, so re-read first.");
+var proposalId = external_exports.string().min(1).max(200).default("business-context").describe(
+  "Context model id. The discovery model is `business-context`; bridged ontology models are `ontology:<connectionId>`. Use list_context_models to see them."
+);
+var expectedRevision = int2(external_exports.number().positive()).describe(
+  "The revision you read. The write is refused with CONFLICT when a newer revision landed, so re-read first."
+);
 var revision = int2(external_exports.number().positive()).optional().describe("A past revision to read; omit for the current one.");
-var listContextModels = { name: "list_context_models", title: "List context models", description: "Every context model in the workspace with its current revision, published ontology version (if any) and source connections. Call first to pick a proposalId.", inputSchema: {} };
-var getContextModel = { name: "get_context_model", title: "Get context model", description: "Summary of one context model revision: revision, publication, counts of concepts, workflows, claims, sections, open questions, and each section with its id, heading, rule and review state. Read this before any edit to learn the current revision and section ids.", inputSchema: { proposalId, revision } };
-var getContextDocument = { name: "get_context_document", title: "Get context document", description: "The business document markdown of a context model revision (what the Document page, step 4, shows), plus open comments. Sections carry protected provenance lines (Context section, Evidence, Answers, Questions, Review) that must be preserved on save.", inputSchema: { proposalId, revision } };
-var getContextGraph = { name: "get_context_graph", title: "Get context graph", description: "Nodes and edges of the context graph (what the Context graph page, step 3, draws): concepts, workflows, claims, evidence, sources and objects. depth 0 is the business overview; focusId expands one node.", inputSchema: {
-  proposalId,
-  expectedRevision,
-  focusId: external_exports.string().min(1).max(200).optional().describe("Expand the neighbourhood of this node id."),
-  depth: int2(external_exports.number().min(0).max(4)).optional().describe("0 = business concepts only, 1 = linked findings and objects, 2 = evidence."),
-  limit: int2(external_exports.number().min(1).max(200)).optional()
-} };
-var editContextSection = { name: "edit_context_section", title: "Edit context section", description: "Change one section of the context document (heading, prose, or rule) and commit it as the next revision, exactly like editing it on the graph or document page. Pick the section by sectionId or heading. Rules are `Type where field op value` over an imported object, or `undetermined`. Returns the new revision; the browser page follows within seconds.", inputSchema: {
-  proposalId,
-  expectedRevision,
-  sectionId: external_exports.string().min(1).max(200).optional().describe("Section id from get_context_model."),
-  heading: external_exports.string().min(1).max(2e3).optional().describe("Current heading, when no sectionId is given."),
-  newHeading: external_exports.string().min(1).max(2e3).optional().describe("Synthesized headings can be long sentences; keep the rename on one line."),
-  body: external_exports.string().max(2e4).optional().describe("New prose for the section (markdown)."),
-  rule: external_exports.string().max(2e3).optional().describe('New rule line, e.g. `Account where Type = "Customer"`, or `undetermined`.'),
-  note: external_exports.string().max(200).optional().describe("Short commit note shown in the revision history.")
-} };
-var saveContextRevision = { name: "save_context_revision", title: "Save context revision", description: "Commit a whole edited context document as the next revision. Use edit_context_section for single-section changes; use this when several sections change at once. Every section and its protected lines must be preserved, and the frontmatter must name the revision being edited.", inputSchema: {
-  proposalId,
-  expectedRevision,
-  markdown: external_exports.string().min(1).max(2e5),
-  note: external_exports.string().max(200).optional()
-} };
-var commentContextSection = { name: "comment_context_section", title: "Comment on context section", description: "Leave a comment on a section for the discovery agent and reviewers, optionally approving it or requesting changes. Creates the next revision.", inputSchema: {
-  proposalId,
-  expectedRevision,
-  sectionId: external_exports.string().min(1).max(200),
-  body: external_exports.string().min(1).max(1e4),
-  decision: external_exports.enum(["approve", "request_changes"]).optional()
-} };
-var compareContextRevisions = { name: "compare_context_revisions", title: "Compare context revisions", description: "Unified diff of the context document between two revisions.", inputSchema: {
-  proposalId,
-  from: int2(external_exports.number().positive()).describe("Older revision."),
-  to: int2(external_exports.number().positive()).optional().describe("Newer revision; defaults to the current one.")
-} };
-var previewContextPublication = { name: "preview_context_publication", title: "Preview context publication", description: "Semantic changes and unresolved references between this context model revision and the published one, before publishing through the ontology.", inputSchema: { proposalId, expectedRevision } };
-var getOntology = { name: "get_ontology", title: "Get ontology", description: "Ontology state: head revision, published version, source selection, every version (number, draft/published, author, created, definition count), draft jobs and automation settings. Read before any ontology write; every write takes the head revision as expectedRevision.", inputSchema: {} };
-var getOntologyVersion = { name: "get_ontology_version", title: "Get ontology version", description: "The markdown of one ontology version (or the newest when omitted) with its parsed definitions.", inputSchema: { version: int2(external_exports.number().positive()).optional() } };
-var saveOntologyVersion = { name: "save_ontology_version", title: "Save ontology version", description: "Save ontology markdown as the next draft version. The markdown is parsed and validated against the imported types; a bad heading or rule is rejected with the reason. Publishing is a separate preview + publish step.", inputSchema: {
-  expectedRevision: int2(external_exports.number().nonnegative()).describe("The ontology head revision from get_ontology."),
-  markdown: external_exports.string().min(1).max(2e5)
-} };
-var configureOntology = { name: "configure_ontology", title: "Configure ontology sources", description: "Set which source connections and objects are in scope for drafts and publication, plus the business questions the draft should answer.", inputSchema: {
-  expectedRevision: int2(external_exports.number().nonnegative()),
-  sources: external_exports.array(external_exports.object({ connectionId: external_exports.string().min(1), objects: external_exports.array(external_exports.string().min(1)).min(1).max(500) })).min(1).max(20),
-  questions: external_exports.string().max(1e4).default("")
-} };
-var requestOntologyDraft = { name: "request_ontology_draft", title: "Request ontology draft", description: "Ask the model to draft the next ontology version from the configured sources and questions. Runs as a background job; poll get_ontology for the job status and the new version.", inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()) } };
-var previewOntologyPublication = { name: "preview_ontology_publication", title: "Preview ontology publication", description: "Exact membership changes of every executable definition (before/after counts, entered/left) and the context changes that publishing the newest draft would make. Returns the previewToken publish_ontology requires.", inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()) } };
-var publishOntology = { name: "publish_ontology", title: "Publish ontology", description: "Publish the newest draft as an immutable version using a previewToken from preview_ontology_publication. Refused when sources or the draft changed since the preview. Ask the person before publishing.", inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()), previewToken: external_exports.string().length(64) } };
-var updateOntologySettings = { name: "update_ontology_settings", title: "Update ontology settings", description: "Turn automatic drafting after imports on or off and set the business questions automatic drafts use.", inputSchema: { autoDraft: bool().optional(), questions: external_exports.string().max(1e4).optional() } };
-var editOntologyEntry = { name: "edit_ontology_entry", title: "Stage an ontology edit", description: "Stage a change to one entry of the ontology (an entity, definition, relationship, workflow, metric, process, automation or question) against the original version. Nothing is saved: the tool returns the diff of all staged changes versus the original, and the changes reach the server only when save_ontology_changes runs after the person says save. Definitions carry `Rule: Type where field op value` or `Rule: undetermined`; entities carry `Source: <type>`. Stage several edits, show the diff, then save once.", inputSchema: {
-  section: external_exports.enum(["entities", "definitions", "relationships", "workflows", "metrics", "processes", "automations", "questions"]),
-  name: external_exports.string().min(1).max(2e3).describe("Entry heading as it appears under the section."),
-  action: external_exports.enum(["update", "add", "remove"]).default("update"),
-  newName: external_exports.string().min(1).max(2e3).optional(),
-  prose: external_exports.string().max(2e4).optional().describe("New prose (markdown); for add, the entry body."),
-  properties: external_exports.record(external_exports.string().min(1).max(40), external_exports.string().max(2e3)).optional().describe('Labeled lines to set, e.g. {"rule": "Account where Type = \\"Customer\\""} or {"source": "Account"}; an empty value removes that line.')
-} };
-var showOntologyChanges = { name: "show_ontology_changes", title: "Show staged ontology changes", description: "The staged ontology edits as a list and as a unified diff against the original version they were made on. Nothing is sent to the server.", inputSchema: {} };
-var saveOntologyChanges = { name: "save_ontology_changes", title: "Save staged ontology changes", description: "Save the staged ontology edits as the next draft version. Call only after the person has seen the diff and said to save. Refused when a newer version was saved since the edits were staged, unless rebase is true, which replays them onto the newest version. Publishing stays a separate preview + publish step.", inputSchema: {
-  expectedRevision: int2(external_exports.number().nonnegative()).describe("Ontology head revision from get_ontology."),
-  rebase: bool().optional().describe("Replay the staged edits onto the newest version when it changed underneath.")
-} };
-var discardOntologyChanges = { name: "discard_ontology_changes", title: "Discard staged ontology changes", description: "Throw away the staged ontology edits without saving anything.", inputSchema: {} };
-var compareOntologyVersions = { name: "compare_ontology_versions", title: "Compare ontology versions", description: "Unified diff of the ontology markdown between two versions.", inputSchema: { from: int2(external_exports.number().positive()), to: int2(external_exports.number().positive()).optional().describe("Defaults to the newest version.") } };
-var listSources = { name: "list_sources", title: "List sources", description: "Connected data sources with provider, status, coverage and freshness.", inputSchema: {} };
-var getImportedModel = { name: "get_imported_model", title: "Get imported model", description: "Imported object types with record counts, fields and reference relationships. Use it to write executable rules (`Type where field op value`) against real field names and picklist values.", inputSchema: {
-  connectionId: external_exports.string().min(1).max(200).optional(),
-  search: external_exports.string().max(200).optional().describe("Case-insensitive filter on type name."),
-  fields: bool().optional().describe("Include field lists (default true).")
-} };
-var searchEntities = { name: "search_entities", title: "Search entities", description: "Imported records of one type, optionally filtered by label. Shows attributes so a rule can be checked against real rows.", inputSchema: {
-  typeId: external_exports.string().min(1).max(200),
-  search: external_exports.string().max(200).optional(),
-  limit: int2(external_exports.number().min(1).max(100)).optional()
-} };
-var aggregateRecords = { name: "aggregate_records", title: "Aggregate records", description: 'Group and total every imported record of one type on the server (not a 100-row sample): counts, sums, averages, minimums, maximums and distinct counts per group, plus the same totals over all matching records. Groups are fields (`StageName`), date buckets (`CloseDate:month`) or an attribute of the referenced record (`AccountId.Industry`); `where` uses the definition rule language without the type prefix (`StageName != "Closed Lost" and Amount > 0`). Returns a caption line, the coverage and snapshot the numbers come from, and a JSON block ready to embed in a chart or table.', inputSchema: {
-  typeId: external_exports.string().min(1).max(200).describe("Type id or native name from get_imported_model, e.g. Opportunity."),
-  connectionId: external_exports.string().min(1).max(200).optional().describe("Only when the same type name exists in several connections."),
-  where: external_exports.string().max(2e3).optional().describe("`field op value and \u2026`, operators = != > >= < <=, strings in double quotes."),
-  groupBy: external_exports.array(external_exports.string().min(1).max(200)).max(2).optional().describe("Up to two of: field, field:day|week|month|quarter|year, referenceField.attribute."),
-  metrics: external_exports.array(external_exports.string().min(1).max(200)).max(6).optional().describe("count, sum:field, avg:field, min:field, max:field, distinct:field (default count)."),
-  orderBy: external_exports.string().max(200).optional().describe("A metric or grouping of this query, optionally followed by asc or desc (default: first metric desc, or the date bucket asc)."),
-  limit: int2(external_exports.number().min(1).max(500)).optional().describe("Maximum groups returned (default 50). The result says when groups were left out.")
-} };
-var exportRecords = { name: "export_records", title: "Export records", description: "Write every imported record of one type (up to 5,000) to a JSON file on this machine, with the fields you name, for a chart or table that needs row-level data (scatter, timeline, drill-down table). Returns the file path, the row count and the columns; the file holds `{ type, fields, snapshot, rows: [{ id, label, ...attributes }] }`. Prefer aggregate_records whenever grouped numbers are enough.", inputSchema: {
-  typeId: external_exports.string().min(1).max(200),
-  connectionId: external_exports.string().min(1).max(200).optional(),
-  search: external_exports.string().max(200).optional().describe("Case-insensitive filter on the record label."),
-  fields: external_exports.array(external_exports.string().min(1).max(200)).max(60).optional().describe("Attributes to keep; every attribute when omitted."),
-  limit: int2(external_exports.number().min(1).max(5e3)).optional().describe("Maximum rows (default 5000).")
-} };
-var getViewCatalog = { name: "get_view_catalog", title: "Get the view catalog", description: "The components a view may be built from: layout (Page, Row, Section, Divider), words (Caption, Note, Callout, Quote, Toggle, Checklist, Badges), numbers (Kpi, Trend, Progress, Gauge, Sparkline, Cards) and charts (BarChart, LineChart, PieChart, Waterfall, Funnel, Heatmap, Scatter, Histogram, Flow, DataTable), each with its props, an example and the rules views follow, plus the spec format save_view expects. Read it once before composing a view: it is the whole vocabulary, and the presentation knobs every chart takes (labels, tooltip, overlay, orientation, palette, emphasis, size, annotations) are described there too.", inputSchema: {} };
-var saveView = { name: "save_view", title: "Save a view", description: 'Save a view to the workspace so it appears on the app\'s Views page (step 5), rendered by the app\'s own components. A view is a json-render spec: `{ "root": "page", "elements": { "page": { "type": "Page", "props": {\u2026}, "children": ["caption","chart","table"] }, \u2026 } }` using only the components get_view_catalog lists; every chart takes the JSON block aggregate_records returned as its `data`. The spec is validated against the catalog here and on the server; problems come back as a list to fix. Record beside it the question, the main form, a one-paragraph caption and the facts the numbers rest on (type, where clause, record count, snapshot, coverage, exact). Pass the id of an earlier view to replace it in place so its link keeps working. Returns the view id and the page link.', inputSchema: {
-  id: external_exports.string().min(1).max(200).optional().describe("An existing view id to replace; omit to create a new view."),
-  title: external_exports.string().min(1).max(120).describe('Two to six words naming the view, e.g. "Closed-won revenue by industry".'),
-  question: external_exports.string().max(1e3).optional().describe("The question in the person's words."),
-  form: external_exports.string().min(1).max(40).describe("The main form: waterfall, funnel, bar, line, table, kpi, flow, heatmap, scatter, histogram, or another single word."),
-  caption: external_exports.string().max(2e3).optional().describe("Type and record count, the where clause in words, the definition applied, the snapshot date and coverage, and whether counts are exact."),
-  facts: external_exports.record(external_exports.string().min(1).max(40), external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean(), external_exports.null()])).optional().describe('Machine-readable facts, e.g. {"typeId":"Opportunity","where":"StageName = \\"Closed Won\\"","records":90,"snapshot":"2026-09-15","coverage":"complete","exact":true}.'),
-  spec: external_exports.record(external_exports.string(), external_exports.unknown()).describe("The json-render spec: { root, elements }.")
-} };
-var listViews = { name: "list_views", title: "List views", description: "The views saved in this workspace (newest first): id, title, form, question, revision, who saved it and when, plus each one's page link. Views belong to one organization's workspace, so a view the person remembers but cannot see here may be saved in another organization: list_organizations shows which ones they can reach. Use this to find the id of a view to replace or to point the person at an existing view.", inputSchema: { limit: int2(external_exports.number().min(1).max(200)).optional() } };
-var deleteView = { name: "delete_view", title: "Delete a view", description: "Remove a saved view from the workspace's Views page. Ask the person first unless they asked for the deletion themselves.", inputSchema: { id: external_exports.string().min(1).max(200).describe("View id from list_views.") } };
-var whoAmI = { name: "whoami", title: "Who am I", description: "Which organization, workspace and person this plugin token acts as, the app URL, and the token label. Call when a write is refused, the person cannot see a change, or something they expect to find is missing: it may live in another organization.", inputSchema: {} };
-var listOrganizations = { name: "list_organizations", title: "List organizations", description: "The organizations this person belongs to, each with its workspace, their role in it, and which one the plugin is in now. Every organization is a separate workspace with its own sources, ontology and views, so anything the person cannot find here may simply be in another one. Call before telling someone a view, source or definition does not exist.", inputSchema: {} };
-var switchOrganization = { name: "switch_organization", title: "Switch organization", description: "Move this plugin install to another organization's workspace and act there from now on. Takes an organization id from list_organizations (or null for the shared workspace); the server checks the membership, issues a new token for that workspace and retires the old one, so no browser sign-in is needed. Everything after the switch (sources, ontology, context model, views) is that organization's. The browser does not follow: the person picks the same organization in the app's own switcher to watch what the plugin is doing.", inputSchema: {
-  organizationId: external_exports.string().min(1).max(200).nullable().describe("Organization id from list_organizations, or null for the shared workspace."),
-  label: external_exports.string().min(1).max(120).optional().describe("Label for the new install, shown in the app. Defaults to the current one.")
-} };
-var getPluginActivity = { name: "get_plugin_activity", title: "Get plugin activity", description: "The ledger of changes editor plugins made in this workspace (the same feed the browser shows), newest first.", inputSchema: { limit: int2(external_exports.number().min(1).max(100)).optional() } };
+var listContextModels = {
+  name: "list_context_models",
+  title: "List context models",
+  description: "Every context model in the workspace with its current revision, published ontology version (if any) and source connections. Call first to pick a proposalId.",
+  inputSchema: {},
+  outputSchema: ContextListSchema
+};
+var getContextModel = {
+  name: "get_context_model",
+  title: "Get context model",
+  description: "Summary of one context model revision: revision, publication, counts of concepts, workflows, findings, sections, open questions, and each section with its id, heading, rule and review state. Read this before any edit to learn the current revision and section ids.",
+  inputSchema: { proposalId, revision }
+};
+var getContextDocument = {
+  name: "get_context_document",
+  title: "Get context document",
+  description: "The business document markdown of a context model revision (what the Document page, step 4, shows), plus open comments. Sections carry protected provenance lines (Context section, Evidence, Answers, Questions, Review) that must be preserved on save.",
+  inputSchema: { proposalId, revision }
+};
+var getContextGraph = {
+  name: "get_context_graph",
+  title: "Get context graph",
+  description: "Nodes and edges of the context graph (what the Context graph page, step 3, draws): concepts, workflows, findings, evidence, sources and objects. depth 0 is the business overview; focusId expands one node.",
+  inputSchema: {
+    proposalId,
+    expectedRevision,
+    focusId: external_exports.string().min(1).max(200).optional().describe("Expand the neighbourhood of this node id."),
+    depth: int2(external_exports.number().min(0).max(4)).optional().describe("0 = business concepts only, 1 = linked findings and objects, 2 = evidence."),
+    limit: int2(external_exports.number().min(1).max(200)).optional()
+  },
+  outputSchema: ContextGraphSchema
+};
+var editContextSection = {
+  name: "edit_context_section",
+  title: "Edit context section",
+  description: "Change one section of the context document (heading, prose, or rule) and commit it as the next revision, exactly like editing it on the graph or document page. Pick the section by sectionId or heading. Rules are `Type where field op value` over an imported object, or `undetermined`. Returns the new revision; the browser page follows within seconds.",
+  inputSchema: {
+    proposalId,
+    expectedRevision,
+    sectionId: external_exports.string().min(1).max(200).optional().describe("Section id from get_context_model."),
+    heading: external_exports.string().min(1).max(2e3).optional().describe("Current heading, when no sectionId is given."),
+    newHeading: external_exports.string().min(1).max(2e3).optional().describe("Synthesized headings can be long sentences; keep the rename on one line."),
+    body: external_exports.string().max(2e4).optional().describe("New prose for the section (markdown)."),
+    rule: external_exports.string().max(2e3).optional().describe('New rule line, e.g. `Account where Type = "Customer"`, or `undetermined`.'),
+    note: external_exports.string().max(200).optional().describe("Short commit note shown in the revision history.")
+  }
+};
+var saveContextRevision = {
+  name: "save_context_revision",
+  title: "Save context revision",
+  description: "Commit a whole edited context document as the next revision. Use edit_context_section for single-section changes; use this when several sections change at once. Every section and its protected lines must be preserved, and the frontmatter must name the revision being edited.",
+  inputSchema: {
+    proposalId,
+    expectedRevision,
+    markdown: external_exports.string().min(1).max(2e5),
+    note: external_exports.string().max(200).optional()
+  }
+};
+var commentContextSection = {
+  name: "comment_context_section",
+  title: "Comment on context section",
+  description: "Leave a comment on a section for the discovery agent and reviewers, optionally approving it or requesting changes. Creates the next revision.",
+  inputSchema: {
+    proposalId,
+    expectedRevision,
+    sectionId: external_exports.string().min(1).max(200),
+    body: external_exports.string().min(1).max(1e4),
+    decision: external_exports.enum(["approve", "request_changes"]).optional()
+  }
+};
+var compareContextRevisions = {
+  name: "compare_context_revisions",
+  title: "Compare context revisions",
+  description: "Unified diff of the context document between two revisions.",
+  inputSchema: {
+    proposalId,
+    from: int2(external_exports.number().positive()).describe("Older revision."),
+    to: int2(external_exports.number().positive()).optional().describe("Newer revision; defaults to the current one.")
+  }
+};
+var previewContextPublication = {
+  name: "preview_context_publication",
+  title: "Preview context publication",
+  description: "Semantic changes and unresolved references between this context model revision and the published one, before publishing through the ontology.",
+  inputSchema: { proposalId, expectedRevision }
+};
+var getOntology = {
+  name: "get_ontology",
+  title: "Get ontology",
+  description: "Ontology state: head revision, published version, source selection, every version (number, draft/published, author, created, definition count), draft jobs and automation settings. Read before any ontology write; every write takes the head revision as expectedRevision.",
+  inputSchema: {}
+};
+var getOntologyVersion = {
+  name: "get_ontology_version",
+  title: "Get ontology version",
+  description: "The markdown of one ontology version (or the newest when omitted) with its parsed definitions.",
+  inputSchema: { version: int2(external_exports.number().positive()).optional() }
+};
+var saveOntologyVersion = {
+  name: "save_ontology_version",
+  title: "Save ontology version",
+  description: "Save ontology markdown as the next draft version. The markdown is parsed and validated against the imported types; a bad heading or rule is rejected with the reason. Publishing is a separate preview + publish step.",
+  inputSchema: {
+    expectedRevision: int2(external_exports.number().nonnegative()).describe("The ontology head revision from get_ontology."),
+    markdown: external_exports.string().min(1).max(2e5)
+  }
+};
+var configureOntology = {
+  name: "configure_ontology",
+  title: "Configure ontology sources",
+  description: "Set which source connections and objects are in scope for drafts and publication, plus the business questions the draft should answer.",
+  inputSchema: {
+    expectedRevision: int2(external_exports.number().nonnegative()),
+    sources: external_exports.array(external_exports.object({ connectionId: external_exports.string().min(1), objects: external_exports.array(external_exports.string().min(1)).min(1).max(500) })).min(1).max(20),
+    questions: external_exports.string().max(1e4).default("")
+  }
+};
+var requestOntologyDraft = {
+  name: "request_ontology_draft",
+  title: "Request ontology draft",
+  description: "Ask the model to draft the next ontology version from the configured sources and questions. Runs as a background job; poll get_ontology for the job status and the new version.",
+  inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()) }
+};
+var previewOntologyPublication = {
+  name: "preview_ontology_publication",
+  title: "Preview ontology publication",
+  description: "Exact membership changes of every executable definition (before/after counts, entered/left) and the context changes that publishing the newest draft would make. Returns the previewToken publish_ontology requires.",
+  inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()) }
+};
+var publishOntology = {
+  name: "publish_ontology",
+  title: "Publish ontology",
+  description: "Publish the newest draft as an immutable version using a previewToken from preview_ontology_publication. Refused when sources or the draft changed since the preview. Ask the person before publishing.",
+  inputSchema: { expectedRevision: int2(external_exports.number().nonnegative()), previewToken: external_exports.string().length(64) }
+};
+var updateOntologySettings = {
+  name: "update_ontology_settings",
+  title: "Update ontology settings",
+  description: "Turn automatic drafting after imports on or off and set the business questions automatic drafts use.",
+  inputSchema: { autoDraft: bool().optional(), questions: external_exports.string().max(1e4).optional() }
+};
+var editOntologyEntry = {
+  name: "edit_ontology_entry",
+  title: "Stage an ontology edit",
+  description: "Stage a change to one entry of the ontology (an entity, definition, relationship, workflow, metric, process, automation or question) against the original version. Nothing is saved: the tool returns the diff of all staged changes versus the original, and the changes reach the server only when save_ontology_changes runs after the person says save. Definitions carry `Rule: Type where field op value` or `Rule: undetermined`; entities carry `Source: <type>`. Stage several edits, show the diff, then save once.",
+  inputSchema: {
+    section: external_exports.enum([
+      "entities",
+      "definitions",
+      "relationships",
+      "workflows",
+      "metrics",
+      "processes",
+      "automations",
+      "questions"
+    ]),
+    name: external_exports.string().min(1).max(2e3).describe("Entry heading as it appears under the section."),
+    action: external_exports.enum(["update", "add", "remove"]).default("update"),
+    newName: external_exports.string().min(1).max(2e3).optional(),
+    prose: external_exports.string().max(2e4).optional().describe("New prose (markdown); for add, the entry body."),
+    properties: external_exports.record(external_exports.string().min(1).max(40), external_exports.string().max(2e3)).optional().describe(
+      'Labeled lines to set, e.g. {"rule": "Account where Type = \\"Customer\\""} or {"source": "Account"}; an empty value removes that line.'
+    )
+  }
+};
+var showOntologyChanges = {
+  name: "show_ontology_changes",
+  title: "Show staged ontology changes",
+  description: "The staged ontology edits as a list and as a unified diff against the original version they were made on. Nothing is sent to the server.",
+  inputSchema: {}
+};
+var saveOntologyChanges = {
+  name: "save_ontology_changes",
+  title: "Save staged ontology changes",
+  description: "Save the staged ontology edits as the next draft version. Call only after the person has seen the diff and said to save. Refused when a newer version was saved since the edits were staged, unless rebase is true, which replays them onto the newest version. Publishing stays a separate preview + publish step.",
+  inputSchema: {
+    expectedRevision: int2(external_exports.number().nonnegative()).describe("Ontology head revision from get_ontology."),
+    rebase: bool().optional().describe("Replay the staged edits onto the newest version when it changed underneath.")
+  }
+};
+var discardOntologyChanges = {
+  name: "discard_ontology_changes",
+  title: "Discard staged ontology changes",
+  description: "Throw away the staged ontology edits without saving anything.",
+  inputSchema: {}
+};
+var compareOntologyVersions = {
+  name: "compare_ontology_versions",
+  title: "Compare ontology versions",
+  description: "Unified diff of the ontology markdown between two versions.",
+  inputSchema: {
+    from: int2(external_exports.number().positive()),
+    to: int2(external_exports.number().positive()).optional().describe("Defaults to the newest version.")
+  }
+};
+var listSources = {
+  name: "list_sources",
+  title: "List sources",
+  description: "Connected data sources with provider, status, coverage and freshness.",
+  inputSchema: {},
+  outputSchema: SourceListResponseSchema
+};
+var getImportedModel = {
+  name: "get_imported_model",
+  title: "Get imported model",
+  description: "Imported object types with record counts, fields and reference relationships. Use it to write executable rules (`Type where field op value`) against real field names and picklist values.",
+  inputSchema: {
+    connectionId: external_exports.string().min(1).max(200).optional(),
+    search: external_exports.string().max(200).optional().describe("Case-insensitive filter on type name."),
+    fields: bool().optional().describe("Include field lists (default true).")
+  }
+};
+var searchEntities = {
+  name: "search_entities",
+  title: "Search entities",
+  description: "Imported records of one type, optionally filtered by label. Shows attributes so a rule can be checked against real rows. When more records exist the answer ends with a cursor; pass it back for the next page.",
+  inputSchema: {
+    typeId: external_exports.string().min(1).max(200),
+    search: external_exports.string().max(200).optional(),
+    limit: int2(external_exports.number().min(1).max(100)).optional(),
+    cursor: external_exports.string().min(1).max(2048).optional().describe("The cursor a previous call ended with, to read the next page.")
+  },
+  outputSchema: EntityListResponseSchema
+};
+var aggregateRecords = {
+  name: "aggregate_records",
+  title: "Aggregate records",
+  description: 'Group and total every imported record of one type on the server (not a 100-row sample): counts, sums, averages, minimums, maximums and distinct counts per group, plus the same totals over all matching records. Groups are fields (`StageName`), date buckets (`CloseDate:month`) or an attribute of the referenced record (`AccountId.Industry`); `where` uses the definition rule language without the type prefix (`StageName != "Closed Lost" and Amount > 0`). Returns a caption line, the coverage and snapshot the numbers come from, and a JSON block ready to embed in a chart or table.',
+  inputSchema: {
+    typeId: external_exports.string().min(1).max(200).describe("Type id or native name from get_imported_model, e.g. Opportunity."),
+    connectionId: external_exports.string().min(1).max(200).optional().describe("Only when the same type name exists in several connections."),
+    where: external_exports.string().max(2e3).optional().describe("`field op value and \u2026`, operators = != > >= < <=, strings in double quotes."),
+    groupBy: external_exports.array(external_exports.string().min(1).max(200)).max(2).optional().describe("Up to two of: field, field:day|week|month|quarter|year, referenceField.attribute."),
+    metrics: external_exports.array(external_exports.string().min(1).max(200)).max(6).optional().describe("count, sum:field, avg:field, min:field, max:field, distinct:field (default count)."),
+    orderBy: external_exports.string().max(200).optional().describe(
+      'A metric or grouping of this query, optionally followed by asc or desc (default: first metric desc, or the date bucket asc). Prefix with "group " or "metric " when a grouping and a metric are written the same way.'
+    ),
+    limit: int2(external_exports.number().min(1).max(500)).optional().describe("Maximum groups returned (default 50). The result says when groups were left out.")
+  },
+  outputSchema: AggregateResponseSchema
+};
+var exportRecords = {
+  name: "export_records",
+  title: "Export records",
+  description: "Write every imported record of one type (up to 5,000) to a JSON file on this machine, with the fields you name, for a chart or table that needs row-level data (scatter, timeline, drill-down table). Returns the file path, the row count and the columns; the file holds `{ type, fields, snapshot, rows: [{ id, label, ...attributes }] }`. Prefer aggregate_records whenever grouped numbers are enough.",
+  inputSchema: {
+    typeId: external_exports.string().min(1).max(200),
+    connectionId: external_exports.string().min(1).max(200).optional(),
+    search: external_exports.string().max(200).optional().describe("Case-insensitive filter on the record label."),
+    fields: external_exports.array(external_exports.string().min(1).max(200)).max(60).optional().describe("Attributes to keep; every attribute when omitted."),
+    limit: int2(external_exports.number().min(1).max(5e3)).optional().describe("Maximum rows (default 5000).")
+  }
+};
+var getViewCatalog = {
+  name: "get_view_catalog",
+  title: "Get the view catalog",
+  description: "The components a view may be built from: layout (Page, Row, Section, Divider), words (Caption, Note, Callout, Quote, Toggle, Checklist, Badges), numbers (Kpi, Trend, Progress, Gauge, Sparkline, Cards) and charts (BarChart, LineChart, PieChart, Waterfall, Funnel, Heatmap, Scatter, Histogram, Flow, DataTable), each with its props, an example and the rules views follow, plus the spec format save_view expects. Read it once before composing a view: it is the whole vocabulary, and the presentation knobs every chart takes (labels, tooltip, overlay, orientation, palette, emphasis, size, annotations) are described there too.",
+  inputSchema: {}
+};
+var saveView = {
+  name: "save_view",
+  title: "Save a view",
+  description: 'Save a view to the workspace so it appears on the app\'s Views page (step 5), rendered by the app\'s own components. A view is a json-render spec: `{ "root": "page", "elements": { "page": { "type": "Page", "props": {\u2026}, "children": ["caption","chart","table"] }, \u2026 } }` using only the components get_view_catalog lists; every chart takes the JSON block aggregate_records returned as its `data`. The spec is validated against the catalog here and on the server; problems come back as a list to fix. Record beside it the question, the main form, a one-paragraph caption and the facts the numbers rest on (type, where clause, record count, snapshot, coverage, exact). Pass the id of an earlier view to replace it in place so its link keeps working. Returns the view id and the page link.',
+  inputSchema: {
+    id: external_exports.string().min(1).max(200).optional().describe("An existing view id to replace; omit to create a new view."),
+    title: external_exports.string().min(1).max(120).describe('Two to six words naming the view, e.g. "Closed-won revenue by industry".'),
+    question: external_exports.string().max(1e3).optional().describe("The question in the person's words."),
+    form: external_exports.string().min(1).max(40).describe(
+      "The main form: waterfall, funnel, bar, line, table, kpi, flow, heatmap, scatter, histogram, or another single word."
+    ),
+    caption: external_exports.string().max(2e3).optional().describe(
+      "Type and record count, the where clause in words, the definition applied, the snapshot date and coverage, and whether counts are exact."
+    ),
+    facts: external_exports.record(external_exports.string().min(1).max(40), external_exports.union([external_exports.string().max(1e3), external_exports.number(), external_exports.boolean(), external_exports.null()])).optional().describe(
+      'Machine-readable facts, e.g. {"typeId":"Opportunity","where":"StageName = \\"Closed Won\\"","records":90,"snapshot":"2026-09-15","coverage":"complete","exact":true}.'
+    ),
+    spec: external_exports.record(external_exports.string(), external_exports.unknown()).describe("The json-render spec: { root, elements }.")
+  }
+};
+var listViews = {
+  name: "list_views",
+  title: "List views",
+  description: "The views saved in this workspace (newest first): id, title, form, question, revision, who saved it and when, plus each one's page link. Views belong to one organization's workspace, so a view the person remembers but cannot see here may be saved in another organization: list_organizations shows which ones they can reach. Use this to find the id of a view to replace or to point the person at an existing view.",
+  inputSchema: { limit: int2(external_exports.number().min(1).max(200)).optional() },
+  outputSchema: ViewListResponseSchema
+};
+var deleteView = {
+  name: "delete_view",
+  title: "Delete a view",
+  description: "Remove a saved view from the workspace's Views page. Ask the person first unless they asked for the deletion themselves.",
+  inputSchema: { id: external_exports.string().min(1).max(200).describe("View id from list_views.") }
+};
+var whoAmI = {
+  name: "whoami",
+  title: "Who am I",
+  description: "Which organization, workspace and person this plugin token acts as, the app URL, and the token label. Call when a write is refused, the person cannot see a change, or something they expect to find is missing: it may live in another organization.",
+  inputSchema: {},
+  outputSchema: PluginWhoAmISchema
+};
+var listOrganizations = {
+  name: "list_organizations",
+  title: "List organizations",
+  description: "The organizations this person belongs to, each with its workspace, their role in it, and which one the plugin is in now. Every organization is a separate workspace with its own sources, ontology and views, so anything the person cannot find here may simply be in another one. Call before telling someone a view, source or definition does not exist.",
+  inputSchema: {},
+  outputSchema: PluginOrganizationListSchema
+};
+var switchOrganization = {
+  name: "switch_organization",
+  title: "Switch organization",
+  description: "Move this plugin install to another organization's workspace and act there from now on. Takes an organization id from list_organizations (or null for the shared workspace); the server checks the membership, issues a new token for that workspace and retires the old one, so no browser sign-in is needed. Everything after the switch (sources, ontology, context model, views) is that organization's. The browser does not follow: the person picks the same organization in the app's own switcher to watch what the plugin is doing.",
+  inputSchema: {
+    organizationId: external_exports.string().min(1).max(200).nullable().describe("Organization id from list_organizations, or null for the shared workspace."),
+    label: external_exports.string().min(1).max(120).optional().describe("Label for the new install, shown in the app. Defaults to the current one.")
+  }
+};
+var getPluginActivity = {
+  name: "get_plugin_activity",
+  title: "Get plugin activity",
+  description: "The ledger of changes editor plugins made in this workspace (the same feed the browser shows), newest first.",
+  inputSchema: { limit: int2(external_exports.number().min(1).max(100)).optional() },
+  outputSchema: PluginActivitySchema
+};
 var ALL_TOOL_CONTRACTS = [
   listContextModels,
   getContextModel,
@@ -23829,7 +25373,9 @@ function unifiedDiff(before, after, labels2, context = 2) {
   const a = before.replace(/\r\n?/g, "\n").split("\n");
   const b = after.replace(/\r\n?/g, "\n").split("\n");
   const table = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
-  for (let i2 = a.length - 1; i2 >= 0; i2--) for (let j2 = b.length - 1; j2 >= 0; j2--) table[i2][j2] = a[i2] === b[j2] ? table[i2 + 1][j2 + 1] + 1 : Math.max(table[i2 + 1][j2], table[i2][j2 + 1]);
+  for (let i2 = a.length - 1; i2 >= 0; i2--)
+    for (let j2 = b.length - 1; j2 >= 0; j2--)
+      table[i2][j2] = a[i2] === b[j2] ? table[i2 + 1][j2 + 1] + 1 : Math.max(table[i2 + 1][j2], table[i2][j2 + 1]);
   const ops = [];
   let i = 0;
   let j = 0;
@@ -23906,24 +25452,156 @@ function applyOps(markdown, ops) {
 }
 function describeOp(op) {
   const what = op.action === "remove" ? "remove" : op.action === "add" ? "add" : "update";
-  const parts = [op.newName ? `rename to "${op.newName}"` : "", op.action === "update" && op.prose !== void 0 ? "prose" : "", op.properties ? Object.entries(op.properties).map(([key, value]) => value.trim() ? `${key}: ${value}` : `drop ${key}`).join(", ") : ""].filter(Boolean);
+  const parts = [
+    op.newName ? `rename to "${op.newName}"` : "",
+    op.action === "update" && op.prose !== void 0 ? "prose" : "",
+    op.properties ? Object.entries(op.properties).map(([key, value]) => value.trim() ? `${key}: ${value}` : `drop ${key}`).join(", ") : ""
+  ].filter(Boolean);
   return `${what} ${op.section} "${op.name}"${parts.length ? ` (${parts.join("; ")})` : ""}`;
+}
+
+// src/toolResults.ts
+import fs4 from "node:fs";
+import os4 from "node:os";
+import path4 from "node:path";
+var OUTPUT_BUDGET = 4e4;
+var CONTEXT_TOOLS = /* @__PURE__ */ new Set([
+  "get_context_model",
+  "get_context_document",
+  "get_context_graph",
+  "edit_context_section",
+  "save_context_revision",
+  "comment_context_section",
+  "compare_context_revisions",
+  "preview_context_publication"
+]);
+var ONTOLOGY_TOOLS = /* @__PURE__ */ new Set([
+  "get_ontology",
+  "get_ontology_version",
+  "save_ontology_version",
+  "configure_ontology",
+  "request_ontology_draft",
+  "preview_ontology_publication",
+  "publish_ontology",
+  "update_ontology_settings",
+  "edit_ontology_entry",
+  "show_ontology_changes",
+  "save_ontology_changes",
+  "discard_ontology_changes",
+  "compare_ontology_versions"
+]);
+var RECORD_TOOLS = /* @__PURE__ */ new Set(["get_imported_model", "search_entities", "aggregate_records", "export_records"]);
+var VIEW_TOOLS = /* @__PURE__ */ new Set(["save_view", "list_views", "delete_view"]);
+function unknownKeys(shape, args) {
+  if (!args || typeof args !== "object" || Array.isArray(args)) return [];
+  return Object.keys(args).filter((key) => !Object.hasOwn(shape, key));
+}
+function ignoredKeysNote(keys) {
+  const list = keys.map((key) => `\`${key}\``).join(", ");
+  return `Note: ignored ${keys.length === 1 ? "parameter" : "parameters"} ${list}, which this version of the plugin does not take. If a skill asked for ${keys.length === 1 ? "it" : "them"}, ${platform.updateHint} brings the plugin up to date.`;
+}
+function nextStep(error62, tool) {
+  const reread = CONTEXT_TOOLS.has(tool) ? "Re-read get_context_model (get_context_document for a whole-document save), tell the person what changed, and retry with the new revision as expectedRevision." : "Re-read get_ontology and retry with its head revision as expectedRevision.";
+  const listing = CONTEXT_TOOLS.has(tool) ? "list_context_models and get_context_model list the models and section ids" : ONTOLOGY_TOOLS.has(tool) ? "get_ontology lists the versions" : RECORD_TOOLS.has(tool) ? "get_imported_model lists the imported types and fields" : VIEW_TOOLS.has(tool) ? "list_views lists the saved views" : "whoami shows where the plugin is working";
+  if (error62.code === "UNAUTHENTICATED" && error62.message.includes(platform.loginHint)) return null;
+  if (error62.code === "NOT_FOUND" && RECORD_TOOLS.has(tool) && error62.message.includes("get_imported_model")) return null;
+  switch (error62.code) {
+    case "UNAUTHENTICATED":
+      return `Next: the sign-in is missing or was revoked. Run ${platform.loginHint}; the tools use the new sign-in without a restart.`;
+    case "FORBIDDEN":
+      return `Next: this account may not do that here. whoami shows its role and workspace; if the work belongs to another organization, list_organizations and ${platform.setupHint} org move the plugin. Otherwise a workspace admin has to make the change.`;
+    case "NOT_FOUND":
+      return `Next: check the id: ${listing}. It may also live in another organization (list_organizations).`;
+    case "CONFLICT":
+      if (tool === "request_ontology_draft")
+        return "Next: a draft is already running or the head moved. Poll get_ontology for the job, then request again if needed.";
+      if (tool === "publish_ontology")
+        return "Next: the draft or the data changed after the preview. Run preview_ontology_publication again and confirm with the person before publishing.";
+      return `Next: someone else saved first. ${reread}`;
+    case "INVALID_REQUEST":
+      return RECORD_TOOLS.has(tool) || tool === "edit_context_section" || tool.includes("ontology") ? "Next: fix the part the message names and call again; get_imported_model has the real type and field names." : "Next: fix the part the message names and call again.";
+    case "RATE_LIMITED":
+      return "Next: the app is limiting requests. Wait a minute, then retry once.";
+    case "UNAVAILABLE":
+    case "SERVICE_UNAVAILABLE":
+      return error62.status === 0 ? `Next: the app could not be reached. ${platform.setupHint} status shows the app URL the plugin uses; check the network and retry.` : "Next: the app is unavailable right now. Retry in a minute; if it keeps failing, tell the person.";
+    case "INVALID_RESPONSE":
+      return `Next: run ${platform.updateHint}; the plugin and the app disagree about a response.`;
+    case "INTERNAL_ERROR":
+    case "NOT_IMPLEMENTED":
+      return "Next: the app failed on its side. Retry once; if it fails again, tell the person and quote the request id.";
+    default:
+      return null;
+  }
+}
+var TRUNCATION_HINTS = {
+  get_context_document: "get_context_model lists every section; edit_context_section changes one without the whole document.",
+  get_context_graph: "Narrow the call: depth 0, a lower limit, or focusId for one node's neighbourhood.",
+  get_imported_model: "Narrow the call: search for one type, or fields: false for the type list alone.",
+  aggregate_records: "Narrow the call: a lower limit or a where clause. Embed the JSON block from the saved file, not from this text.",
+  search_entities: "Ask for a lower limit or add a search filter.",
+  get_plugin_activity: "Ask for a lower limit.",
+  list_views: "Ask for a lower limit."
+};
+function capText(tool, value, budget = OUTPUT_BUDGET, directory = path4.join(os4.tmpdir(), "context-graph", "outputs")) {
+  if (value.length <= budget) return { text: value, truncated: false };
+  const lines = value.split("\n");
+  const kept = [];
+  let used = 0;
+  for (const line of lines) {
+    if (used + line.length + 1 > budget) break;
+    kept.push(line);
+    used += line.length + 1;
+  }
+  if (!kept.length) kept.push(value.slice(0, budget));
+  let savedTo;
+  try {
+    fs4.mkdirSync(directory, { recursive: true });
+    savedTo = path4.join(directory, `${tool}-${Date.now()}.txt`);
+    fs4.writeFileSync(savedTo, value);
+  } catch {
+    savedTo = void 0;
+  }
+  const shown = kept.join("\n");
+  const shownLines = kept.length;
+  const totalLines = lines.length;
+  const where = savedTo ? ` The full text (${totalLines} lines) is in ${savedTo}: read it with the Read tool from line ${shownLines + 1}, using offset and limit for further parts.` : "";
+  const hint = TRUNCATION_HINTS[tool] ? ` ${TRUNCATION_HINTS[tool]}` : "";
+  return {
+    text: `${shown}
+
+[Truncated: showing ${shown.length.toLocaleString("en-US")} of ${value.length.toLocaleString("en-US")} characters, lines 1-${shownLines} of ${totalLines}.]${where}${hint}`,
+    truncated: true,
+    ...savedTo ? { savedTo } : {}
+  };
 }
 
 // src/toolHandlers.ts
 var text2 = (value) => ({ content: [{ type: "text", text: value }] });
+var structured = (value, data) => ({
+  content: [{ type: "text", text: value }],
+  structuredContent: data
+});
 var failure2 = (message) => ({ content: [{ type: "text", text: message }], isError: true });
 async function resolveType(client, requested, connectionId) {
   const found = [];
   let cursor;
   for (let pages = 0; pages < 20; pages++) {
     const page = ModelResponseSchema.parse(await client.get("/graph/model", { limit: 100, cursor, connectionId }));
-    for (const node2 of page.nodes) if (node2.type.id === requested || node2.type.nativeName === requested) found.push({ id: node2.type.id, nativeName: node2.type.nativeName, connectionId: node2.type.connectionId });
+    for (const node2 of page.nodes)
+      if (node2.type.id === requested || node2.type.nativeName === requested)
+        found.push({ id: node2.type.id, nativeName: node2.type.nativeName, connectionId: node2.type.connectionId });
     if (!page.page.nextCursor) break;
     cursor = page.page.nextCursor;
   }
-  if (!found.length) throw new ApiError("NOT_FOUND", `Unknown entity type: ${requested}. get_imported_model lists the imported types.`, 404);
-  if (found.length > 1) throw new ApiError("INVALID_REQUEST", `Ambiguous entity type ${requested}: pass connectionId or the type id.`, 400);
+  if (!found.length)
+    throw new ApiError(
+      "NOT_FOUND",
+      `Unknown entity type: ${requested}. get_imported_model lists the imported types.`,
+      404
+    );
+  if (found.length > 1)
+    throw new ApiError("INVALID_REQUEST", `Ambiguous entity type ${requested}: pass connectionId or the type id.`, 400);
   return found[0];
 }
 var shorten = (value, max = 160) => value.length > max ? `${value.slice(0, max - 1)}\u2026` : value;
@@ -23954,7 +25632,8 @@ function explainParseFailure(original, edited) {
     }
   };
   const message = complaint(edited);
-  if (message && !/type/i.test(message)) return `Parser: ${message}${complaint(original) ? " (the stored document has this problem already)" : ""}`;
+  if (message && !/type/i.test(message))
+    return `Parser: ${message}${complaint(original) ? " (the stored document has this problem already)" : ""}`;
   return "The document structure parses, so the rejected part is a rule: check the type and field names with get_imported_model, or set the rule to undetermined.";
 }
 function createToolHandlers(client, telemetry = telemetryOff) {
@@ -23963,7 +25642,11 @@ function createToolHandlers(client, telemetry = telemetryOff) {
       return schema.parse(value);
     } catch (error62) {
       const issues = error62 instanceof external_exports.ZodError ? error62.issues.slice(0, 3).map((issue2) => `${issue2.path.join(".") || "(root)"}: ${issue2.message}`).join("; ") : "";
-      throw new ApiError("INVALID_RESPONSE", `The app returned an unexpected response shape (${issues || "unparseable"}). Update the plugin, or the app.`, 0);
+      throw new ApiError(
+        "INVALID_RESPONSE",
+        `The app returned an unexpected response shape (${issues || "unparseable"}). Update the plugin, or the app.`,
+        0
+      );
     }
   };
   const state = async (proposalId2, revision2) => parse3(ContextStateSchema, await client.get("/context-model", { proposalId: proposalId2, revision: revision2 }));
@@ -23972,8 +25655,20 @@ function createToolHandlers(client, telemetry = telemetryOff) {
   const handlers = {
     async list_context_models() {
       const list = parse3(ContextListSchema, await client.get("/context-model/list"));
-      if (!list.items.length) return text2("No context models yet. Run discovery in the app (step 2) so the agent can synthesize the first revision.");
-      return text2(["Context models:", ...list.items.map((item) => `- ${item.id} \xB7 "${item.label}" \xB7 revision ${item.revision}${item.ontologyVersion ? ` \xB7 published ontology v${item.ontologyVersion}` : ""} \xB7 sources: ${item.sources.join(", ") || "none"}`)].join("\n"));
+      if (!list.items.length)
+        return structured(
+          "No context models yet. Run discovery in the app (step 2) so the agent can synthesize the first revision.",
+          list
+        );
+      return structured(
+        [
+          "Context models:",
+          ...list.items.map(
+            (item) => `- ${item.id} \xB7 "${item.label}" \xB7 revision ${item.revision}${item.ontologyVersion ? ` \xB7 published ontology v${item.ontologyVersion}` : ""} \xB7 sources: ${item.sources.join(", ") || "none"}`
+          )
+        ].join("\n"),
+        list
+      );
     },
     async get_context_model(args) {
       const { proposalId: proposalId2, revision: revision2 } = args;
@@ -23988,7 +25683,9 @@ function createToolHandlers(client, telemetry = telemetryOff) {
         "Sections (id \xB7 heading \xB7 rule \xB7 review):"
       ];
       for (const section of p.sections) {
-        lines.push(`- ${section.id} \xB7 "${section.heading}" \xB7 ${sectionRule(p, section) ?? "undetermined"} \xB7 ${section.review}`);
+        lines.push(
+          `- ${section.id} \xB7 "${section.heading}" \xB7 ${sectionRule(p, section) ?? "undetermined"} \xB7 ${section.review}`
+        );
       }
       return text2(lines.join("\n"));
     },
@@ -23996,28 +25693,55 @@ function createToolHandlers(client, telemetry = telemetryOff) {
       const { proposalId: proposalId2, revision: revision2 } = args;
       const doc = await document(proposalId2, revision2);
       const open2 = doc.comments.filter((comment) => !comment.resolvedAt);
-      const lines = [`Document for ${doc.proposalId} \xB7 revision ${doc.revision} \xB7 ${doc.sections.length} sections \xB7 ${open2.length} open comments`, "", doc.markdown.trimEnd()];
+      const lines = [
+        `Document for ${doc.proposalId} \xB7 revision ${doc.revision} \xB7 ${doc.sections.length} sections \xB7 ${open2.length} open comments`,
+        "",
+        doc.markdown.trimEnd()
+      ];
       if (open2.length) {
         lines.push("", "Open comments:");
-        for (const comment of open2) lines.push(`- [${doc.sections.find((section) => section.id === comment.sectionId)?.heading ?? comment.sectionId}] ${shorten(comment.body, 300)} (${when(comment.createdAt)})`);
+        for (const comment of open2)
+          lines.push(
+            `- [${doc.sections.find((section) => section.id === comment.sectionId)?.heading ?? comment.sectionId}] ${shorten(comment.body, 300)} (${when(comment.createdAt)})`
+          );
       }
       return text2(lines.join("\n"));
     },
     async get_context_graph(args) {
       const { proposalId: proposalId2, expectedRevision: expectedRevision2, focusId, depth, limit } = args;
-      const graph = parse3(ContextGraphSchema, await client.get("/context-model/graph", { proposalId: proposalId2, expectedRevision: expectedRevision2, focusId, depth: depth ?? 1, limit: limit ?? 100 }));
-      const lines = [`Graph of ${proposalId2} \xB7 revision ${graph.revision} \xB7 ${graph.nodes.length} nodes \xB7 ${graph.edges.length} edges`, "", "Nodes (id \xB7 kind \xB7 label):"];
-      for (const node2 of graph.nodes) lines.push(`- ${node2.id} \xB7 ${node2.kind} \xB7 "${shorten(node2.label, 80)}"${node2.status ? ` \xB7 ${node2.status}` : ""}${node2.sectionId ? ` \xB7 section ${node2.sectionId}` : ""}${node2.hiddenNeighborCount ? ` \xB7 +${node2.hiddenNeighborCount} hidden` : ""}`);
+      const graph = parse3(
+        ContextGraphSchema,
+        await client.get("/context-model/graph", {
+          proposalId: proposalId2,
+          expectedRevision: expectedRevision2,
+          focusId,
+          depth: depth ?? 1,
+          limit: limit ?? 100
+        })
+      );
+      const lines = [
+        `Graph of ${proposalId2} \xB7 revision ${graph.revision} \xB7 ${graph.nodes.length} nodes \xB7 ${graph.edges.length} edges`,
+        "",
+        "Nodes (id \xB7 kind \xB7 label):"
+      ];
+      for (const node2 of graph.nodes)
+        lines.push(
+          `- ${node2.id} \xB7 ${node2.kind} \xB7 "${shorten(node2.label, 80)}"${node2.status ? ` \xB7 ${node2.status}` : ""}${node2.sectionId ? ` \xB7 section ${node2.sectionId}` : ""}${node2.hiddenNeighborCount ? ` \xB7 +${node2.hiddenNeighborCount} hidden` : ""}`
+        );
       lines.push("", "Edges (source -kind-> target):");
       for (const edge of graph.edges) lines.push(`- ${edge.source} -${edge.kind}-> ${edge.target} (${edge.layer})`);
-      return text2(lines.join("\n"));
+      return structured(lines.join("\n"), graph);
     },
     async edit_context_section(args) {
       const { proposalId: proposalId2, expectedRevision: expectedRevision2, sectionId, heading, newHeading, body, rule, note } = args;
       if (!sectionId && !heading) return failure2("Pass sectionId or heading to pick the section.");
-      if (newHeading === void 0 && body === void 0 && rule === void 0) return failure2("Pass newHeading, body, and/or rule.");
+      if (newHeading === void 0 && body === void 0 && rule === void 0)
+        return failure2("Pass newHeading, body, and/or rule.");
       const doc = await document(proposalId2);
-      if (doc.revision !== expectedRevision2) return failure2(`CONFLICT: the document is at revision ${doc.revision}, not ${expectedRevision2}. Re-read it and retry.`);
+      if (doc.revision !== expectedRevision2)
+        return failure2(
+          `CONFLICT: the document is at revision ${doc.revision}, not ${expectedRevision2}. Re-read it and retry.`
+        );
       let edited;
       try {
         edited = editSection(doc.markdown, { sectionId, heading }, { heading: newHeading, body, rule });
@@ -24027,42 +25751,89 @@ function createToolHandlers(client, telemetry = telemetryOff) {
       const repaired = dedupeHeadings(edited.markdown);
       let saved;
       try {
-        saved = parse3(ContextSaveResultSchema, await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown: repaired.markdown }));
+        saved = parse3(
+          ContextSaveResultSchema,
+          await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown: repaired.markdown })
+        );
       } catch (error62) {
-        if (error62 instanceof ApiError && error62.code === "INVALID_REQUEST") return failure2(`${error62.code}: ${error62.message} ${explainParseFailure(doc.markdown, edited.markdown)}`.trim());
+        if (error62 instanceof ApiError && error62.code === "INVALID_REQUEST")
+          return failure2(
+            `${error62.code}: ${error62.message} ${explainParseFailure(doc.markdown, edited.markdown)}`.trim()
+          );
         throw error62;
       }
       const repairs = repaired.renamed.length ? ` Also renamed ${repaired.renamed.length} duplicated heading${repaired.renamed.length === 1 ? "" : "s"} so the document parses: ${repaired.renamed.map((item) => `"${shorten(item.from, 60)}" \u2192 "${shorten(item.to, 64)}"`).join("; ")}.` : "";
-      return text2(`Committed revision ${saved.proposal.revision} of ${proposalId2}: updated "${edited.section.heading}"${note ? ` (${note})` : ""}.${repairs} The graph and document pages pick it up on their next poll. Read get_context_model for the new section states.`);
+      return text2(
+        `Committed revision ${saved.proposal.revision} of ${proposalId2}: updated "${edited.section.heading}"${note ? ` (${note})` : ""}.${repairs} The graph and document pages pick it up on their next poll. Read get_context_model for the new section states.`
+      );
     },
     async save_context_revision(args) {
       const { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown, note } = args;
       const identity = documentIdentity(markdown);
-      if (identity.contextModel !== proposalId2 || identity.contextRevision !== expectedRevision2) return failure2(`The frontmatter must read context_model: "${proposalId2}" and context_revision: ${expectedRevision2}. Start from get_context_document and keep every section and its protected lines.`);
-      const saved = parse3(ContextSaveResultSchema, await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown }));
-      return text2(`Committed revision ${saved.proposal.revision} of ${proposalId2}${note ? ` (${note})` : ""} with ${listSections(markdown).length} sections.`);
+      if (identity.contextModel !== proposalId2 || identity.contextRevision !== expectedRevision2)
+        return failure2(
+          `The frontmatter must read context_model: "${proposalId2}" and context_revision: ${expectedRevision2}. Start from get_context_document and keep every section and its protected lines.`
+        );
+      const saved = parse3(
+        ContextSaveResultSchema,
+        await client.post("/context-model/save", { proposalId: proposalId2, expectedRevision: expectedRevision2, markdown })
+      );
+      return text2(
+        `Committed revision ${saved.proposal.revision} of ${proposalId2}${note ? ` (${note})` : ""} with ${listSections(markdown).length} sections.`
+      );
     },
     async comment_context_section(args) {
       const { proposalId: proposalId2, expectedRevision: expectedRevision2, sectionId, body, decision } = args;
-      const result = parse3(ContextCommentResultSchema, await client.post("/context-model/comment", { proposalId: proposalId2, expectedRevision: expectedRevision2, sectionId, body, ...decision ? { decision } : {} }));
+      const result = parse3(
+        ContextCommentResultSchema,
+        await client.post("/context-model/comment", {
+          proposalId: proposalId2,
+          expectedRevision: expectedRevision2,
+          sectionId,
+          body,
+          ...decision ? { decision } : {}
+        })
+      );
       const section = result.proposal.sections.find((item) => item.id === sectionId);
-      return text2(`Comment ${result.comment.id} added to "${section?.heading ?? sectionId}"${decision ? ` with decision ${decision}` : ""}; the model is now at revision ${result.proposal.revision}. Use "Ask agent to revise" in the app, or the discovery thread, to have the agent act on open comments.`);
+      return text2(
+        `Comment ${result.comment.id} added to "${section?.heading ?? sectionId}"${decision ? ` with decision ${decision}` : ""}; the model is now at revision ${result.proposal.revision}. Use "Ask agent to revise" in the app, or the discovery thread, to have the agent act on open comments.`
+      );
     },
     async compare_context_revisions(args) {
       const { proposalId: proposalId2, from, to } = args;
       const [older, newer] = await Promise.all([document(proposalId2, from), document(proposalId2, to)]);
-      return text2(unifiedDiff(older.markdown, newer.markdown, { before: `${proposalId2} r${older.revision}`, after: `${proposalId2} r${newer.revision}` }));
+      return text2(
+        unifiedDiff(older.markdown, newer.markdown, {
+          before: `${proposalId2} r${older.revision}`,
+          after: `${proposalId2} r${newer.revision}`
+        })
+      );
     },
     async preview_context_publication(args) {
       const { proposalId: proposalId2, expectedRevision: expectedRevision2 } = args;
-      const preview = parse3(ContextPreviewSchema, await client.post("/context-model/preview", { proposalId: proposalId2, expectedRevision: expectedRevision2 }));
-      const lines = [`Publication preview for ${proposalId2} r${expectedRevision2}:`, `Semantic changes (${preview.changes.length}):`, ...preview.changes.map((change) => {
-        const concept = change.after ?? change.before;
-        return `- ${change.kind}: ${concept ? `${concept.name}: ${shorten(concept.description)}` : change.conceptId}`;
-      })];
-      if (preview.unresolvedRequirements.length) lines.push(`Unresolved (${preview.unresolvedRequirements.length}):`, ...preview.unresolvedRequirements.map((item) => `- ${item}`));
-      if (preview.staleAnswers) lines.push("Warning: business-owner answers changed since this revision was synthesized.");
-      lines.push("", "To publish: save this document as an ontology draft (save_ontology_version), then preview_ontology_publication and publish_ontology.");
+      const preview = parse3(
+        ContextPreviewSchema,
+        await client.post("/context-model/preview", { proposalId: proposalId2, expectedRevision: expectedRevision2 })
+      );
+      const lines = [
+        `Publication preview for ${proposalId2} r${expectedRevision2}:`,
+        `Semantic changes (${preview.changes.length}):`,
+        ...preview.changes.map((change) => {
+          const concept = change.after ?? change.before;
+          return `- ${change.kind}: ${concept ? `${concept.name}: ${shorten(concept.description)}` : change.conceptId}`;
+        })
+      ];
+      if (preview.unresolvedRequirements.length)
+        lines.push(
+          `Unresolved (${preview.unresolvedRequirements.length}):`,
+          ...preview.unresolvedRequirements.map((item) => `- ${item}`)
+        );
+      if (preview.staleAnswers)
+        lines.push("Warning: business-owner answers changed since this revision was synthesized.");
+      lines.push(
+        "",
+        "To publish: save this document as an ontology draft (save_ontology_version), then preview_ontology_publication and publish_ontology."
+      );
       return text2(lines.join("\n"));
     },
     async get_ontology() {
@@ -24077,61 +25848,118 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
         "Versions (newest first):",
         ...current.versions.map((version2) => versionLine(version2, current.publishedVersion))
       ];
-      if (current.jobs.length) lines.push("", "Draft jobs:", ...current.jobs.slice(0, 5).map((job) => `- ${job.id} \xB7 ${job.status}${job.version ? ` \xB7 produced v${job.version}` : ""}${job.error ? ` \xB7 ${shorten(job.error, 200)}` : ""} \xB7 ${job.attempts.length} attempts`));
+      if (current.jobs.length)
+        lines.push(
+          "",
+          "Draft jobs:",
+          ...current.jobs.slice(0, 5).map(
+            (job) => `- ${job.id} \xB7 ${job.status}${job.version ? ` \xB7 produced v${job.version}` : ""}${job.error ? ` \xB7 ${shorten(job.error, 200)}` : ""} \xB7 ${job.attempts.length} attempts`
+          )
+        );
       return text2(lines.join("\n"));
     },
     async get_ontology_version(args) {
       const { version: version2 } = args;
       const current = await ontology();
       const found = version2 ? current.versions.find((item) => item.version === version2) : current.versions[0];
-      if (!found) return failure2(version2 ? `No ontology version ${version2}. Versions: ${current.versions.map((item) => item.version).join(", ") || "none"}.` : "No ontology versions yet.");
-      return text2([versionLine(found, current.publishedVersion).replace(/^- /, ""), `Head revision: ${current.revision} (use as expectedRevision for writes)`, "", found.markdown.trimEnd()].join("\n"));
+      if (!found)
+        return failure2(
+          version2 ? `No ontology version ${version2}. Versions: ${current.versions.map((item) => item.version).join(", ") || "none"}.` : "No ontology versions yet."
+        );
+      return text2(
+        [
+          versionLine(found, current.publishedVersion).replace(/^- /, ""),
+          `Head revision: ${current.revision} (use as expectedRevision for writes)`,
+          "",
+          found.markdown.trimEnd()
+        ].join("\n")
+      );
     },
     async save_ontology_version(args) {
       const { expectedRevision: expectedRevision2, markdown } = args;
       const next = parse3(OntologyStateSchema, await client.post("/ontology/save", { expectedRevision: expectedRevision2, markdown }));
       const version2 = next.versions[0];
-      return text2(`Saved ontology draft v${version2.version} (head revision ${next.revision}, ${version2.definitions.length} definitions, ${version2.definitions.filter((definition) => definition.rule.kind === "filter").length} executable). Preview with preview_ontology_publication before publishing.`);
+      return text2(
+        `Saved ontology draft v${version2.version} (head revision ${next.revision}, ${version2.definitions.length} definitions, ${version2.definitions.filter((definition) => definition.rule.kind === "filter").length} executable). Preview with preview_ontology_publication before publishing.`
+      );
     },
     async configure_ontology(args) {
       const { expectedRevision: expectedRevision2, sources, questions } = args;
       const first = sources[0];
-      const next = parse3(OntologyStateSchema, await client.post("/ontology/configure", { expectedRevision: expectedRevision2, selection: { connectionId: first.connectionId, objects: first.objects, questions, sources } }));
-      return text2(`Ontology scope saved (head revision ${next.revision}): ${sources.map((source) => `${source.connectionId} [${source.objects.join(", ")}]`).join("; ")}.`);
+      const next = parse3(
+        OntologyStateSchema,
+        await client.post("/ontology/configure", {
+          expectedRevision: expectedRevision2,
+          selection: { connectionId: first.connectionId, objects: first.objects, questions, sources }
+        })
+      );
+      return text2(
+        `Ontology scope saved (head revision ${next.revision}): ${sources.map((source) => `${source.connectionId} [${source.objects.join(", ")}]`).join("; ")}.`
+      );
     },
     async request_ontology_draft(args) {
       const { expectedRevision: expectedRevision2 } = args;
       const next = parse3(OntologyStateSchema, await client.post("/ontology/draft", { expectedRevision: expectedRevision2 }));
       const job = next.jobs[0];
-      return text2(`Draft job ${job?.id ?? "queued"} is ${job?.status ?? "pending"}. Poll get_ontology; a new draft version appears when it succeeds (usually within a few minutes).`);
+      return text2(
+        `Draft job ${job?.id ?? "queued"} is ${job?.status ?? "pending"}. Poll get_ontology; a new draft version appears when it succeeds (usually within a few minutes).`
+      );
     },
     async preview_ontology_publication(args) {
       const { expectedRevision: expectedRevision2 } = args;
       const preview = parse3(OntologyPreviewSchema, await client.post("/ontology/preview", { expectedRevision: expectedRevision2 }));
-      const lines = [`Publication preview (revision ${preview.revision}) \xB7 previewToken ${preview.previewToken}`, "", "Definition membership changes:"];
+      const lines = [
+        `Publication preview (revision ${preview.revision}) \xB7 previewToken ${preview.previewToken}`,
+        "",
+        "Definition membership changes:"
+      ];
       if (!preview.changes.length) lines.push("- No executable definition changes.");
-      for (const change of preview.changes) lines.push(`- ${change.name} \xB7 ${change.kind} \xB7 before ${change.beforeCount ?? "n/a"} \u2192 after ${change.afterCount ?? "n/a"} \xB7 +${change.enteredCount} \u2212${change.leftCount}${change.idsTruncated ? " (ids truncated)" : ""}`);
+      for (const change of preview.changes)
+        lines.push(
+          `- ${change.name} \xB7 ${change.kind} \xB7 before ${change.beforeCount ?? "n/a"} \u2192 after ${change.afterCount ?? "n/a"} \xB7 +${change.enteredCount} \u2212${change.leftCount}${change.idsTruncated ? " (ids truncated)" : ""}`
+        );
       if (preview.context) {
-        lines.push("", `Context changes (${preview.context.semanticChanges.length}):`, ...preview.context.semanticChanges.map((change) => `- ${change.kind}: ${change.description}`));
+        lines.push(
+          "",
+          `Context changes (${preview.context.semanticChanges.length}):`,
+          ...preview.context.semanticChanges.map((change) => `- ${change.kind}: ${change.description}`)
+        );
         if (preview.context.unresolved.length) lines.push(`Unresolved: ${preview.context.unresolved.join("; ")}`);
       }
-      lines.push("", "Confirm with the person, then call publish_ontology with this previewToken and expectedRevision.");
+      lines.push(
+        "",
+        "Confirm with the person, then call publish_ontology with this previewToken and expectedRevision."
+      );
       return text2(lines.join("\n"));
     },
     async publish_ontology(args) {
       const { expectedRevision: expectedRevision2, previewToken } = args;
-      const next = parse3(OntologyStateSchema, await client.post("/ontology/publish", { expectedRevision: expectedRevision2, previewToken }));
-      return text2(`Published ontology v${next.publishedVersion} (head revision ${next.revision}). The versions menu on the graph and document pages now shows it as live.`);
+      const next = parse3(
+        OntologyStateSchema,
+        await client.post("/ontology/publish", { expectedRevision: expectedRevision2, previewToken })
+      );
+      return text2(
+        `Published ontology v${next.publishedVersion} (head revision ${next.revision}). The versions menu on the graph and document pages now shows it as live.`
+      );
     },
     async update_ontology_settings(args) {
       const { autoDraft, questions } = args;
       if (autoDraft === void 0 && questions === void 0) return failure2("Pass autoDraft and/or questions.");
-      const next = parse3(OntologyStateSchema, await client.post("/ontology/settings", { ...autoDraft === void 0 ? {} : { autoDraft }, ...questions === void 0 ? {} : { questions } }));
-      return text2(`Settings saved: autoDraft=${next.settings.autoDraft}, questions=${shorten(next.settings.questions || "(none)", 200)}.`);
+      const next = parse3(
+        OntologyStateSchema,
+        await client.post("/ontology/settings", {
+          ...autoDraft === void 0 ? {} : { autoDraft },
+          ...questions === void 0 ? {} : { questions }
+        })
+      );
+      return text2(
+        `Settings saved: autoDraft=${next.settings.autoDraft}, questions=${shorten(next.settings.questions || "(none)", 200)}.`
+      );
     },
     async edit_ontology_entry(args) {
       const { section, name, action, newName, prose, properties } = args;
-      if (action === "update" && newName === void 0 && prose === void 0 && properties === void 0) return failure2("Nothing to change: pass newName, prose, and/or properties.");
+      if (action === "update" && newName === void 0 && prose === void 0 && properties === void 0)
+        return failure2("Nothing to change: pass newName, prose, and/or properties.");
       const current = await ontology();
       const newest = current.versions[0];
       if (!newest) return failure2("No ontology versions yet: save one with save_ontology_version or request a draft.");
@@ -24139,7 +25967,9 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
       const base2 = pending ? current.versions.find((item) => item.version === pending.baseVersion) : newest;
       if (!base2) {
         clearPending(client.serviceUrl);
-        return failure2(`The staged edits were made on version ${pending?.baseVersion}, which no longer exists; they were discarded. Stage the edit again.`);
+        return failure2(
+          `The staged edits were made on version ${pending?.baseVersion}, which no longer exists; they were discarded. Stage the edit again.`
+        );
       }
       const op = { action, section, name, newName, prose, properties, at: (/* @__PURE__ */ new Date()).toISOString() };
       const ops = [...pending?.ops ?? [], op];
@@ -24149,67 +25979,130 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
       } catch (error62) {
         return failure2(error62 instanceof Error ? error62.message : "The edit could not be applied.");
       }
-      if (markdown === applyOps(base2.markdown, pending?.ops ?? [])) return failure2("Nothing changed: the entry already reads that way.");
-      writePending(client.serviceUrl, { host: new URL(client.serviceUrl).host, baseVersion: base2.version, ops, updatedAt: op.at });
+      if (markdown === applyOps(base2.markdown, pending?.ops ?? []))
+        return failure2("Nothing changed: the entry already reads that way.");
+      writePending(client.serviceUrl, {
+        host: new URL(client.serviceUrl).host,
+        baseVersion: base2.version,
+        ops,
+        updatedAt: op.at
+      });
       const stale = base2.version !== newest.version ? ` Note: version ${newest.version} was saved since these edits started on v${base2.version}; save_ontology_changes will need rebase.` : "";
-      return text2([`Staged (not saved): ${describeOp(op)}. ${ops.length} change${ops.length === 1 ? "" : "s"} staged on v${base2.version}.${stale}`, "", unifiedDiff(base2.markdown, markdown, { before: `ontology v${base2.version} (original)`, after: "staged changes" }), "", "Show the diff to the person; when they say save, call save_ontology_changes. discard_ontology_changes drops the staging."].join("\n"));
+      return text2(
+        [
+          `Staged (not saved): ${describeOp(op)}. ${ops.length} change${ops.length === 1 ? "" : "s"} staged on v${base2.version}.${stale}`,
+          "",
+          unifiedDiff(base2.markdown, markdown, {
+            before: `ontology v${base2.version} (original)`,
+            after: "staged changes"
+          }),
+          "",
+          "Show the diff to the person; when they say save, call save_ontology_changes. discard_ontology_changes drops the staging."
+        ].join("\n")
+      );
     },
     async show_ontology_changes() {
       const pending = readPending(client.serviceUrl);
       if (!pending || !pending.ops.length) return text2("No staged ontology changes.");
       const current = await ontology();
       const base2 = current.versions.find((item) => item.version === pending.baseVersion);
-      if (!base2) return failure2(`The staged edits were made on version ${pending.baseVersion}, which no longer exists. discard_ontology_changes clears them.`);
+      if (!base2)
+        return failure2(
+          `The staged edits were made on version ${pending.baseVersion}, which no longer exists. discard_ontology_changes clears them.`
+        );
       let markdown;
       try {
         markdown = applyOps(base2.markdown, pending.ops);
       } catch (error62) {
-        return failure2(`The staged edits no longer apply: ${error62 instanceof Error ? error62.message : String(error62)}. discard_ontology_changes clears them.`);
+        return failure2(
+          `The staged edits no longer apply: ${error62 instanceof Error ? error62.message : String(error62)}. discard_ontology_changes clears them.`
+        );
       }
       const newest = current.versions[0];
-      return text2([`${pending.ops.length} staged change${pending.ops.length === 1 ? "" : "s"} on v${base2.version}${newest.version !== base2.version ? ` (newest is now v${newest.version}; saving needs rebase)` : ""}:`, ...pending.ops.map((op, index) => `${index + 1}. ${describeOp(op)} \xB7 ${when(op.at)}`), "", unifiedDiff(base2.markdown, markdown, { before: `ontology v${base2.version} (original)`, after: "staged changes" })].join("\n"));
+      return text2(
+        [
+          `${pending.ops.length} staged change${pending.ops.length === 1 ? "" : "s"} on v${base2.version}${newest.version !== base2.version ? ` (newest is now v${newest.version}; saving needs rebase)` : ""}:`,
+          ...pending.ops.map((op, index) => `${index + 1}. ${describeOp(op)} \xB7 ${when(op.at)}`),
+          "",
+          unifiedDiff(base2.markdown, markdown, {
+            before: `ontology v${base2.version} (original)`,
+            after: "staged changes"
+          })
+        ].join("\n")
+      );
     },
     async save_ontology_changes(args) {
       const { expectedRevision: expectedRevision2, rebase } = args;
       const pending = readPending(client.serviceUrl);
       if (!pending || !pending.ops.length) return failure2("No staged ontology changes to save.");
       const current = await ontology();
-      if (current.revision !== expectedRevision2) return failure2(`CONFLICT: the ontology head is at revision ${current.revision}, not ${expectedRevision2}. Re-read get_ontology and retry.`);
+      if (current.revision !== expectedRevision2)
+        return failure2(
+          `CONFLICT: the ontology head is at revision ${current.revision}, not ${expectedRevision2}. Re-read get_ontology and retry.`
+        );
       const newest = current.versions[0];
       let base2 = current.versions.find((item) => item.version === pending.baseVersion);
-      if (!base2) return failure2(`The staged edits were made on version ${pending.baseVersion}, which no longer exists. Use rebase: true to replay them onto v${newest.version}, or discard them.`);
+      if (!base2)
+        return failure2(
+          `The staged edits were made on version ${pending.baseVersion}, which no longer exists. Use rebase: true to replay them onto v${newest.version}, or discard them.`
+        );
       if (base2.version !== newest.version) {
-        if (!rebase) return failure2(`Version ${newest.version} was saved after these edits were staged on v${base2.version}. Show the person compare_ontology_versions ${base2.version} \u2192 ${newest.version}, then call again with rebase: true to replay the edits onto v${newest.version}, or discard them.`);
+        if (!rebase)
+          return failure2(
+            `Version ${newest.version} was saved after these edits were staged on v${base2.version}. Show the person compare_ontology_versions ${base2.version} \u2192 ${newest.version}, then call again with rebase: true to replay the edits onto v${newest.version}, or discard them.`
+          );
         base2 = newest;
       }
       let markdown;
       try {
         markdown = applyOps(base2.markdown, pending.ops);
       } catch (error62) {
-        return failure2(`The staged edits do not apply to v${base2.version}: ${error62 instanceof Error ? error62.message : String(error62)}.`);
+        return failure2(
+          `The staged edits do not apply to v${base2.version}: ${error62 instanceof Error ? error62.message : String(error62)}.`
+        );
       }
       const next = parse3(OntologyStateSchema, await client.post("/ontology/save", { expectedRevision: expectedRevision2, markdown }));
       clearPending(client.serviceUrl);
       const saved = next.versions[0];
-      return text2(`Saved ontology draft v${saved.version} from v${base2.version} (head revision ${next.revision}) with ${pending.ops.length} change${pending.ops.length === 1 ? "" : "s"}: ${pending.ops.map(describeOp).join("; ")}. ${saved.definitions.length} definitions (${saved.definitions.filter((definition) => definition.rule.kind === "filter").length} executable). The versions menu on the graph and document pages lists it; preview_ontology_publication then publish_ontology make it live.`);
+      return text2(
+        `Saved ontology draft v${saved.version} from v${base2.version} (head revision ${next.revision}) with ${pending.ops.length} change${pending.ops.length === 1 ? "" : "s"}: ${pending.ops.map(describeOp).join("; ")}. ${saved.definitions.length} definitions (${saved.definitions.filter((definition) => definition.rule.kind === "filter").length} executable). The versions menu on the graph and document pages lists it; preview_ontology_publication then publish_ontology make it live.`
+      );
     },
     async discard_ontology_changes() {
       const pending = readPending(client.serviceUrl);
       clearPending(client.serviceUrl);
-      return text2(pending?.ops.length ? `Discarded ${pending.ops.length} staged change${pending.ops.length === 1 ? "" : "s"} (${pending.ops.map(describeOp).join("; ")}). Nothing was saved.` : "No staged ontology changes.");
+      return text2(
+        pending?.ops.length ? `Discarded ${pending.ops.length} staged change${pending.ops.length === 1 ? "" : "s"} (${pending.ops.map(describeOp).join("; ")}). Nothing was saved.` : "No staged ontology changes."
+      );
     },
     async compare_ontology_versions(args) {
       const { from, to } = args;
       const current = await ontology();
       const older = current.versions.find((item) => item.version === from);
       const newer = to ? current.versions.find((item) => item.version === to) : current.versions[0];
-      if (!older || !newer) return failure2(`Unknown version. Versions: ${current.versions.map((item) => item.version).join(", ") || "none"}.`);
-      return text2(unifiedDiff(older.markdown, newer.markdown, { before: `ontology v${older.version}`, after: `ontology v${newer.version}` }));
+      if (!older || !newer)
+        return failure2(
+          `Unknown version. Versions: ${current.versions.map((item) => item.version).join(", ") || "none"}.`
+        );
+      return text2(
+        unifiedDiff(older.markdown, newer.markdown, {
+          before: `ontology v${older.version}`,
+          after: `ontology v${newer.version}`
+        })
+      );
     },
     async list_sources() {
       const sources = parse3(SourceListResponseSchema, await client.get("/sources", { limit: 100 }));
-      if (!sources.items.length) return text2("No sources connected. Connect one in the app (step 1).");
-      return text2(["Sources:", ...sources.items.map((source) => `- ${source.id} \xB7 ${source.displayName} \xB7 ${source.provider} \xB7 ${source.status} \xB7 coverage ${source.coverage.status} \xB7 last sync ${source.freshness.lastSuccessfulSyncAt ? when(source.freshness.lastSuccessfulSyncAt) : "never"}`)].join("\n"));
+      if (!sources.items.length) return structured("No sources connected. Connect one in the app (step 1).", sources);
+      return structured(
+        [
+          "Sources:",
+          ...sources.items.map(
+            (source) => `- ${source.id} \xB7 ${source.displayName} \xB7 ${source.provider} \xB7 ${source.status} \xB7 coverage ${source.coverage.status} \xB7 last sync ${source.freshness.lastSuccessfulSyncAt ? when(source.freshness.lastSuccessfulSyncAt) : "never"}`
+          )
+        ].join("\n"),
+        sources
+      );
     },
     async get_imported_model(args) {
       const { connectionId, search, fields } = args;
@@ -24224,42 +26117,104 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
         cursor = page.page.nextCursor;
       }
       const needle = search?.toLowerCase();
-      const kept = nodes.filter((node2) => !needle || node2.type.label.toLowerCase().includes(needle) || node2.type.nativeName.toLowerCase().includes(needle));
+      const kept = nodes.filter(
+        (node2) => !needle || node2.type.label.toLowerCase().includes(needle) || node2.type.nativeName.toLowerCase().includes(needle)
+      );
       const lines = [`Imported types (${kept.length}${needle ? ` matching "${search}"` : ""}):`];
       for (const node2 of kept) {
-        lines.push(`- ${node2.type.id} \xB7 ${node2.type.label} (${node2.type.nativeName}) \xB7 ${node2.importedRecordCount} records \xB7 connection ${node2.type.connectionId}`);
-        if (fields !== false) for (const field of node2.type.fields.slice(0, 60)) lines.push(`    ${field.name}: ${field.dataType}${field.referenceTo.length ? ` \u2192 ${field.referenceTo.join(", ")}` : ""}${field.picklistValues?.length ? ` \xB7 values: ${field.picklistValues.slice(0, 12).map((value) => value.value).join(", ")}${field.picklistValues.length > 12 ? ", \u2026" : ""}` : ""}`);
-        if (fields !== false && node2.type.fields.length > 60) lines.push(`    \u2026 ${node2.type.fields.length - 60} more fields`);
+        lines.push(
+          `- ${node2.type.id} \xB7 ${node2.type.label} (${node2.type.nativeName}) \xB7 ${node2.importedRecordCount} records \xB7 connection ${node2.type.connectionId}`
+        );
+        if (fields !== false)
+          for (const field of node2.type.fields.slice(0, 60))
+            lines.push(
+              `    ${field.name}: ${field.dataType}${field.referenceTo.length ? ` \u2192 ${field.referenceTo.join(", ")}` : ""}${field.picklistValues?.length ? ` \xB7 values: ${field.picklistValues.slice(0, 12).map((value) => value.value).join(", ")}${field.picklistValues.length > 12 ? ", \u2026" : ""}` : ""}`
+            );
+        if (fields !== false && node2.type.fields.length > 60)
+          lines.push(`    \u2026 ${node2.type.fields.length - 60} more fields`);
       }
       const typeIds = new Set(kept.map((node2) => node2.type.id));
       const related = edges.filter((edge) => typeIds.has(edge.sourceTypeId));
-      if (related.length) lines.push("", "Relationships:", ...related.map((edge) => `- ${edge.label}: ${edge.sourceTypeId} \u2192 ${edge.targetTypeIds.join(", ")}`));
+      if (related.length)
+        lines.push(
+          "",
+          "Relationships:",
+          ...related.map((edge) => `- ${edge.label}: ${edge.sourceTypeId} \u2192 ${edge.targetTypeIds.join(", ")}`)
+        );
       return text2(lines.join("\n"));
     },
     async search_entities(args) {
-      const { typeId, search, limit } = args;
-      const page = parse3(EntityListResponseSchema, await client.get("/entities", { typeId, search, limit: limit ?? 20 }));
-      if (!page.items.length) return text2(`No records of ${typeId}${search ? ` matching "${search}"` : ""}.`);
-      return text2([`Records of ${typeId}${search ? ` matching "${search}"` : ""} (${page.items.length}${page.page.hasMore ? ", more available" : ""}):`, ...page.items.map((entity) => `- ${entity.id} \xB7 "${entity.label}" \xB7 ${shorten(JSON.stringify(entity.attributes), 240)}`)].join("\n"));
+      const { typeId, search, limit, cursor } = args;
+      const page = parse3(
+        EntityListResponseSchema,
+        await client.get("/entities", { typeId, search, limit: limit ?? 20, cursor })
+      );
+      if (!page.items.length)
+        return structured(
+          `No records of ${typeId}${search ? ` matching "${search}"` : ""}${cursor ? " after that cursor" : ""}.`,
+          page
+        );
+      const lines = [
+        `Records of ${typeId}${search ? ` matching "${search}"` : ""} (${page.items.length}${page.page.hasMore ? ", more available" : ""}):`,
+        ...page.items.map(
+          (entity) => `- ${entity.id} \xB7 "${entity.label}" \xB7 ${shorten(JSON.stringify(entity.attributes), 240)}`
+        )
+      ];
+      if (page.page.hasMore && page.page.nextCursor)
+        lines.push(
+          "",
+          `Next page: call search_entities again with the same typeId${search ? " and search" : ""} and cursor: ${JSON.stringify(page.page.nextCursor)}. For totals use aggregate_records, not pages of rows.`
+        );
+      return structured(lines.join("\n"), page);
     },
     async aggregate_records(args) {
       const { typeId, connectionId, where, groupBy, metrics, orderBy, limit } = args;
-      const result = parse3(AggregateResponseSchema, await client.get("/graph/aggregate", { typeId, connectionId, where, groupBy: groupBy ?? [], metric: metrics ?? [], orderBy, limit }));
-      const columns = [...result.query.groupBy.map((group) => group.spec), ...result.query.metrics.map((metric) => metric.spec)];
-      const caption = [`${result.type.label} (${result.type.nativeName})`, where ? `where ${where}` : null, result.query.groupBy.length ? `by ${result.query.groupBy.map((group) => group.spec).join(", ")}` : null, `metrics ${result.query.metrics.map((metric) => metric.spec).join(", ")}`].filter(Boolean).join(" \xB7 ");
+      const result = parse3(
+        AggregateResponseSchema,
+        await client.get("/graph/aggregate", {
+          typeId,
+          connectionId,
+          where,
+          groupBy: groupBy ?? [],
+          metric: metrics ?? [],
+          orderBy,
+          limit
+        })
+      );
+      const columns = [
+        ...result.query.groupBy.map((group) => group.spec),
+        ...result.query.metrics.map((metric) => metric.spec)
+      ];
+      const caption = [
+        `${result.type.label} (${result.type.nativeName})`,
+        where ? `where ${where}` : null,
+        result.query.groupBy.length ? `by ${result.query.groupBy.map((group) => group.spec).join(", ")}` : null,
+        `metrics ${result.query.metrics.map((metric) => metric.spec).join(", ")}`
+      ].filter(Boolean).join(" \xB7 ");
       const lines = [
         caption,
         `Matching records: ${result.totals.count} \xB7 groups: ${result.groups.returned} of ${result.groups.total}${result.groups.truncated ? " (more groups exist; raise limit or narrow with where)" : ""} \xB7 order ${result.query.orderBy}`,
         `Snapshot: ${result.snapshot.syncRunId ?? "none"} \xB7 coverage ${result.metadata.coverage.status} \xB7 last sync ${result.metadata.freshness.lastSuccessfulSyncAt ? when(result.metadata.freshness.lastSuccessfulSyncAt) : "never"} \xB7 ${result.snapshot.exact ? "exact counts" : `NOT exact: ${result.snapshot.reason}`}`,
         "Caption every view with the snapshot, coverage and where clause above.",
         "```json",
-        JSON.stringify({ columns, rows: result.rows.map((row) => [...row.keys, ...row.values]), totals: [...result.query.groupBy.map(() => null), ...result.totals.values], count: result.totals.count }),
+        JSON.stringify({
+          columns,
+          rows: result.rows.map((row) => [...row.keys, ...row.values]),
+          totals: [...result.query.groupBy.map(() => null), ...result.totals.values],
+          count: result.totals.count
+        }),
         "```"
       ];
-      return text2(lines.join("\n"));
+      return structured(lines.join("\n"), result);
     },
     async export_records(args) {
-      const { typeId: requested, connectionId, search, fields, limit } = args;
+      const {
+        typeId: requested,
+        connectionId,
+        search,
+        fields,
+        limit
+      } = args;
       const type = await resolveType(client, requested, connectionId);
       const typeId = type.id;
       const max = limit ?? 5e3;
@@ -24268,7 +26223,16 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
       let hasMore = false;
       let metadata;
       while (rows3.length < max) {
-        const page = parse3(EntityListResponseSchema, await client.get("/entities", { typeId, connectionId: type.connectionId, search, limit: Math.min(100, max - rows3.length), cursor }));
+        const page = parse3(
+          EntityListResponseSchema,
+          await client.get("/entities", {
+            typeId,
+            connectionId: type.connectionId,
+            search,
+            limit: Math.min(100, max - rows3.length),
+            cursor
+          })
+        );
         metadata = page.metadata;
         for (const entity of page.items) {
           const attributes = fields ? Object.fromEntries(fields.map((field) => [field, entity.attributes[field] ?? null])) : entity.attributes;
@@ -24278,44 +26242,73 @@ Questions: ${shorten(selection.questions || "(none)", 300)}` : "Selection: none 
         if (!page.page.nextCursor || !hasMore) break;
         cursor = page.page.nextCursor;
       }
-      const directory = path4.join(os4.tmpdir(), "context-graph", "exports");
-      fs4.mkdirSync(directory, { recursive: true });
-      const file2 = path4.join(directory, `${type.nativeName.replace(/[^A-Za-z0-9_-]/g, "_")}-${Date.now()}.json`);
+      const directory = path5.join(os5.tmpdir(), "context-graph", "exports");
+      fs5.mkdirSync(directory, { recursive: true });
+      const file2 = path5.join(directory, `${type.nativeName.replace(/[^A-Za-z0-9_-]/g, "_")}-${Date.now()}.json`);
       const snapshot = metadata ? { coverage: metadata.coverage.status, lastSuccessfulSyncAt: metadata.freshness.lastSuccessfulSyncAt } : null;
-      fs4.writeFileSync(file2, JSON.stringify({ type: type.nativeName, typeId, fields: fields ?? null, snapshot, rows: rows3 }));
+      fs5.writeFileSync(file2, JSON.stringify({ type: type.nativeName, typeId, fields: fields ?? null, snapshot, rows: rows3 }));
       const columns = [...new Set(rows3.flatMap((row) => Object.keys(row)))];
-      return text2([
-        `Wrote ${rows3.length} ${type.nativeName} record(s) to ${file2}${hasMore ? " (more records exist beyond the limit; the file is a partial export)" : ""}.`,
-        `Columns: ${columns.slice(0, 60).join(", ")}${columns.length > 60 ? ", \u2026" : ""}`,
-        snapshot ? `Snapshot: coverage ${snapshot.coverage} \xB7 last sync ${snapshot.lastSuccessfulSyncAt ? when(snapshot.lastSuccessfulSyncAt) : "never"}` : "Snapshot: unknown",
-        "Embed the rows into the page (read the file, or splice it in with a short node script); a browser cannot fetch a local file."
-      ].join("\n"));
+      return text2(
+        [
+          `Wrote ${rows3.length} ${type.nativeName} record(s) to ${file2}${hasMore ? " (more records exist beyond the limit; the file is a partial export)" : ""}.`,
+          `Columns: ${columns.slice(0, 60).join(", ")}${columns.length > 60 ? ", \u2026" : ""}`,
+          snapshot ? `Snapshot: coverage ${snapshot.coverage} \xB7 last sync ${snapshot.lastSuccessfulSyncAt ? when(snapshot.lastSuccessfulSyncAt) : "never"}` : "Snapshot: unknown",
+          "Embed the rows into the page (read the file, or splice it in with a short node script); a browser cannot fetch a local file."
+        ].join("\n")
+      );
     },
     async get_view_catalog() {
-      return text2([
-        viewCatalogPrompt(),
-        "",
-        'Spec format for save_view: {"root":"page","elements":{"page":{"type":"Page","props":{\u2026},"children":["caption","chart","table"]},"caption":{"type":"Caption","props":{\u2026},"children":[]},\u2026}}.',
-        "Every chart's `data` is the JSON block aggregate_records returned ({columns, rows}); column props name headers from data.columns."
-      ].join("\n"));
+      return text2(
+        [
+          viewCatalogPrompt(),
+          "",
+          'Spec format for save_view: {"root":"page","elements":{"page":{"type":"Page","props":{\u2026},"children":["caption","chart","table"]},"caption":{"type":"Caption","props":{\u2026},"children":[]},\u2026}}.',
+          "Every chart's `data` is the JSON block aggregate_records returned ({columns, rows}); column props name headers from data.columns."
+        ].join("\n")
+      );
     },
     async save_view(args) {
       const { id, title: title2, question, form, caption, facts, spec } = args;
       const checked = validateViewSpec(spec);
-      if (!checked.ok) return failure2(`The spec does not match the view catalog. Fix these and save again:
-${checked.issues.map((issue2) => `- ${issue2}`).join("\n")}`);
-      const view = parse3(ViewSchema, await client.post("/views", { ...id ? { id } : {}, title: title2, question: question ?? "", form, caption: caption ?? "", facts: facts ?? {}, spec }));
-      return text2(`${id ? "Replaced" : "Saved"} view "${view.title}" (${view.id}, revision ${view.revision}, ${form}, ${view.elementCount} elements). It is on the Views page: ${pageUrl(client.serviceUrl, "views", { viewId: view.id })}`);
+      if (!checked.ok)
+        return failure2(
+          `The spec does not match the view catalog. Fix these and save again:
+${checked.issues.map((issue2) => `- ${issue2}`).join("\n")}`
+        );
+      const view = parse3(
+        ViewSchema,
+        await client.post("/views", {
+          ...id ? { id } : {},
+          title: title2,
+          question: question ?? "",
+          form,
+          caption: caption ?? "",
+          facts: facts ?? {},
+          spec
+        })
+      );
+      return text2(
+        `${id ? "Replaced" : "Saved"} view "${view.title}" (${view.id}, revision ${view.revision}, ${form}, ${view.elementCount} elements). It is on the Views page: ${pageUrl(client.serviceUrl, "views", { viewId: view.id })}`
+      );
     },
     async list_views(args) {
       const { limit } = args;
       const views = parse3(ViewListResponseSchema, await client.get("/views", { limit: limit ?? 50 }));
-      if (!views.items.length) return text2("No views saved in this workspace yet. Render one and call save_view; if the person expected to find one, check list_organizations, since another organization has its own views.");
-      return text2([
-        `Views (${views.items.length}, newest first) in this workspace:`,
-        ...views.items.map((view) => `- ${view.id} \xB7 "${view.title}" \xB7 ${view.form} \xB7 revision ${view.revision} \xB7 ${when(view.updatedAt)} \xB7 by ${view.createdBy.subjectId}${view.question ? ` \xB7 asks "${shorten(view.question, 120)}"` : ""} \xB7 ${pageUrl(client.serviceUrl, "views", { viewId: view.id })}`),
-        "Views belong to one organization: list_organizations shows the other workspaces this person can reach."
-      ].join("\n"));
+      if (!views.items.length)
+        return structured(
+          "No views saved in this workspace yet. Render one and call save_view; if the person expected to find one, check list_organizations, since another organization has its own views.",
+          views
+        );
+      return structured(
+        [
+          `Views (${views.items.length}, newest first) in this workspace:`,
+          ...views.items.map(
+            (view) => `- ${view.id} \xB7 "${view.title}" \xB7 ${view.form} \xB7 revision ${view.revision} \xB7 ${when(view.updatedAt)} \xB7 by ${view.createdBy.subjectId}${view.question ? ` \xB7 asks "${shorten(view.question, 120)}"` : ""} \xB7 ${pageUrl(client.serviceUrl, "views", { viewId: view.id })}`
+          ),
+          "Views belong to one organization: list_organizations shows the other workspaces this person can reach."
+        ].join("\n"),
+        views
+      );
     },
     async delete_view(args) {
       const { id } = args;
@@ -24324,82 +26317,136 @@ ${checked.issues.map((issue2) => `- ${issue2}`).join("\n")}`);
     },
     async whoami() {
       const who = parse3(PluginWhoAmISchema, await client.get("/plugin/whoami"));
-      return text2([
-        `Signed in to ${client.serviceUrl} as ${who.principal.subjectId} (${who.principal.role}) in workspace ${who.principal.workspaceId}. Token "${who.token.label}" created ${when(who.token.createdAt)}.`,
-        "Sources, ontology, context models and views all belong to this one workspace; list_organizations shows the others this person can reach."
-      ].join("\n"));
+      return structured(
+        [
+          `Signed in to ${client.serviceUrl} as ${who.principal.subjectId} (${who.principal.role}) in workspace ${who.principal.workspaceId}. Token "${who.token.label}" created ${when(who.token.createdAt)}.`,
+          "Sources, ontology, context models and views all belong to this one workspace; list_organizations shows the others this person can reach."
+        ].join("\n"),
+        who
+      );
     },
     async list_organizations() {
       const list = parse3(PluginOrganizationListSchema, await client.get("/plugin/organizations"));
       const current = list.items.find((item) => item.current);
       const lines = [`Organizations (${list.items.length}), each its own workspace:`];
       for (const item of list.items) {
-        lines.push(`- ${item.current ? "* " : "  "}${item.name}${item.slug ? ` (${item.slug})` : ""} \xB7 ${item.role} \xB7 workspace ${item.workspaceId} \xB7 id ${item.id ?? "null (shared workspace)"}${item.current ? " \xB7 current" : ""}`);
+        lines.push(
+          `- ${item.current ? "* " : "  "}${item.name}${item.slug ? ` (${item.slug})` : ""} \xB7 ${item.role} \xB7 workspace ${item.workspaceId} \xB7 id ${item.id ?? "null (shared workspace)"}${item.current ? " \xB7 current" : ""}`
+        );
       }
-      if (!list.complete) lines.push("The directory could not be reached, so only the organization this install is in is listed.");
-      else if (list.items.length > 1) lines.push(`Sources, ontology, context models and views are per organization: what is missing from ${current?.name ?? "this one"} may be saved in another. switch_organization moves this install; the browser follows when the person picks the same organization in the app.`);
-      return text2(lines.join("\n"));
+      if (!list.complete)
+        lines.push("The directory could not be reached, so only the organization this install is in is listed.");
+      else if (list.items.length > 1)
+        lines.push(
+          `Sources, ontology, context models and views are per organization: what is missing from ${current?.name ?? "this one"} may be saved in another. switch_organization moves this install; the browser follows when the person picks the same organization in the app.`
+        );
+      return structured(lines.join("\n"), list);
     },
     async switch_organization(args) {
       const { organizationId, label: label2 } = args;
-      const result = parse3(SwitchOrganizationResultSchema, await client.post("/plugin/organizations/switch", { organizationId, ...label2 ? { label: label2 } : {} }));
-      if (result.status === "already-current") return text2(`Already working in ${result.organization.name} (workspace ${result.organization.workspaceId}). Nothing changed.`);
+      const result = parse3(
+        SwitchOrganizationResultSchema,
+        await client.post("/plugin/organizations/switch", { organizationId, ...label2 ? { label: label2 } : {} })
+      );
+      if (result.status === "already-current")
+        return text2(
+          `Already working in ${result.organization.name} (workspace ${result.organization.workspaceId}). Nothing changed.`
+        );
       if (result.token) saveToken(result.token);
-      return text2([
-        `Switched to ${result.organization.name} (workspace ${result.organization.workspaceId}, ${result.organization.role}). Every tool now reads and writes that organization.`,
-        "The browser does not follow on its own: pick the same organization in the app's switcher to watch the plugin work.",
-        "Sources, ontology, context models and views here are this organization's own; re-read them rather than reusing what was in hand."
-      ].join("\n"));
+      return text2(
+        [
+          `Switched to ${result.organization.name} (workspace ${result.organization.workspaceId}, ${result.organization.role}). Every tool now reads and writes that organization.`,
+          "The browser does not follow on its own: pick the same organization in the app's switcher to watch the plugin work.",
+          "Sources, ontology, context models and views here are this organization's own; re-read them rather than reusing what was in hand."
+        ].join("\n")
+      );
     },
     async get_plugin_activity(args) {
       const { limit } = args;
       const activity = parse3(PluginActivitySchema, await client.get("/plugin/activity", { limit: limit ?? 20 }));
-      const lines = [`Plugin activity \xB7 ${activity.tokens.length} active token(s) \xB7 agent ${activity.active ? "active now" : "idle"}`];
-      for (const event of activity.events) lines.push(`- ${when(event.at)} \xB7 ${event.action} \xB7 HTTP ${event.status} \xB7 ${JSON.stringify(event.detail)}`);
+      const lines = [
+        `Plugin activity \xB7 ${activity.tokens.length} active token(s) \xB7 agent ${activity.active ? "active now" : "idle"}`
+      ];
+      for (const event of activity.events)
+        lines.push(`- ${when(event.at)} \xB7 ${event.action} \xB7 HTTP ${event.status} \xB7 ${JSON.stringify(event.detail)}`);
       if (!activity.events.length) lines.push("- No plugin changes recorded yet.");
-      return text2(lines.join("\n"));
+      return structured(lines.join("\n"), activity);
     }
   };
   return ALL_TOOL_CONTRACTS.map((contract) => {
     const handle = handlers[contract.name];
     if (!handle) throw new Error(`No handler for tool ${contract.name}`);
-    return { contract, handle: async (args) => {
-      const started = Date.now();
-      const done = (result, code) => {
-        telemetry.record({ name: "tool.called", ms: Date.now() - started, ok: result.isError !== true, detail: { tool: contract.name, ...code ? { code } : {} } });
-        return result;
-      };
-      try {
-        return done(await handle(external_exports.object(contract.inputSchema).parse(args)));
-      } catch (error62) {
-        if (error62 instanceof external_exports.ZodError) return done(failure2(`Invalid arguments for ${contract.name}: ${error62.issues.map((issue2) => `${issue2.path.join(".") || "(root)"}: ${issue2.message}`).join("; ")}`), "invalid-arguments");
-        if (error62 instanceof ApiError) return done(failure2(`${error62.code}: ${error62.message}${error62.requestId ? ` (request ${error62.requestId})` : ""}`), error62.code);
-        return done(failure2(error62 instanceof Error ? error62.message : String(error62)), "unexpected");
+    return {
+      contract,
+      handle: async (args) => {
+        const started = Date.now();
+        const ignored = unknownKeys(contract.inputSchema, args);
+        const done = (result, code) => {
+          telemetry.record({
+            name: "tool.called",
+            ms: Date.now() - started,
+            ok: result.isError !== true,
+            detail: { tool: contract.name, ...code ? { code } : {} }
+          });
+          return shape(result, ignored);
+        };
+        try {
+          return done(await handle(external_exports.object(contract.inputSchema).parse(args)));
+        } catch (error62) {
+          if (error62 instanceof external_exports.ZodError)
+            return done(
+              failure2(
+                `Invalid arguments for ${contract.name}: ${error62.issues.map((issue2) => `${issue2.path.join(".") || "(root)"}: ${issue2.message}`).join("; ")}`
+              ),
+              "invalid-arguments"
+            );
+          if (error62 instanceof ApiError) {
+            const next = nextStep(error62, contract.name);
+            return done(
+              failure2(
+                `${error62.code}: ${error62.message}${error62.requestId ? ` (request ${error62.requestId})` : ""}${next ? `
+${next}` : ""}`
+              ),
+              error62.code
+            );
+          }
+          return done(failure2(error62 instanceof Error ? error62.message : String(error62)), "unexpected");
+        }
       }
-    } };
+    };
+    function shape(result, ignored) {
+      const joined = result.content.map((item) => item.text).join("\n");
+      const capped = capText(contract.name, joined);
+      const note = ignored.length ? `
+
+${ignoredKeysNote(ignored)}` : "";
+      const { structuredContent, ...rest } = result;
+      const keep = contract.outputSchema && !result.isError && structuredContent ? { structuredContent } : {};
+      return { ...rest, ...keep, content: [{ type: "text", text: `${capped.text}${note}` }] };
+    }
   });
 }
 
 // src/version.ts
-import fs6 from "node:fs";
-import path6 from "node:path";
+import fs7 from "node:fs";
+import path7 from "node:path";
 
 // src/pluginRoot.ts
-import fs5 from "node:fs";
-import path5 from "node:path";
+import fs6 from "node:fs";
+import path6 from "node:path";
 import { fileURLToPath } from "node:url";
 function findRoot(start) {
   let dir = start;
   for (let depth = 0; depth < 5; depth++) {
-    if (fs5.existsSync(path5.join(dir, "package.json")) && fs5.existsSync(path5.join(dir, ".claude-plugin"))) return dir;
-    dir = path5.dirname(dir);
+    if (fs6.existsSync(path6.join(dir, "package.json")) && fs6.existsSync(path6.join(dir, ".claude-plugin"))) return dir;
+    dir = path6.dirname(dir);
   }
-  return path5.resolve(start, "..");
+  return path6.resolve(start, "..");
 }
-var PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT ?? findRoot(path5.dirname(fileURLToPath(import.meta.url)));
+var PLUGIN_ROOT = process.env.CLAUDE_PLUGIN_ROOT ?? findRoot(path6.dirname(fileURLToPath(import.meta.url)));
 
 // src/version.ts
-var PLUGIN_VERSION = JSON.parse(fs6.readFileSync(path6.join(PLUGIN_ROOT, "package.json"), "utf8")).version;
+var PLUGIN_VERSION = JSON.parse(fs7.readFileSync(path7.join(PLUGIN_ROOT, "package.json"), "utf8")).version;
 function getVersion() {
   return PLUGIN_VERSION;
 }
@@ -24420,35 +26467,41 @@ async function runTool(name, rawArgs, handlers) {
     }
   }
   const parsed = external_exports.object(handler.contract.inputSchema).safeParse(input2);
-  if (!parsed.success) throw new UsageError(`Invalid arguments for ${name}: ${parsed.error.issues.map((issue2) => `${issue2.path.join(".") || "(root)"}: ${issue2.message}`).join("; ")}`);
-  const result = await handler.handle(parsed.data);
+  if (!parsed.success)
+    throw new UsageError(
+      `Invalid arguments for ${name}: ${parsed.error.issues.map((issue2) => `${issue2.path.join(".") || "(root)"}: ${issue2.message}`).join("; ")}`
+    );
+  const result = await handler.handle({ ...input2, ...parsed.data });
   return { text: result.content.map((item) => item.text).join("\n"), isError: result.isError === true };
 }
 if (process.env.VITEST === void 0) {
-  void runCommand({
-    description: "Run one of the plugin's MCP tools from the shell and print its result. Use when the mcp__plugin_context-graph_ContextGraph__* tools cannot be called directly.",
-    positional: [
-      { name: "tool", required: false, description: "Tool name, e.g. list_context_models or edit_context_section." },
-      { name: "args", required: false, description: "The tool's arguments as one JSON object (default: {})." }
-    ],
-    flags: [{ name: "list", boolean: true, description: "Print every tool with a one-line description and exit." }]
-  }, async ({ positional, flags }) => {
-    const client = createApiClient(platform, getVersion());
-    const telemetry = createTelemetry(createApiSender(client.post));
-    const handlers = createToolHandlers(client, telemetry);
-    if (flags.list === true) {
-      console.log(listToolLines(handlers).join("\n"));
-      return;
+  void runCommand(
+    {
+      description: "Run one of the plugin's MCP tools from the shell and print its result. Use when the mcp__plugin_context-graph_ContextGraph__* tools cannot be called directly.",
+      positional: [
+        { name: "tool", required: false, description: "Tool name, e.g. list_context_models or edit_context_section." },
+        { name: "args", required: false, description: "The tool's arguments as one JSON object (default: {})." }
+      ],
+      flags: [{ name: "list", boolean: true, description: "Print every tool with a one-line description and exit." }]
+    },
+    async ({ positional, flags }) => {
+      const client = createApiClient(platform, getVersion());
+      const telemetry = createTelemetry(createApiSender(client.post));
+      const handlers = createToolHandlers(client, telemetry);
+      if (flags.list === true) {
+        console.log(listToolLines(handlers).join("\n"));
+        return;
+      }
+      if (!positional[0]) throw new UsageError("Pass a tool name, or --list.");
+      const { text: text3, isError } = await runTool(positional[0], positional[1], handlers);
+      await telemetry.flush();
+      if (isError) {
+        console.error(text3);
+        process.exit(1);
+      }
+      console.log(text3);
     }
-    if (!positional[0]) throw new UsageError("Pass a tool name, or --list.");
-    const { text: text3, isError } = await runTool(positional[0], positional[1], handlers);
-    await telemetry.flush();
-    if (isError) {
-      console.error(text3);
-      process.exit(1);
-    }
-    console.log(text3);
-  });
+  );
 }
 export {
   listToolLines,

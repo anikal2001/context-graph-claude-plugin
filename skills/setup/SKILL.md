@@ -20,7 +20,7 @@ Sign the plugin in to a plum workspace from the browser, check its state, or sig
 
 ## Output
 
-The user wants the result, not the work. Do not narrate what you are about to do, which tool you are calling, or what you are checking; never write "Let me", "I'll", "First I'll" or a summary of your reasoning. Run the steps silently and answer with the outcome only: one or two lines (for example "Committed revision 7: tightened Customer." plus the page link), a fenced diff when a step calls for one, or a single question through `AskUserQuestion`. When something fails, say what failed and the one command that fixes it, nothing else.
+The user wants the result, not the work. Do not narrate what you are about to do, which tool you are calling, or what you are checking; never write "Let me", "I'll", "First I'll" or a summary of your reasoning. Run the steps silently and answer with the outcome only: one or two lines (for example "Signed in to Acme as owner@acme.com (admin)." plus the graph page link), or a single question through `AskUserQuestion`. When something fails, say what failed and the one command that fixes it, nothing else.
 
 ## Tool access
 
@@ -95,7 +95,7 @@ Every organization is its own workspace: its own sources, discovery, ontology, c
 
 ## Url
 
-1. The second token of `$ARGUMENTS` is the app URL (for example `http://localhost:5173` for the Vite dev server, which proxies `/api` to the API). Run:
+1. The second token of `$ARGUMENTS` is the app URL (for example `http://localhost:5173` for a local copy of the app). Run:
 
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/dist/commands/login.js" --force --url "<app-url>"
