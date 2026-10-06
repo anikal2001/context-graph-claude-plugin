@@ -19679,7 +19679,7 @@ function date4(params) {
 }
 
 // ../../packages/shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.17.0";
+var CONTRACT_VERSION = "1.18.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -23479,7 +23479,8 @@ var PlumMetricsResponseSchema = external_exports.object({
   /** Base URL for record links (https://<domain>.lightning.force.com), or null when not configured. */
   salesforceUrl: external_exports.string().nullable(),
   /** The ontology repository on GitHub (https://github.com/<owner>/<name>), or null for a local or sample ontology. */
-  repositoryUrl: external_exports.string().nullable().default(null)
+  repositoryUrl: external_exports.string().nullable().default(null),
+  ontologyWarning: external_exports.string().nullable().default(null)
 });
 var PlumMetricFileSchema = external_exports.object({
   metric: PlumMetricSummarySchema,
@@ -23527,9 +23528,9 @@ var PlumProposalSchema = external_exports.object({
   path: external_exports.string().nullable(),
   branch: external_exports.string().nullable(),
   url: external_exports.string().nullable(),
-  /** open: a pull request exists; recorded: stored here only (no writable ontology remote). */
-  status: external_exports.enum(["open", "recorded"]),
+  status: external_exports.enum(["open", "recorded", "merged"]),
   runId: external_exports.string().nullable(),
+  mergeCommit: external_exports.string().nullable().default(null),
   createdAt: external_exports.string()
 });
 var PlumAskRequestSchema = external_exports.strictObject({
