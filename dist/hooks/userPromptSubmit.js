@@ -19680,7 +19680,7 @@ function date4(params) {
 }
 
 // ../../packages/shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.18.0";
+var CONTRACT_VERSION = "1.20.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -19750,7 +19750,7 @@ var EntityTypeSchema = external_exports.strictObject({
   /** Exact identities of the same object in other providers, e.g. an ORM class naming its Postgres table (1.2.0). */
   aliases: external_exports.array(
     external_exports.strictObject({
-      provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion"]),
+      provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion", "website"]),
       nativeName: external_exports.string().min(1)
     })
   ).max(20).optional()
@@ -19838,7 +19838,7 @@ var SourceMetadataSchema = external_exports.record(
 );
 var SourceConnectionSchema = external_exports.strictObject({
   id: IdSchema,
-  provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion"]),
+  provider: external_exports.enum(["salesforce", "codebase", "postgres", "notion", "website"]),
   displayName: external_exports.string().min(1),
   allowedObjects: external_exports.array(external_exports.string().min(1)),
   status: external_exports.enum(["connected", "disconnected", "error", "pending"]),
@@ -20010,6 +20010,7 @@ var CatalogKindSchema = external_exports.enum([
   "organization",
   "user",
   "connected_application",
+  "web_page",
   "other"
 ]);
 var ReaderKindSchema = external_exports.enum([
@@ -20027,7 +20028,8 @@ var ReaderKindSchema = external_exports.enum([
   "lead_status",
   "organization",
   "user",
-  "connected_application"
+  "connected_application",
+  "web_page"
 ]);
 var ReaderDescriptorSchema = external_exports.strictObject({
   kind: CatalogKindSchema,
@@ -20197,6 +20199,7 @@ var DiscoveryEventSchema = external_exports.strictObject({
     "batch_accepted",
     "catalog_updated",
     "answer_submitted",
+    "intake_submitted",
     "run_progress",
     "run_completed",
     "message",
@@ -20478,6 +20481,33 @@ var ContextPublicationSchema = external_exports.strictObject({
   snapshot: SnapshotVectorSchema,
   publishedBy: IdSchema,
   publishedAt: TimestampSchema
+});
+var PublicHttpsUrlSchema = external_exports.url({ protocol: /^https$/, hostname: external_exports.regexes.domain }).max(2e3).refine((value) => {
+  const url2 = new URL(value);
+  return !url2.username && !url2.password;
+}, "Use a public https address without a user name or password.").describe("A public https address on a domain name, for example https://example.com.");
+var DiscoveryStartingSourceSchema = external_exports.discriminatedUnion("kind", [
+  external_exports.strictObject({
+    kind: external_exports.literal("website").describe("The company website. Discovery reads its public pages."),
+    url: PublicHttpsUrlSchema
+  })
+]);
+var DiscoveryPointOfContactSchema = external_exports.strictObject({
+  name: external_exports.string().trim().min(1).max(200),
+  email: external_exports.email().max(320).nullable().default(null),
+  role: external_exports.string().trim().min(1).max(200).nullable().default(null).describe('Their job title, for example "COO".')
+});
+var intakeFields = {
+  companyName: external_exports.string().trim().min(1).max(200).describe("The company discovery is about."),
+  pointOfContact: DiscoveryPointOfContactSchema.nullable().default(null).describe("The person to ask first when discovery has questions. Optional."),
+  startingSource: DiscoveryStartingSourceSchema
+};
+var DiscoveryIntakeRequestSchema = external_exports.strictObject({ ...intakeFields, expectedRevision: CountSchema });
+var DiscoveryIntakeSchema = external_exports.strictObject({
+  ...intakeFields,
+  revision: external_exports.number().int().positive(),
+  submittedBy: IdSchema,
+  submittedAt: TimestampSchema
 });
 var DiscoverySnapshotSchema = external_exports.strictObject({ ...base, vector: SnapshotVectorSchema });
 var ModelRevisionRefSchema = external_exports.strictObject({
@@ -22960,7 +22990,6 @@ var ClearWorkspaceRequestSchema = external_exports.strictObject({ confirm: exter
 var WorkspaceClearedSchema = external_exports.strictObject({
   workspaceId: IdSchema,
   clearedAt: TimestampSchema,
-  /** Rows removed per table, so the page can say what went. */
   deleted: external_exports.record(external_exports.string().min(1).max(80), external_exports.number().int().nonnegative()),
   total: external_exports.number().int().nonnegative()
 });
