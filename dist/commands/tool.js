@@ -19677,7 +19677,7 @@ function date4(params) {
 import os2 from "node:os";
 
 // ../../packages/shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.20.0";
+var CONTRACT_VERSION = "1.22.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -24523,7 +24523,7 @@ var PlumFeedbackSchema = external_exports.object({
 });
 var PlumProposalSchema = external_exports.object({
   id: external_exports.string(),
-  kind: external_exports.enum(["new_metric", "metric_change", "path", "metric_request", "definition_issue"]),
+  kind: external_exports.enum(["new_metric", "metric_change", "path", "metric_request", "definition_issue", "ontology_update"]),
   title: external_exports.string(),
   path: external_exports.string().nullable(),
   branch: external_exports.string().nullable(),
@@ -24608,6 +24608,29 @@ var PlumOntologyDocumentSchema = PlumOntologyEntrySchema.extend({
   history: external_exports.array(external_exports.object({ sha: external_exports.string(), date: external_exports.string(), message: external_exports.string(), author: external_exports.string().nullable() })),
   viewUrl: external_exports.string().nullable(),
   editUrl: external_exports.string().nullable()
+});
+var PlumOntologyUpdateRequestSchema = external_exports.strictObject({
+  title: external_exports.string().trim().min(1).max(200).describe("What the change does, in a few words."),
+  rationale: external_exports.string().trim().min(1).max(4e3).describe("Why, and which sources it comes from. The reviewer reads this before approving."),
+  files: external_exports.array(
+    external_exports.strictObject({
+      path: external_exports.string().min(1).max(300).describe("Repository path, e.g. gtm/definitions/icp.md or AGENT.md."),
+      content: external_exports.string().max(6e4).describe("The whole new file, frontmatter included.")
+    })
+  ).min(1).max(50)
+});
+var PlumOntologySearchResultSchema = external_exports.object({
+  ontologyVersion: external_exports.string(),
+  query: external_exports.string(),
+  hits: external_exports.array(
+    external_exports.object({
+      path: external_exports.string(),
+      title: external_exports.string(),
+      /** Lines around the best match, so the caller can decide whether to read the whole file. */
+      excerpt: external_exports.string(),
+      score: external_exports.number()
+    })
+  )
 });
 
 // ../../packages/shared/src/automations.ts
@@ -24850,6 +24873,51 @@ var CreateServiceKeyResponseSchema = external_exports.strictObject({
   secret: external_exports.string()
 });
 var ServiceKeyListResponseSchema = external_exports.strictObject({ items: external_exports.array(ServiceKeySchema) });
+
+// ../../packages/shared/src/granola.ts
+var GranolaPersonSchema = external_exports.object({
+  name: external_exports.string().nullable(),
+  email: external_exports.string().nullable()
+});
+var GranolaLinkedNoteSchema = external_exports.object({
+  noteId: external_exports.string(),
+  title: external_exports.string().nullable(),
+  /** When the meeting's note was created in Granola. */
+  meetingAt: external_exports.string(),
+  webUrl: external_exports.string().nullable(),
+  linkedBy: external_exports.string(),
+  linkedAt: external_exports.string()
+});
+var GranolaNoteListSchema = external_exports.object({ notes: external_exports.array(GranolaLinkedNoteSchema) });
+var GranolaTranscriptLineSchema = external_exports.object({
+  speaker: external_exports.string().nullable(),
+  text: external_exports.string(),
+  startTime: external_exports.string().nullable()
+});
+var GranolaNoteSchema = GranolaLinkedNoteSchema.extend({
+  owner: GranolaPersonSchema,
+  attendees: external_exports.array(GranolaPersonSchema),
+  /** Granola's summary, as Markdown when Granola has it. */
+  summary: external_exports.string(),
+  transcript: external_exports.array(GranolaTranscriptLineSchema).nullable()
+});
+var GranolaLinkRequestSchema = external_exports.strictObject({
+  note: external_exports.string().trim().min(1).max(500).describe("The Granola note id (not_\u2026) or a link that contains it.")
+});
+var GranolaSearchResultSchema = external_exports.object({
+  query: external_exports.string(),
+  /** Linked notes searched; the search covers titles and summaries, not transcripts. */
+  searched: external_exports.number().int().nonnegative(),
+  hits: external_exports.array(
+    external_exports.object({
+      noteId: external_exports.string(),
+      title: external_exports.string().nullable(),
+      meetingAt: external_exports.string(),
+      excerpt: external_exports.string(),
+      score: external_exports.number()
+    })
+  )
+});
 
 // src/config.ts
 import fs from "node:fs";
@@ -25280,6 +25348,86 @@ var expectedRevision = int2(external_exports.number().positive()).describe(
   "The revision you read. The write is refused with CONFLICT when a newer revision landed, so re-read first."
 );
 var revision = int2(external_exports.number().positive()).optional().describe("A past revision to read; omit for the current one.");
+var granolaNoteId = external_exports.string().regex(/^not_[a-zA-Z0-9]{14}$/).describe("A linked note id (not_\u2026) from list_granola_notes or search_granola_notes.");
+var listGranolaNotes = {
+  name: "list_granola_notes",
+  title: "List Granola notes",
+  description: "The Granola meeting notes linked to this project, newest meeting first. Only notes someone linked to this project appear; other clients' meetings never do.",
+  inputSchema: {},
+  outputSchema: GranolaNoteListSchema
+};
+var getGranolaNote = {
+  name: "get_granola_note",
+  title: "Get Granola note",
+  description: "One linked meeting note: title, date, attendees, Granola's summary and, when asked, the transcript. The owner's private notes are never included.",
+  inputSchema: {
+    noteId: granolaNoteId,
+    transcript: bool().default(false).describe("Include the full transcript (long).")
+  },
+  outputSchema: GranolaNoteSchema
+};
+var searchGranolaNotes = {
+  name: "search_granola_notes",
+  title: "Search Granola notes",
+  description: "Find this project's linked meeting notes whose title or summary mentions these words, best matches first. Transcripts are not searched; read a note with get_granola_note for those.",
+  inputSchema: { query: external_exports.string().trim().min(1).max(500).describe("Words to look for.") },
+  outputSchema: GranolaSearchResultSchema
+};
+var linkGranolaNote = {
+  name: "link_granola_note",
+  title: "Link Granola note",
+  description: "Link one Granola meeting note to this project so its tools can read it. Give the note id (not_\u2026) or its link from Granola; the person asking supplies it. Only shared notes can be linked. Editors and admins only.",
+  inputSchema: {
+    note: external_exports.string().trim().min(1).max(500).describe("The Granola note id (not_\u2026) or a link that contains it.")
+  }
+};
+var unlinkGranolaNote = {
+  name: "unlink_granola_note",
+  title: "Unlink Granola note",
+  description: "Remove a linked meeting note from this project. The note stays in Granola. Editors and admins only.",
+  inputSchema: { noteId: granolaNoteId }
+};
+var ontologyPath = external_exports.string().min(1).max(300).describe("Repository path from list_ontology_files, e.g. AGENT.md or gtm/definitions/icp.md.");
+var listOntologyFiles = {
+  name: "list_ontology_files",
+  title: "List ontology files",
+  description: "Every file in the workspace's company ontology (the repository the team approves changes to): AGENT.md, domain folders, strategy, market, connectors, metrics, glossary. Read AGENT.md first: its navigation table says where each topic lives.",
+  inputSchema: {},
+  outputSchema: PlumOntologyFilesResponseSchema
+};
+var getOntologyFile = {
+  name: "get_ontology_file",
+  title: "Read ontology file",
+  description: "One ontology file as stored, frontmatter included, at the current approved version, with its recent history.",
+  inputSchema: { path: ontologyPath },
+  outputSchema: PlumOntologyDocumentSchema
+};
+var searchOntology = {
+  name: "search_ontology",
+  title: "Search ontology",
+  description: "Find ontology files that mention these words, folder READMEs included, best matches first, each with the lines around the match. Use the words people say; READMEs list synonyms.",
+  inputSchema: { query: external_exports.string().trim().min(1).max(500).describe("Words to look for.") },
+  outputSchema: PlumOntologySearchResultSchema
+};
+var proposeOntologyUpdate = {
+  name: "propose_ontology_update",
+  title: "Propose ontology update",
+  description: "Propose new or changed ontology files as one change for a person to approve in the app. Nothing reaches the approved ontology until they do. Send each file whole, frontmatter included, following the repository layout: one topic per file, edit the file that owns a topic instead of adding another, label statements confirmed, inferred or unknown, write unknowns as OPEN, and update AGENT.md's navigation or the folder README when you add a file. Read the files you change first.",
+  inputSchema: {
+    title: external_exports.string().trim().min(1).max(200).describe("What the change does, in a few words."),
+    rationale: external_exports.string().trim().min(1).max(4e3).describe("Why, and which sources it comes from (document names, meeting dates). The reviewer reads this."),
+    files: external_exports.preprocess(
+      parseJson,
+      external_exports.array(external_exports.object({ path: ontologyPath, content: external_exports.string().max(6e4).describe("The whole new file.") })).min(1).max(50)
+    ).describe("Every file to create or replace, each in full.")
+  }
+};
+var listOntologyUpdates = {
+  name: "list_ontology_updates",
+  title: "List ontology updates",
+  description: "Recent ontology updates in this workspace, newest first, with status (open: waiting for approval; merged: in the approved ontology) and their review links.",
+  inputSchema: {}
+};
 var listContextModels = {
   name: "list_context_models",
   title: "List context models",
@@ -25637,7 +25785,17 @@ var ALL_TOOL_CONTRACTS = [
   whoAmI,
   listOrganizations,
   switchOrganization,
-  getPluginActivity
+  getPluginActivity,
+  listOntologyFiles,
+  getOntologyFile,
+  searchOntology,
+  proposeOntologyUpdate,
+  listOntologyUpdates,
+  listGranolaNotes,
+  getGranolaNote,
+  searchGranolaNotes,
+  linkGranolaNote,
+  unlinkGranolaNote
 ];
 
 // src/diff.ts
@@ -26586,6 +26744,155 @@ ${checked.issues.map((issue2) => `- ${issue2}`).join("\n")}`
       const { id } = args;
       await client.delete(`/views/${encodeURIComponent(id)}`);
       return text2(`Deleted view ${id}. The Views page drops it within seconds: ${pageUrl(client.serviceUrl, "views")}`);
+    },
+    async list_ontology_files() {
+      const list = parse3(PlumOntologyFilesResponseSchema, await client.get("/plum/files"));
+      if (!list.files.length)
+        return structured(
+          "The company ontology is empty. Propose AGENT.md and the first files with propose_ontology_update.",
+          list
+        );
+      return structured(
+        [
+          `Company ontology at ${list.ontologyVersion.slice(0, 12)} (${list.files.length} files):`,
+          ...list.files.map((file2) => `- ${file2.path} \xB7 ${file2.kind} \xB7 ${file2.title}`),
+          "get_ontology_file reads one; start with AGENT.md when it exists."
+        ].join("\n"),
+        list
+      );
+    },
+    async get_ontology_file(args) {
+      const { path: filePath } = args;
+      const file2 = parse3(PlumOntologyDocumentSchema, await client.get("/plum/document", { path: filePath }));
+      const history = file2.history.slice(0, 5).map((entry) => `- ${when(entry.date)} \xB7 ${shorten(entry.message.split("\n")[0] ?? "", 100)}`);
+      return structured(
+        [
+          `${file2.path} at ${file2.ontologyVersion.slice(0, 12)}:`,
+          "",
+          file2.text,
+          ...history.length ? ["", "Recent changes:", ...history] : []
+        ].join("\n"),
+        file2
+      );
+    },
+    async search_ontology(args) {
+      const { query } = args;
+      const result = parse3(PlumOntologySearchResultSchema, await client.get("/plum/search", { q: query }));
+      if (!result.hits.length)
+        return structured(
+          `Nothing in the ontology mentions "${query}". Try the words people use for it, or list_ontology_files.`,
+          result
+        );
+      return structured(
+        [
+          `${result.hits.length} files mention "${query}":`,
+          ...result.hits.map((hit) => `- ${hit.path} (${hit.title})
+  ${hit.excerpt.replace(/\n/g, "\n  ")}`),
+          "get_ontology_file reads a whole file."
+        ].join("\n"),
+        result
+      );
+    },
+    async propose_ontology_update(args) {
+      const body = args;
+      const proposal = parse3(PlumProposalSchema, await client.post("/plum/proposals", body));
+      return text2(
+        [
+          `Proposed "${proposal.title}" (${body.files.length} file${body.files.length === 1 ? "" : "s"}) as ${proposal.id}. It is waiting for an editor or admin to approve it in the app; until then the ontology is unchanged.`,
+          ...proposal.url ? [`Review: ${proposal.url}`] : [],
+          "list_ontology_updates shows when it has merged."
+        ].join("\n")
+      );
+    },
+    async list_ontology_updates() {
+      const { proposals } = parse3(
+        external_exports.object({ proposals: external_exports.array(PlumProposalSchema) }),
+        await client.get("/plum/proposals")
+      );
+      if (!proposals.length) return text2("No ontology updates yet in this workspace.");
+      return text2(
+        [
+          `Ontology updates (${proposals.length}, newest first):`,
+          ...proposals.map(
+            (item) => `- ${item.id} \xB7 ${item.status} \xB7 ${item.kind} \xB7 "${shorten(item.title, 100)}" \xB7 ${when(item.createdAt)}${item.url ? ` \xB7 ${item.url}` : ""}`
+          ),
+          "An editor or admin approves open updates in the app."
+        ].join("\n")
+      );
+    },
+    async list_granola_notes() {
+      const list = parse3(GranolaNoteListSchema, await client.get("/granola/notes"));
+      if (!list.notes.length)
+        return structured(
+          "No Granola notes are linked to this project yet. Ask for the note link or id from Granola and use link_granola_note.",
+          list
+        );
+      return structured(
+        [
+          `Granola notes linked to this project (${list.notes.length}, newest meeting first):`,
+          ...list.notes.map((note) => `- ${note.noteId} \xB7 ${when(note.meetingAt)} \xB7 ${note.title ?? "(untitled)"}`),
+          "get_granola_note reads one; search_granola_notes finds them by topic."
+        ].join("\n"),
+        list
+      );
+    },
+    async get_granola_note(args) {
+      const { noteId, transcript } = args;
+      const note = parse3(
+        GranolaNoteSchema,
+        await client.get(`/granola/notes/${encodeURIComponent(noteId)}`, {
+          transcript: transcript ? "true" : void 0
+        })
+      );
+      const people = note.attendees.map((person) => person.name ?? person.email ?? "unknown").join(", ");
+      return structured(
+        [
+          `${note.title ?? "(untitled)"} \xB7 ${when(note.meetingAt)} \xB7 ${note.noteId}`,
+          `Attendees: ${people || "none listed"}`,
+          ...note.webUrl ? [`In Granola: ${note.webUrl}`] : [],
+          "",
+          note.summary || "(Granola has no summary for this meeting.)",
+          ...note.transcript ? ["", "Transcript:", ...note.transcript.map((line) => `${line.speaker ?? "Speaker"}: ${line.text}`)] : ["", "Ask again with transcript: true for the full transcript."]
+        ].join("\n"),
+        note
+      );
+    },
+    async search_granola_notes(args) {
+      const { query } = args;
+      const result = parse3(GranolaSearchResultSchema, await client.get("/granola/search", { q: query }));
+      if (!result.hits.length)
+        return structured(
+          `None of the ${result.searched} linked notes mention "${query}" in their title or summary. list_granola_notes shows them all.`,
+          result
+        );
+      return structured(
+        [
+          `${result.hits.length} of ${result.searched} linked notes mention "${query}":`,
+          ...result.hits.map(
+            (hit) => `- ${hit.noteId} \xB7 ${when(hit.meetingAt)} \xB7 ${hit.title ?? "(untitled)"}
+  ${hit.excerpt.replace(/\n/g, "\n  ")}`
+          ),
+          "get_granola_note reads one, with the transcript when you need it."
+        ].join("\n"),
+        result
+      );
+    },
+    async link_granola_note(args) {
+      const { note } = args;
+      const linked = parse3(GranolaLinkedNoteSchema, await client.post("/granola/notes", { note }));
+      return text2(
+        `Linked "${linked.title ?? "(untitled)"}" (${when(linked.meetingAt)}, ${linked.noteId}) to this project. get_granola_note reads it.`
+      );
+    },
+    async unlink_granola_note(args) {
+      const { noteId } = args;
+      const result = parse3(
+        external_exports.object({ noteId: external_exports.string(), unlinked: external_exports.boolean() }),
+        await client.delete(`/granola/notes/${encodeURIComponent(noteId)}`)
+      );
+      return text2(
+        result.unlinked ? `Unlinked ${noteId} from this project. It stays in Granola.` : `${noteId} was not linked to this project, so nothing changed.`
+      );
     },
     async whoami() {
       const who = parse3(PluginWhoAmISchema, await client.get("/plugin/whoami"));

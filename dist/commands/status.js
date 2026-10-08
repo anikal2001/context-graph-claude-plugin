@@ -19674,7 +19674,7 @@ function date4(params) {
 }
 
 // ../../packages/shared/src/schemas/core.ts
-var CONTRACT_VERSION = "1.20.0";
+var CONTRACT_VERSION = "1.22.0";
 var IdSchema = external_exports.string().min(1).max(200);
 var TimestampSchema = external_exports.iso.datetime({ offset: true });
 var CountSchema = external_exports.number().int().nonnegative();
@@ -23547,7 +23547,7 @@ var PlumFeedbackSchema = external_exports.object({
 });
 var PlumProposalSchema = external_exports.object({
   id: external_exports.string(),
-  kind: external_exports.enum(["new_metric", "metric_change", "path", "metric_request", "definition_issue"]),
+  kind: external_exports.enum(["new_metric", "metric_change", "path", "metric_request", "definition_issue", "ontology_update"]),
   title: external_exports.string(),
   path: external_exports.string().nullable(),
   branch: external_exports.string().nullable(),
@@ -23632,6 +23632,29 @@ var PlumOntologyDocumentSchema = PlumOntologyEntrySchema.extend({
   history: external_exports.array(external_exports.object({ sha: external_exports.string(), date: external_exports.string(), message: external_exports.string(), author: external_exports.string().nullable() })),
   viewUrl: external_exports.string().nullable(),
   editUrl: external_exports.string().nullable()
+});
+var PlumOntologyUpdateRequestSchema = external_exports.strictObject({
+  title: external_exports.string().trim().min(1).max(200).describe("What the change does, in a few words."),
+  rationale: external_exports.string().trim().min(1).max(4e3).describe("Why, and which sources it comes from. The reviewer reads this before approving."),
+  files: external_exports.array(
+    external_exports.strictObject({
+      path: external_exports.string().min(1).max(300).describe("Repository path, e.g. gtm/definitions/icp.md or AGENT.md."),
+      content: external_exports.string().max(6e4).describe("The whole new file, frontmatter included.")
+    })
+  ).min(1).max(50)
+});
+var PlumOntologySearchResultSchema = external_exports.object({
+  ontologyVersion: external_exports.string(),
+  query: external_exports.string(),
+  hits: external_exports.array(
+    external_exports.object({
+      path: external_exports.string(),
+      title: external_exports.string(),
+      /** Lines around the best match, so the caller can decide whether to read the whole file. */
+      excerpt: external_exports.string(),
+      score: external_exports.number()
+    })
+  )
 });
 
 // ../../packages/shared/src/automations.ts
@@ -23874,6 +23897,51 @@ var CreateServiceKeyResponseSchema = external_exports.strictObject({
   secret: external_exports.string()
 });
 var ServiceKeyListResponseSchema = external_exports.strictObject({ items: external_exports.array(ServiceKeySchema) });
+
+// ../../packages/shared/src/granola.ts
+var GranolaPersonSchema = external_exports.object({
+  name: external_exports.string().nullable(),
+  email: external_exports.string().nullable()
+});
+var GranolaLinkedNoteSchema = external_exports.object({
+  noteId: external_exports.string(),
+  title: external_exports.string().nullable(),
+  /** When the meeting's note was created in Granola. */
+  meetingAt: external_exports.string(),
+  webUrl: external_exports.string().nullable(),
+  linkedBy: external_exports.string(),
+  linkedAt: external_exports.string()
+});
+var GranolaNoteListSchema = external_exports.object({ notes: external_exports.array(GranolaLinkedNoteSchema) });
+var GranolaTranscriptLineSchema = external_exports.object({
+  speaker: external_exports.string().nullable(),
+  text: external_exports.string(),
+  startTime: external_exports.string().nullable()
+});
+var GranolaNoteSchema = GranolaLinkedNoteSchema.extend({
+  owner: GranolaPersonSchema,
+  attendees: external_exports.array(GranolaPersonSchema),
+  /** Granola's summary, as Markdown when Granola has it. */
+  summary: external_exports.string(),
+  transcript: external_exports.array(GranolaTranscriptLineSchema).nullable()
+});
+var GranolaLinkRequestSchema = external_exports.strictObject({
+  note: external_exports.string().trim().min(1).max(500).describe("The Granola note id (not_\u2026) or a link that contains it.")
+});
+var GranolaSearchResultSchema = external_exports.object({
+  query: external_exports.string(),
+  /** Linked notes searched; the search covers titles and summaries, not transcripts. */
+  searched: external_exports.number().int().nonnegative(),
+  hits: external_exports.array(
+    external_exports.object({
+      noteId: external_exports.string(),
+      title: external_exports.string().nullable(),
+      meetingAt: external_exports.string(),
+      excerpt: external_exports.string(),
+      score: external_exports.number()
+    })
+  )
+});
 
 // src/buildInfo.ts
 import fs from "node:fs";
